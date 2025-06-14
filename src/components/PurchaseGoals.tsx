@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X, Target, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AutocompleteInput } from "./AutocompleteInput";
+import { osrsApi } from "@/services/osrsApi";
 
 interface PurchaseGoal {
   id: string;
@@ -62,6 +63,27 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     { name: "Prayer Scroll (Augury)", currentPrice: 25000000, category: "other", priority: "medium" },
     { name: "Bonds x10", currentPrice: 50000000, category: "other", priority: "medium" }
   ];
+
+  const searchItems = async (query: string) => {
+    const items = await osrsApi.searchItems(query);
+    return items.map(item => ({
+      id: item.id,
+      name: item.name,
+      subtitle: 'OSRS Item',
+      icon: item.icon,
+      value: item.current_price,
+      category: 'item'
+    }));
+  };
+
+  const handleItemSelect = (option: any) => {
+    setNewGoal({
+      ...newGoal,
+      name: option.name,
+      currentPrice: option.value || 0,
+      imageUrl: option.icon || ''
+    });
+  };
 
   const addGoal = () => {
     if (!newGoal.name?.trim()) {
@@ -206,10 +228,12 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label>Item Name</Label>
-              <Input
+              <AutocompleteInput
                 value={newGoal.name || ''}
-                onChange={(e) => setNewGoal({...newGoal, name: e.target.value})}
+                onChange={(value) => setNewGoal({...newGoal, name: value})}
+                onSelect={handleItemSelect}
                 placeholder="e.g., Twisted Bow, Bandos Chestplate"
+                searchFunction={searchItems}
                 className="bg-white dark:bg-slate-800"
               />
             </div>

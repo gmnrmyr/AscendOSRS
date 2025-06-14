@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Users } from "lucide-react";
+import { Plus, X, Users, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { osrsApi } from "@/services/osrsApi";
 
 interface Character {
   id: string;
@@ -33,7 +33,55 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
     bank: 0,
     notes: ''
   });
+  const [fetchingStats, setFetchingStats] = useState(false);
   const { toast } = useToast();
+
+  const fetchPlayerStats = async () => {
+    if (!newCharacter.name?.trim()) {
+      toast({
+        title: "Error",
+        description: "Enter a character name first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setFetchingStats(true);
+    try {
+      const stats = await osrsApi.fetchPlayerStats(newCharacter.name);
+      
+      if (stats) {
+        setNewCharacter({
+          ...newCharacter,
+          combatLevel: stats.combat_level,
+          totalLevel: stats.total_level,
+          type: stats.account_type === 'regular' ? 'main' : 
+                stats.account_type === 'ironman' ? 'ironman' :
+                stats.account_type === 'hardcore' ? 'hardcore' :
+                stats.account_type === 'ultimate' ? 'ultimate' : 'main'
+        });
+        
+        toast({
+          title: "Success",
+          description: `Fetched stats for ${stats.name}: Combat ${stats.combat_level}, Total ${stats.total_level}`
+        });
+      } else {
+        toast({
+          title: "Player Not Found",
+          description: "Could not find player stats. Please check the username or enter manually.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch player stats",
+        variant: "destructive"
+      });
+    } finally {
+      setFetchingStats(false);
+    }
+  };
 
   const addCharacter = () => {
     if (!newCharacter.name?.trim()) {
@@ -121,12 +169,29 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label>Character Name</Label>
-              <Input
-                value={newCharacter.name || ''}
-                onChange={(e) => setNewCharacter({...newCharacter, name: e.target.value})}
-                placeholder="Enter character name"
-                className="bg-white dark:bg-slate-800"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={newCharacter.name || ''}
+                  onChange={(e) => setNewCharacter({...newCharacter, name: e.target.value})}
+                  placeholder="Enter OSRS username"
+                  className="bg-white dark:bg-slate-800"
+                />
+                <Button
+                  onClick={fetchPlayerStats}
+                  disabled={fetchingStats || !newCharacter.name?.trim()}
+                  variant="outline"
+                  size="sm"
+                >
+                  {fetchingStats ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Click search to auto-fetch stats from OSRS Hiscores
+              </p>
             </div>
             
             <div>

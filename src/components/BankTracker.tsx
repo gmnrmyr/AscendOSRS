@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X, Coins, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { BankCSVImporter } from "./BankCSVImporter";
 
 interface BankItem {
   id: string;
@@ -20,7 +21,7 @@ interface BankItem {
 interface BankTrackerProps {
   bankData: Record<string, BankItem[]>;
   setBankData: (bankData: Record<string, BankItem[]>) => void;
-  characters: any[];
+  characters: Array<{ id: string; name: string }>;
 }
 
 export function BankTracker({ bankData, setBankData, characters }: BankTrackerProps) {
@@ -131,6 +132,13 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     });
   };
 
+  const handleImportBank = (items: BankItem[], character: string) => {
+    setBankData({
+      ...bankData,
+      [character]: [...(bankData[character] || []), ...items]
+    });
+  };
+
   const formatGP = (amount: number) => {
     if (amount >= 1000000000) {
       return `${(amount / 1000000000).toFixed(1)}B`;
@@ -163,6 +171,12 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
 
   return (
     <div className="space-y-6">
+      {/* Bank CSV Importer */}
+      <BankCSVImporter 
+        onImportBank={handleImportBank}
+        characters={characters}
+      />
+
       {/* Total Bank Value Summary */}
       <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200 dark:border-amber-800">
         <CardContent className="p-6">

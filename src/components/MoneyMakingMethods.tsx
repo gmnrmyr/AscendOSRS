@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, X, Coins, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MoneyMakerImporter } from "./MoneyMakerImporter";
+import { AutocompleteInput } from "./AutocompleteInput";
+import { osrsApi } from "@/services/osrsApi";
 
 interface MoneyMethod {
   id: string;
@@ -37,6 +39,32 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     category: 'combat'
   });
   const { toast } = useToast();
+
+  const searchMoneyMakers = async (query: string) => {
+    const methods = await osrsApi.searchMoneyMakers(query);
+    return methods.map(method => ({
+      id: method.name,
+      name: method.name,
+      subtitle: method.description,
+      value: method.profit,
+      category: method.category
+    }));
+  };
+
+  const handleMethodSelect = (option: any) => {
+    const defaultMethod = osrsApi.getDefaultMoneyMakers().find(m => m.name === option.name);
+    if (defaultMethod) {
+      setNewMethod({
+        ...newMethod,
+        name: option.name,
+        gpHour: defaultMethod.profit,
+        clickIntensity: defaultMethod.difficulty as 1 | 2 | 3 | 4 | 5,
+        requirements: defaultMethod.requirements.join(', '),
+        notes: defaultMethod.description,
+        category: defaultMethod.category as 'combat' | 'skilling' | 'bossing' | 'other'
+      });
+    }
+  };
 
   const addMethod = () => {
     if (!newMethod.name?.trim()) {
@@ -146,10 +174,12 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label>Method Name</Label>
-              <Input
+              <AutocompleteInput
                 value={newMethod.name || ''}
-                onChange={(e) => setNewMethod({...newMethod, name: e.target.value})}
-                placeholder="e.g., Zulrah, Vorkath, etc."
+                onChange={(value) => setNewMethod({...newMethod, name: value})}
+                onSelect={handleMethodSelect}
+                placeholder="e.g., Vorkath, Zulrah, etc."
+                searchFunction={searchMoneyMakers}
                 className="bg-white dark:bg-slate-800"
               />
             </div>

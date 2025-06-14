@@ -1,4 +1,3 @@
-
 export interface OSRSItem {
   id: number;
   name: string;
@@ -27,9 +26,18 @@ export interface MoneyMakingGuide {
   difficulty: number;
 }
 
+export interface OSRSPlayerStats {
+  name: string;
+  combat_level: number;
+  total_level: number;
+  account_type: 'regular' | 'ironman' | 'hardcore' | 'ultimate';
+  skills: Record<string, { level: number; xp: number }>;
+}
+
 class OSRSApiService {
   private readonly WIKI_BASE_URL = 'https://oldschool.runescape.wiki/api.php';
   private readonly PRICES_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs';
+  private readonly HISCORES_BASE_URL = 'https://secure.runescape.com/m=hiscore_oldschool';
   
   async fetchItemPrices(): Promise<Record<string, OSRSPriceData>> {
     try {
@@ -52,14 +60,147 @@ class OSRSApiService {
       
       if (!data.query?.search) return [];
       
-      // Convert search results to our format
+      // Convert search results to our format and add thumbnails
       return data.query.search.map((item: any) => ({
         id: Math.random(), // Wiki doesn't provide item IDs in search
         name: item.title,
-        wiki_url: `https://oldschool.runescape.wiki/w/${encodeURIComponent(item.title)}`
+        wiki_url: `https://oldschool.runescape.wiki/w/${encodeURIComponent(item.title)}`,
+        icon: this.getItemIcon(item.title)
       }));
     } catch (error) {
       console.error('Error searching items:', error);
+      return [];
+    }
+  }
+
+  getItemIcon(itemName: string): string {
+    // Generate OSRS Wiki item icon URL
+    const cleanName = itemName.replace(/ /g, '_').replace(/[()]/g, '');
+    return `https://oldschool.runescape.wiki/images/${encodeURIComponent(cleanName)}_detail.png`;
+  }
+
+  async searchMoneyMakers(query: string): Promise<MoneyMakingGuide[]> {
+    const allMethods = this.getDefaultMoneyMakers();
+    
+    if (!query.trim()) return [];
+    
+    // Filter methods based on query
+    return allMethods.filter(method => 
+      method.name.toLowerCase().includes(query.toLowerCase()) ||
+      method.description.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+
+  async fetchPlayerStats(username: string): Promise<OSRSPlayerStats | null> {
+    try {
+      // Try different account types
+      const accountTypes = ['', '_ironman', '_hardcore_ironman', '_ultimate'];
+      
+      for (const type of accountTypes) {
+        try {
+          const response = await fetch(
+            `${this.HISCORES_BASE_URL}${type}/index_lite.ws?player=${encodeURIComponent(username)}`
+          );
+          
+          if (response.ok) {
+            const data = await response.text();
+            return this.parseHiscoresData(username, data, type);
+          }
+        } catch (error) {
+          console.log(`Failed to fetch ${type} stats for ${username}`);
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching player stats:', error);
+      return null;
+    }
+  }
+
+  private parseHiscoresData(username: string, data: string, accountType: string): OSRSPlayerStats {
+    const lines = data.split('\n');
+    const skillNames = [
+      'Overall', 'Attack', 'Defence', 'Strength', 'Hitpoints', 'Ranged', 'Prayer', 'Magic',
+      'Cooking', 'Woodcutting', 'Fletching', 'Fishing', 'Firemaking', 'Crafting', 'Smithing',
+      'Mining', 'Herblore', 'Agility', 'Thieving', 'Slayer', 'Farming', 'Runecraft', 'Hunter', 'Construction'
+    ];
+
+    const skills: Record<string, { level: number; xp: number }> = {};
+    let totalLevel = 0;
+    let combatLevel = 3;
+
+    // Parse skill data
+    for (let i = 0; i < Math.min(lines.length, skillNames.length); i++) {
+      const parts = lines[i].split(',');
+      if (parts.length >= 3) {
+        const level = parseInt(parts[1]) || 1;
+        const xp = parseInt(parts[2]) || 0;
+        
+        skills[skillNames[i].toLowerCase()] = { level, xp };
+        
+        if (i > 0) { // Skip overall for total level calculation
+          totalLevel += level;
+        }
+      }
+    }
+
+    // Calculate combat level
+    const attack = skills.attack?.level || 1;
+    const defence = skills.defence?.level || 1;
+    const strength = skills.strength?.level || 1;
+    const hitpoints = skills.hitpoints?.level || 10;
+    const ranged = skills.ranged?.level || 1;
+    const magic = skills.magic?.level || 1;
+    const prayer = skills.prayer?.level || 1;
+
+    const base = 0.25 * (defence + hitpoints + Math.floor(prayer / 2));
+    const melee = 0.325 * (attack + strength);
+    const rangeLevel = 0.325 * (Math.floor(ranged * 1.5));
+    const mageLevel = 0.325 * (Math.floor(magic * 1.5));
+    
+    combatLevel = Math.floor(base + Math.max(melee, Math.max(rangeLevel, mageLevel)));
+
+    let type: 'regular' | 'ironman' | 'hardcore' | 'ultimate' = 'regular';
+    if (accountType.includes('ultimate')) type = 'ultimate';
+    else if (accountType.includes('hardcore')) type = 'hardcore';
+    else if (accountType.includes('ironman')) type = 'ironman';
+
+    return {
+      name: username,
+      combat_level: combatLevel,
+      total_level: totalLevel,
+      account_type: type,
+      skills
+    };
+  }
+
+  parseBankCSV(csvData: string): Array<{name: string; quantity: number; value: number}> {
+    try {
+      const lines = csvData.trim().split('\n');
+      const result = [];
+      
+      // Skip header row
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        // Parse CSV line (handle commas in item names)
+        const parts = line.split(',');
+        if (parts.length >= 3) {
+          const name = parts[0].replace(/"/g, '').trim();
+          const quantity = parseInt(parts[1]) || 0;
+          const value = parseInt(parts[2]) || 0;
+          
+          if (name && quantity > 0) {
+            result.push({ name, quantity, value });
+          }
+        }
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error parsing bank CSV:', error);
       return [];
     }
   }
@@ -90,11 +231,14 @@ class OSRSApiService {
       return popularItems.map(item => ({
         ...item,
         current_price: prices[item.id]?.high || 0,
-        icon: `https://oldschool.runescape.wiki/images/thumb/${item.name.replace(/ /g, '_')}_detail.png/120px-${item.name.replace(/ /g, '_')}_detail.png`
+        icon: this.getItemIcon(item.name)
       }));
     } catch (error) {
       console.error('Error fetching popular items:', error);
-      return popularItems;
+      return popularItems.map(item => ({
+        ...item,
+        icon: this.getItemIcon(item.name)
+      }));
     }
   }
 

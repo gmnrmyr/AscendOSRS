@@ -9,7 +9,189 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bank_items: {
+        Row: {
+          category: string
+          character: string
+          created_at: string | null
+          estimated_price: number | null
+          id: string
+          name: string
+          quantity: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          character: string
+          created_at?: string | null
+          estimated_price?: number | null
+          id?: string
+          name: string
+          quantity?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          character?: string
+          created_at?: string | null
+          estimated_price?: number | null
+          id?: string
+          name?: string
+          quantity?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      characters: {
+        Row: {
+          bank: number | null
+          combat_level: number | null
+          created_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          total_level: number | null
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          bank?: number | null
+          combat_level?: number | null
+          created_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          total_level?: number | null
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          bank?: number | null
+          combat_level?: number | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          total_level?: number | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      money_methods: {
+        Row: {
+          category: string
+          character: string
+          click_intensity: number
+          created_at: string | null
+          gp_hour: number
+          id: string
+          name: string
+          notes: string | null
+          requirements: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          character: string
+          click_intensity: number
+          created_at?: string | null
+          gp_hour?: number
+          id?: string
+          name: string
+          notes?: string | null
+          requirements?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          character?: string
+          click_intensity?: number
+          created_at?: string | null
+          gp_hour?: number
+          id?: string
+          name?: string
+          notes?: string | null
+          requirements?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      purchase_goals: {
+        Row: {
+          category: string
+          created_at: string | null
+          current_price: number | null
+          id: string
+          image_url: string | null
+          name: string
+          notes: string | null
+          priority: string
+          quantity: number | null
+          target_price: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          current_price?: number | null
+          id?: string
+          image_url?: string | null
+          name: string
+          notes?: string | null
+          priority: string
+          quantity?: number | null
+          target_price?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          current_price?: number | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          notes?: string | null
+          priority?: string
+          quantity?: number | null
+          target_price?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

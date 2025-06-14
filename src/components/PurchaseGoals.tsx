@@ -64,6 +64,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     { name: "Bonds x10", currentPrice: 50000000, category: "other", priority: "medium" }
   ];
 
+  // Only search for items, not money-making methods
   const searchItems = async (query: string) => {
     const items = await osrsApi.searchItems(query);
     return items.map(item => ({

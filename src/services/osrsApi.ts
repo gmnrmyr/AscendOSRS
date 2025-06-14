@@ -1,3 +1,4 @@
+
 export interface OSRSItem {
   id: number;
   name: string;
@@ -93,24 +94,36 @@ class OSRSApiService {
 
   async fetchPlayerStats(username: string): Promise<OSRSPlayerStats | null> {
     try {
-      // Try different account types
-      const accountTypes = ['', '_ironman', '_hardcore_ironman', '_ultimate'];
+      console.log(`Attempting to fetch stats for ${username}`);
       
-      for (const type of accountTypes) {
+      // Try different account types with proper CORS handling
+      const accountTypes = [
+        { type: '', name: 'regular' },
+        { type: '_ironman', name: 'ironman' },
+        { type: '_hardcore_ironman', name: 'hardcore' },
+        { type: '_ultimate', name: 'ultimate' }
+      ];
+      
+      for (const account of accountTypes) {
         try {
-          const response = await fetch(
-            `${this.HISCORES_BASE_URL}${type}/index_lite.ws?player=${encodeURIComponent(username)}`
-          );
+          console.log(`Trying ${account.name} account type for ${username}`);
+          
+          // Use a CORS proxy for the hiscores API
+          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`${this.HISCORES_BASE_URL}${account.type}/index_lite.ws?player=${encodeURIComponent(username)}`)}`;
+          
+          const response = await fetch(proxyUrl);
           
           if (response.ok) {
             const data = await response.text();
-            return this.parseHiscoresData(username, data, type);
+            console.log(`Successfully fetched ${account.name} stats for ${username}`);
+            return this.parseHiscoresData(username, data, account.type);
           }
         } catch (error) {
-          console.log(`Failed to fetch ${type} stats for ${username}`);
+          console.log(`Failed to fetch ${account.name} stats for ${username}:`, error);
         }
       }
       
+      console.log(`Could not find any stats for ${username}`);
       return null;
     } catch (error) {
       console.error('Error fetching player stats:', error);

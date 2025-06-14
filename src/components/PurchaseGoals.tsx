@@ -84,6 +84,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     
     // Fetch current price if available
     let currentPrice = option.value || 0;
+    let itemIcon = option.icon;
+    
     try {
       const prices = await osrsApi.fetchItemPrices();
       const itemPrice = prices[option.id];
@@ -94,11 +96,16 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       console.log('Could not fetch current price, using default');
     }
 
+    // If no icon from search, generate one
+    if (!itemIcon) {
+      itemIcon = osrsApi.getItemIcon(option.name);
+    }
+
     setNewGoal({
       ...newGoal,
       name: option.name,
       currentPrice: currentPrice,
-      imageUrl: option.icon || osrsApi.getItemIcon(option.name)
+      imageUrl: itemIcon
     });
   };
 
@@ -366,7 +373,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Item Name</Label>
               <AutocompleteInput
@@ -380,25 +387,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             </div>
             
             <div>
-              <Label>Current Price (GP) - Auto-fetched</Label>
-              <Input
-                type="number"
-                value={newGoal.currentPrice || ''}
-                readOnly
-                placeholder="Auto-fetched when item selected"
-                className="bg-gray-100 dark:bg-slate-700 cursor-not-allowed"
-              />
-            </div>
-
-            <div>
-              <Label>Target Price (Optional)</Label>
-              <Input
-                type="number"
-                value={newGoal.targetPrice || ''}
-                onChange={(e) => setNewGoal({...newGoal, targetPrice: Number(e.target.value)})}
-                placeholder="Leave empty to use current price"
-                className="bg-white dark:bg-slate-800"
-              />
+              <Label>Current Price (GP) - Auto-fetched from Wiki</Label>
+              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+                {newGoal.currentPrice ? formatGP(newGoal.currentPrice) : 'Select an item to fetch price'}
+              </div>
             </div>
           </div>
 
@@ -536,20 +528,20 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs text-gray-500">Current Price (Auto)</Label>
+                  <Label className="text-xs text-gray-500">Current Price (Wiki)</Label>
                   <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm">
                     {formatGP(goal.currentPrice)} GP
                   </div>
                 </div>
                 
                 <div>
-                  <Label className="text-xs text-gray-500">Target Price</Label>
+                  <Label className="text-xs text-gray-500">Target Price (Optional)</Label>
                   <Input
                     type="number"
                     value={goal.targetPrice || ''}
                     onChange={(e) => updateGoal(goal.id, 'targetPrice', Number(e.target.value) || undefined)}
                     className="h-8 text-sm"
-                    placeholder="Auto"
+                    placeholder="Use current"
                   />
                 </div>
               </div>

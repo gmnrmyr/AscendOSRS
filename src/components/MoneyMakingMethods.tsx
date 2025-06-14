@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,7 +47,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     return methods.map(method => ({
       id: method.name,
       name: method.name,
-      subtitle: method.description,
+      subtitle: `${method.profit.toLocaleString()} GP/hr - ${method.membership.toUpperCase()}`,
       value: method.profit,
       category: method.category
     }));
@@ -151,7 +152,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
 
   const getMembershipColor = (membership?: string) => {
     switch (membership) {
-      case 'f2p': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'f2p': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
       case 'p2p': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
@@ -179,25 +180,25 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
             <Plus className="h-5 w-5" />
-            Add Custom Money-Making Method
+            Add Money-Making Method
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Method Name</Label>
+              <Label>Method Name (Auto-fills from Wiki)</Label>
               <AutocompleteInput
                 value={newMethod.name || ''}
                 onChange={(value) => setNewMethod({...newMethod, name: value})}
                 onSelect={handleMethodSelect}
-                placeholder="e.g., Vorkath, Zulrah, etc."
+                placeholder="Start typing method name..."
                 searchFunction={searchMoneyMakers}
                 className="bg-white dark:bg-slate-800"
               />
             </div>
             
             <div>
-              <Label>Assigned Character</Label>
+              <Label>Assign to Character</Label>
               <Select 
                 value={newMethod.character} 
                 onValueChange={(value) => setNewMethod({...newMethod, character: value})}
@@ -213,97 +214,54 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Read-only fields that get auto-filled */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label>GP per Hour (From Wiki)</Label>
+              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+                {newMethod.gpHour ? formatGP(newMethod.gpHour) : 'Select method to auto-fill'}
+              </div>
+            </div>
 
             <div>
-              <Label>GP per Hour</Label>
-              <Input
-                type="number"
-                value={newMethod.gpHour || ''}
-                onChange={(e) => setNewMethod({...newMethod, gpHour: Number(e.target.value)})}
-                placeholder="1000000"
-                className="bg-white dark:bg-slate-800"
-              />
+              <Label>Category (From Wiki)</Label>
+              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+                {newMethod.category ? newMethod.category : 'Auto-filled from selection'}
+              </div>
+            </div>
+
+            <div>
+              <Label>Membership (From Wiki)</Label>
+              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+                {newMethod.membership ? newMethod.membership.toUpperCase() : 'Auto-filled from selection'}
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Click Intensity (1-5)</Label>
-              <Select 
-                value={newMethod.clickIntensity?.toString()} 
-                onValueChange={(value) => setNewMethod({...newMethod, clickIntensity: Number(value) as 1 | 2 | 3 | 4 | 5})}
-              >
-                <SelectTrigger className="bg-white dark:bg-slate-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 - Very AFK</SelectItem>
-                  <SelectItem value="2">2 - Low</SelectItem>
-                  <SelectItem value="3">3 - Medium</SelectItem>
-                  <SelectItem value="4">4 - High</SelectItem>
-                  <SelectItem value="5">5 - Very High</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Requirements (From Wiki)</Label>
+              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400 max-h-20 overflow-y-auto">
+                {newMethod.requirements || 'Auto-filled from selection'}
+              </div>
             </div>
 
             <div>
-              <Label>Category</Label>
-              <Select 
-                value={newMethod.category} 
-                onValueChange={(value) => setNewMethod({...newMethod, category: value as MoneyMethod['category']})}
-              >
-                <SelectTrigger className="bg-white dark:bg-slate-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="combat">Combat</SelectItem>
-                  <SelectItem value="skilling">Skilling</SelectItem>
-                  <SelectItem value="bossing">Bossing</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Membership</Label>
-              <Select 
-                value={newMethod.membership || 'p2p'} 
-                onValueChange={(value) => setNewMethod({...newMethod, membership: value as 'f2p' | 'p2p'})}
-              >
-                <SelectTrigger className="bg-white dark:bg-slate-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="f2p">F2P (Free)</SelectItem>
-                  <SelectItem value="p2p">P2P (Members)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Requirements</Label>
+              <Label>Notes (Optional)</Label>
               <Input
-                value={newMethod.requirements || ''}
-                onChange={(e) => setNewMethod({...newMethod, requirements: e.target.value})}
-                placeholder="Stats, quests, gear..."
+                value={newMethod.notes || ''}
+                onChange={(e) => setNewMethod({...newMethod, notes: e.target.value})}
+                placeholder="Add your own notes..."
                 className="bg-white dark:bg-slate-800"
               />
             </div>
-          </div>
-
-          <div>
-            <Label>Notes</Label>
-            <Input
-              value={newMethod.notes || ''}
-              onChange={(e) => setNewMethod({...newMethod, notes: e.target.value})}
-              placeholder="Additional notes..."
-              className="bg-white dark:bg-slate-800"
-            />
           </div>
 
           <Button onClick={addMethod} className="bg-amber-600 hover:bg-amber-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
-            Add Custom Method
+            Add Method
           </Button>
         </CardContent>
       </Card>
@@ -349,17 +307,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
             
             <CardContent className="space-y-3">
               <div>
-                <Label className="text-xs text-gray-500">GP per Hour</Label>
-                <Input
-                  type="number"
-                  value={method.gpHour}
-                  onChange={(e) => updateMethod(method.id, 'gpHour', Number(e.target.value))}
-                  className="h-8 text-sm"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs text-gray-500">Character</Label>
+                <Label className="text-xs text-gray-500">Character Assignment</Label>
                 <Select 
                   value={method.character} 
                   onValueChange={(value) => updateMethod(method.id, 'character', value)}
@@ -379,17 +327,15 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
               {method.requirements && (
                 <div>
                   <Label className="text-xs text-gray-500">Requirements</Label>
-                  <Input
-                    value={method.requirements}
-                    onChange={(e) => updateMethod(method.id, 'requirements', e.target.value)}
-                    className="h-8 text-sm"
-                  />
+                  <div className="bg-gray-50 dark:bg-gray-800 border rounded px-2 py-1 text-xs max-h-16 overflow-y-auto">
+                    {method.requirements}
+                  </div>
                 </div>
               )}
 
               {method.notes && (
                 <div>
-                  <Label className="text-xs text-gray-500">Notes</Label>
+                  <Label className="text-xs text-gray-500">Personal Notes</Label>
                   <Input
                     value={method.notes}
                     onChange={(e) => updateMethod(method.id, 'notes', e.target.value)}
@@ -408,7 +354,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
             <Coins className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-500 mb-2">No money-making methods yet</h3>
             <p className="text-gray-400 text-center mb-4">
-              Import methods from OSRS Wiki or add your own custom methods
+              Import methods from OSRS Wiki or search to add specific methods
             </p>
           </CardContent>
         </Card>

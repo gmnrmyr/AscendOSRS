@@ -14,8 +14,51 @@ import { SummaryDashboard } from "@/components/SummaryDashboard";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, TrendingUp, Target, Coins, Users, Settings } from "lucide-react";
 
+// Type definitions to match the component interfaces
+interface Character {
+  id: string;
+  name: string;
+  type: 'main' | 'alt' | 'ironman' | 'hardcore' | 'ultimate';
+  combatLevel: number;
+  totalLevel: number;
+  bank: number;
+  notes: string;
+}
+
+interface MoneyMethod {
+  id: string;
+  name: string;
+  character: string;
+  gpHour: number;
+  clickIntensity: 1 | 2 | 3 | 4 | 5;
+  requirements: string;
+  notes: string;
+  category: 'combat' | 'skilling' | 'bossing' | 'other';
+}
+
+interface PurchaseGoal {
+  id: string;
+  name: string;
+  currentPrice: number;
+  targetPrice?: number;
+  quantity: number;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  category: 'gear' | 'consumables' | 'materials' | 'other';
+  notes: string;
+  imageUrl?: string;
+}
+
+interface BankItem {
+  id: string;
+  name: string;
+  quantity: number;
+  estimatedPrice: number;
+  category: 'stackable' | 'gear' | 'materials' | 'other';
+  character: string;
+}
+
 const Index = () => {
-  const [characters, setCharacters] = useState([
+  const [characters, setCharacters] = useState<Character[]>([
     {
       id: "1",
       name: "Lazy Priest",
@@ -36,7 +79,7 @@ const Index = () => {
     }
   ]);
 
-  const [moneyMethods, setMoneyMethods] = useState([
+  const [moneyMethods, setMoneyMethods] = useState<MoneyMethod[]>([
     {
       id: "1",
       name: "Brutal Black Dragons",
@@ -79,7 +122,7 @@ const Index = () => {
     }
   ]);
 
-  const [purchaseGoals, setPurchaseGoals] = useState([
+  const [purchaseGoals, setPurchaseGoals] = useState<PurchaseGoal[]>([
     {
       id: "1",
       name: "Twisted Bow",
@@ -115,7 +158,7 @@ const Index = () => {
     }
   ]);
 
-  const [bankData, setBankData] = useState({
+  const [bankData, setBankData] = useState<Record<string, BankItem[]>>({
     "Lazy Priest": [
       {
         id: "1",

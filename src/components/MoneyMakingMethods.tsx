@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X, Coins, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { MoneyMakerImporter } from "./MoneyMakerImporter";
 
 interface MoneyMethod {
   id: string;
@@ -36,29 +37,6 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     category: 'combat'
   });
   const { toast } = useToast();
-
-  // Default methods based on your spreadsheet - now with notes property
-  const defaultMethods = [
-    { name: "Brutal Black Dragons", gpHour: 1000000, clickIntensity: 3, requirements: "Tbow", category: "combat", notes: "" },
-    { name: "Rune Dragons", gpHour: 1200000, clickIntensity: 4, requirements: "High stats, gear", category: "combat", notes: "" },
-    { name: "Sapphire Ring Crafting (F2P)", gpHour: 120000, clickIntensity: 2, requirements: "None", category: "skilling", notes: "" },
-    { name: "Fletching Maple (u)", gpHour: 150000, clickIntensity: 1, requirements: "None", category: "skilling", notes: "" },
-    { name: "Cannonballs", gpHour: 150000, clickIntensity: 1, requirements: "Dwarf Cannon quest, 35 smithing", category: "skilling", notes: "" },
-    { name: "Magic Tabs", gpHour: 225000, clickIntensity: 2, requirements: "Magic level", category: "skilling", notes: "" },
-    { name: "Anglerfish", gpHour: 190000, clickIntensity: 1, requirements: "Piscarilius favour", category: "skilling", notes: "" },
-    { name: "Amethyst Mining", gpHour: 250000, clickIntensity: 1, requirements: "Dragon pickaxe", category: "skilling", notes: "" },
-    { name: "Kurasks", gpHour: 400000, clickIntensity: 3, requirements: "High slayer, quests, gear", category: "combat", notes: "" },
-    { name: "Sacred Eels", gpHour: 290000, clickIntensity: 1, requirements: "Cooking levels", category: "skilling", notes: "" },
-    { name: "Zulrah", gpHour: 2500000, clickIntensity: 5, requirements: "Tbow, high stats", category: "bossing", notes: "" },
-    { name: "Rune Smithing", gpHour: 400000, clickIntensity: 2, requirements: "99 smithing", category: "skilling", notes: "" },
-    { name: "Gargoyles", gpHour: 567000, clickIntensity: 3, requirements: "High slayer, gear", category: "combat", notes: "" },
-    { name: "Magic Logs", gpHour: 112500, clickIntensity: 1, requirements: "Hosidius favour", category: "skilling", notes: "" },
-    { name: "Giant Mole", gpHour: 800000, clickIntensity: 2, requirements: "Tbow recommended", category: "bossing", notes: "" },
-    { name: "Yew Logs (F2P)", gpHour: 80000, clickIntensity: 1, requirements: "None", category: "skilling", notes: "" },
-    { name: "Steel/Iron Smithing (F2P)", gpHour: 80000, clickIntensity: 2, requirements: "None", category: "skilling", notes: "" },
-    { name: "Adamant Ore (F2P)", gpHour: 80000, clickIntensity: 2, requirements: "None", category: "skilling", notes: "" },
-    { name: "Wyverns", gpHour: 600000, clickIntensity: 3, requirements: "High slayer, quests", category: "combat", notes: "" }
-  ];
 
   const addMethod = () => {
     if (!newMethod.name?.trim()) {
@@ -98,20 +76,8 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     });
   };
 
-  const addDefaultMethods = () => {
-    const newMethods = defaultMethods.map(method => ({
-      id: Date.now().toString() + Math.random(),
-      ...method,
-      character: '',
-      clickIntensity: method.clickIntensity as 1 | 2 | 3 | 4 | 5,
-      category: method.category as 'combat' | 'skilling' | 'bossing' | 'other'
-    }));
-    
+  const importMethods = (newMethods: MoneyMethod[]) => {
     setMethods([...methods, ...newMethods]);
-    toast({
-      title: "Success",
-      description: `Added ${newMethods.length} default money-making methods`
-    });
   };
 
   const removeMethod = (id: string) => {
@@ -162,12 +128,18 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
 
   return (
     <div className="space-y-6">
+      {/* Import from OSRS Wiki */}
+      <MoneyMakerImporter 
+        onImportMethods={importMethods}
+        characters={characters}
+      />
+
       {/* Add New Method */}
       <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
             <Plus className="h-5 w-5" />
-            Add Money-Making Method
+            Add Custom Money-Making Method
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -271,18 +243,10 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
             />
           </div>
 
-          <div className="flex gap-2">
-            <Button onClick={addMethod} className="bg-amber-600 hover:bg-amber-700 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Method
-            </Button>
-            
-            {methods.length === 0 && (
-              <Button onClick={addDefaultMethods} variant="outline">
-                Add Default Methods
-              </Button>
-            )}
-          </div>
+          <Button onClick={addMethod} className="bg-amber-600 hover:bg-amber-700 text-white">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Custom Method
+          </Button>
         </CardContent>
       </Card>
 
@@ -381,11 +345,8 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
             <Coins className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-500 mb-2">No money-making methods yet</h3>
             <p className="text-gray-400 text-center mb-4">
-              Add your preferred money-making methods to track profitability
+              Import methods from OSRS Wiki or add your own custom methods
             </p>
-            <Button onClick={addDefaultMethods} variant="outline">
-              Add Default Methods
-            </Button>
           </CardContent>
         </Card>
       )}

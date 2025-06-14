@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -23,23 +24,31 @@ export function SummaryDashboard({
   const getTotalBankValue = () => {
     return Object.keys(bankData).reduce((total, character) => {
       const items = bankData[character] || [];
-      return total + items.reduce((sum, item) => sum + (item.quantity * item.estimatedPrice), 0);
+      return total + items.reduce((sum, item) => {
+        const quantity = item?.quantity || 0;
+        const price = item?.estimatedPrice || 0;
+        return sum + (quantity * price);
+      }, 0);
     }, 0);
   };
 
   // Calculate total goals value
   const getTotalGoalsValue = () => {
     return purchaseGoals.reduce((total, goal) => {
-      return total + ((goal.targetPrice || goal.currentPrice) * goal.quantity);
+      const targetPrice = goal?.targetPrice || goal?.currentPrice || 0;
+      const quantity = goal?.quantity || 0;
+      return total + (targetPrice * quantity);
     }, 0);
   };
 
   // Calculate best money making method
   const getBestMethod = () => {
-    if (moneyMethods.length === 0) return null;
-    return moneyMethods.reduce((best, current) => 
-      current.gpHour > best.gpHour ? current : best
-    );
+    if (!moneyMethods || moneyMethods.length === 0) return null;
+    return moneyMethods.reduce((best, current) => {
+      const currentGpHour = current?.gpHour || 0;
+      const bestGpHour = best?.gpHour || 0;
+      return currentGpHour > bestGpHour ? current : best;
+    });
   };
 
   // Calculate time to complete all goals
@@ -48,7 +57,7 @@ export function SummaryDashboard({
     if (totalNeeded <= 0) return 0;
     
     const bestMethod = getBestMethod();
-    if (!bestMethod) return Infinity;
+    if (!bestMethod || !bestMethod.gpHour) return Infinity;
     
     const dailyEarnings = bestMethod.gpHour * hoursPerDay;
     return Math.ceil(totalNeeded / dailyEarnings);
@@ -62,7 +71,12 @@ export function SummaryDashboard({
     return Math.min(100, (totalBank / totalGoals) * 100);
   };
 
-  const formatGP = (amount: number) => {
+  const formatGP = (amount: number | undefined | null) => {
+    // Handle undefined, null, or invalid numbers
+    if (amount == null || isNaN(amount) || typeof amount !== 'number') {
+      return '0';
+    }
+    
     if (amount >= 1000000000) {
       return `${(amount / 1000000000).toFixed(1)}B`;
     } else if (amount >= 1000000) {
@@ -94,7 +108,7 @@ export function SummaryDashboard({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-800 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>👥 Characters</p>
-              <p className="text-4xl font-bold text-blue-900" style={{ fontFamily: 'MedievalSharp, cursive' }}>{characters.length}</p>
+              <p className="text-4xl font-bold text-blue-900" style={{ fontFamily: 'MedievalSharp, cursive' }}>{characters?.length || 0}</p>
             </div>
             <Users className="h-10 w-10 text-blue-700" />
           </div>
@@ -192,7 +206,7 @@ export function SummaryDashboard({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-bold text-lg text-amber-800" style={{ fontFamily: 'Cinzel, serif' }}>
-                  {bestMethod.name}
+                  {bestMethod.name || 'Unknown Method'}
                 </h4>
                 <span className="osrs-badge">
                   {formatGP(bestMethod.gpHour)}/hr
@@ -203,13 +217,13 @@ export function SummaryDashboard({
                 <div className="p-3 bg-amber-50 border border-amber-300 rounded">
                   <p className="text-amber-600 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>Daily ({hoursPerDay}h)</p>
                   <p className="font-bold text-green-700 text-lg" style={{ fontFamily: 'MedievalSharp, cursive' }}>
-                    {formatGP(bestMethod.gpHour * hoursPerDay)} GP
+                    {formatGP((bestMethod.gpHour || 0) * hoursPerDay)} GP
                   </p>
                 </div>
                 <div className="p-3 bg-amber-50 border border-amber-300 rounded">
                   <p className="text-amber-600 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>Monthly</p>
                   <p className="font-bold text-green-700 text-lg" style={{ fontFamily: 'MedievalSharp, cursive' }}>
-                    {formatGP(bestMethod.gpHour * hoursPerDay * 30)} GP
+                    {formatGP((bestMethod.gpHour || 0) * hoursPerDay * 30)} GP
                   </p>
                 </div>
               </div>
@@ -236,18 +250,18 @@ export function SummaryDashboard({
               👥 Character Overview
             </h3>
           </div>
-          {characters.length > 0 ? (
+          {characters && characters.length > 0 ? (
             <div className="space-y-3">
               {characters.slice(0, 3).map((char, index) => (
-                <div key={char.id} className="flex items-center justify-between p-3 bg-amber-50 border border-amber-400 rounded">
+                <div key={char?.id || index} className="flex items-center justify-between p-3 bg-amber-50 border border-amber-400 rounded">
                   <div>
-                    <p className="font-bold text-amber-800" style={{ fontFamily: 'Cinzel, serif' }}>⚔️ {char.name}</p>
+                    <p className="font-bold text-amber-800" style={{ fontFamily: 'Cinzel, serif' }}>⚔️ {char?.name || 'Unknown'}</p>
                     <p className="text-sm text-amber-600" style={{ fontFamily: 'Cinzel, serif' }}>
-                      CB: {char.combatLevel} | Total: {char.totalLevel}
+                      CB: {char?.combatLevel || 0} | Total: {char?.totalLevel || 0}
                     </p>
                   </div>
                   <span className="osrs-badge">
-                    {formatGP(char.bank)} GP
+                    {formatGP(char?.bank)} GP
                   </span>
                 </div>
               ))}
@@ -274,18 +288,21 @@ export function SummaryDashboard({
             🎯 Purchase Goals Progress
           </h3>
         </div>
-        {purchaseGoals.length > 0 ? (
+        {purchaseGoals && purchaseGoals.length > 0 ? (
           <div className="space-y-4">
             {purchaseGoals.slice(0, 5).map((goal, index) => {
-              const progress = Math.min(100, (goal.currentValue / goal.targetValue) * 100);
+              const targetValue = goal?.targetPrice || goal?.currentPrice || 0;
+              const currentValue = goal?.currentValue || 0;
+              const progress = targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0;
+              
               return (
-                <div key={goal.id} className="space-y-2 p-3 bg-amber-50 border border-amber-300 rounded">
+                <div key={goal?.id || index} className="space-y-2 p-3 bg-amber-50 border border-amber-300 rounded">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-amber-800" style={{ fontFamily: 'Cinzel, serif' }}>
-                      🏆 {goal.name}
+                      🏆 {goal?.name || 'Unknown Goal'}
                     </span>
                     <span className="osrs-badge">
-                      {formatGP(goal.targetValue)} GP
+                      {formatGP(targetValue)} GP
                     </span>
                   </div>
                   <div className="osrs-progress h-3">
@@ -295,7 +312,7 @@ export function SummaryDashboard({
                     />
                   </div>
                   <div className="flex justify-between text-sm text-amber-600" style={{ fontFamily: 'Cinzel, serif' }}>
-                    <span>{formatGP(goal.currentValue)} / {formatGP(goal.targetValue)} GP</span>
+                    <span>{formatGP(currentValue)} / {formatGP(targetValue)} GP</span>
                     <span className="font-bold">{progress.toFixed(1)}%</span>
                   </div>
                 </div>

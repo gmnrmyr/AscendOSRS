@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,10 +95,12 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       console.log('Could not fetch current price, using default');
     }
 
-    // If no icon from search, generate one
-    if (!itemIcon) {
+    // Ensure we have a valid image URL
+    if (!itemIcon || itemIcon === '') {
       itemIcon = osrsApi.getItemIcon(option.name);
     }
+
+    console.log('Setting item icon:', itemIcon);
 
     setNewGoal({
       ...newGoal,
@@ -119,6 +120,12 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       return;
     }
 
+    // Ensure we have an image URL
+    let finalImageUrl = newGoal.imageUrl;
+    if (!finalImageUrl || finalImageUrl === '') {
+      finalImageUrl = osrsApi.getItemIcon(newGoal.name);
+    }
+
     const goal: PurchaseGoal = {
       id: Date.now().toString(),
       name: newGoal.name,
@@ -128,9 +135,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       priority: newGoal.priority || 'A',
       category: newGoal.category || 'gear',
       notes: newGoal.notes || '',
-      imageUrl: newGoal.imageUrl || osrsApi.getItemIcon(newGoal.name)
+      imageUrl: finalImageUrl
     };
 
+    console.log('Adding goal with image:', goal.imageUrl);
     setGoals([...goals, goal]);
     setNewGoal({
       name: '',
@@ -487,9 +495,16 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                         src={goal.imageUrl} 
                         alt={goal.name}
                         className="w-full h-full object-contain"
+                        onLoad={() => console.log('Image loaded successfully:', goal.imageUrl)}
                         onError={(e) => {
+                          console.log('Image failed to load:', goal.imageUrl);
                           const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
+                          const fallbackUrl = osrsApi.getItemIcon(goal.name);
+                          if (target.src !== fallbackUrl) {
+                            target.src = fallbackUrl;
+                          } else {
+                            target.style.display = 'none';
+                          }
                         }}
                       />
                     </div>

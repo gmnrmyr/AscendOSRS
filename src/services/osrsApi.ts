@@ -11,6 +11,13 @@ export interface OSRSItem {
   wiki_url?: string;
 }
 
+export interface OSRSPriceData {
+  high?: number;
+  highTime?: number;
+  low?: number;
+  lowTime?: number;
+}
+
 export interface MoneyMakingGuide {
   name: string;
   profit: number;
@@ -24,7 +31,7 @@ class OSRSApiService {
   private readonly WIKI_BASE_URL = 'https://oldschool.runescape.wiki/api.php';
   private readonly PRICES_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs';
   
-  async fetchItemPrices(): Promise<Record<string, OSRSItem>> {
+  async fetchItemPrices(): Promise<Record<string, OSRSPriceData>> {
     try {
       const response = await fetch(`${this.PRICES_BASE_URL}/latest`);
       const data = await response.json();

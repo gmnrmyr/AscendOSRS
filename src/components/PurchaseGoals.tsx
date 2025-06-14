@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Target, TrendingUp } from "lucide-react";
+import { Plus, X, Target, TrendingUp, Filter, SortAsc, SortDesc } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AutocompleteInput } from "./AutocompleteInput";
 import { osrsApi } from "@/services/osrsApi";
@@ -16,7 +17,7 @@ interface PurchaseGoal {
   currentPrice: number;
   targetPrice?: number;
   quantity: number;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-';
   category: 'gear' | 'consumables' | 'materials' | 'other';
   notes: string;
   imageUrl?: string;
@@ -33,35 +34,36 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     currentPrice: 0,
     targetPrice: 0,
     quantity: 1,
-    priority: 'medium',
+    priority: 'A',
     category: 'gear',
     notes: '',
     imageUrl: ''
   });
+  
+  // Filtering and sorting states
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'priority'>('priority');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showFilters, setShowFilters] = useState(false);
+  
   const { toast } = useToast();
 
   // Default popular OSRS purchase goals
   const defaultGoals = [
-    { name: "Twisted Bow", currentPrice: 1200000000, category: "gear", priority: "critical" },
-    { name: "Scythe of Vitur", currentPrice: 800000000, category: "gear", priority: "high" },
-    { name: "Avernic Defender", currentPrice: 150000000, category: "gear", priority: "high" },
-    { name: "Primordial Boots", currentPrice: 32000000, category: "gear", priority: "medium" },
-    { name: "Pegasian Boots", currentPrice: 38000000, category: "gear", priority: "medium" },
-    { name: "Eternal Boots", currentPrice: 5000000, category: "gear", priority: "medium" },
-    { name: "Dragon Claws", currentPrice: 180000000, category: "gear", priority: "medium" },
-    { name: "Bandos Chestplate", currentPrice: 25000000, category: "gear", priority: "medium" },
-    { name: "Bandos Tassets", currentPrice: 28000000, category: "gear", priority: "medium" },
-    { name: "Armadyl Chestplate", currentPrice: 35000000, category: "gear", priority: "medium" },
-    { name: "Armadyl Chainskirt", currentPrice: 25000000, category: "gear", priority: "medium" },
-    { name: "Dragon Hunter Lance", currentPrice: 75000000, category: "gear", priority: "medium" },
-    { name: "Dragon Warhammer", currentPrice: 45000000, category: "gear", priority: "medium" },
-    { name: "Elysian Spirit Shield", currentPrice: 850000000, category: "gear", priority: "high" },
-    { name: "Spectral Spirit Shield", currentPrice: 90000000, category: "gear", priority: "low" },
-    { name: "Arcane Spirit Shield", currentPrice: 150000000, category: "gear", priority: "medium" },
-    { name: "Dragon Pickaxe", currentPrice: 12000000, category: "gear", priority: "medium" },
-    { name: "Prayer Scroll (Rigour)", currentPrice: 45000000, category: "other", priority: "high" },
-    { name: "Prayer Scroll (Augury)", currentPrice: 25000000, category: "other", priority: "medium" },
-    { name: "Bonds x10", currentPrice: 50000000, category: "other", priority: "medium" }
+    { name: "Twisted Bow", currentPrice: 1200000000, category: "gear", priority: "S+" },
+    { name: "Scythe of Vitur", currentPrice: 800000000, category: "gear", priority: "S" },
+    { name: "Avernic Defender", currentPrice: 150000000, category: "gear", priority: "A+" },
+    { name: "Primordial Boots", currentPrice: 32000000, category: "gear", priority: "A" },
+    { name: "Pegasian Boots", currentPrice: 38000000, category: "gear", priority: "A" },
+    { name: "Eternal Boots", currentPrice: 5000000, category: "gear", priority: "A-" },
+    { name: "Dragon Claws", currentPrice: 180000000, category: "gear", priority: "A" },
+    { name: "Bandos Chestplate", currentPrice: 25000000, category: "gear", priority: "A-" },
+    { name: "Bandos Tassets", currentPrice: 28000000, category: "gear", priority: "A-" },
+    { name: "Armadyl Chestplate", currentPrice: 35000000, category: "gear", priority: "A" },
+    { name: "Prayer Scroll (Rigour)", currentPrice: 45000000, category: "other", priority: "S-" },
+    { name: "Prayer Scroll (Augury)", currentPrice: 25000000, category: "other", priority: "A+" },
+    { name: "Bonds x10", currentPrice: 50000000, category: "other", priority: "B+" }
   ];
 
   // Only search for items, not money-making methods
@@ -77,12 +79,26 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     }));
   };
 
-  const handleItemSelect = (option: any) => {
+  const handleItemSelect = async (option: any) => {
+    console.log('Selected item:', option);
+    
+    // Fetch current price if available
+    let currentPrice = option.value || 0;
+    try {
+      const prices = await osrsApi.fetchItemPrices();
+      const itemPrice = prices[option.id];
+      if (itemPrice?.high) {
+        currentPrice = itemPrice.high;
+      }
+    } catch (error) {
+      console.log('Could not fetch current price, using default');
+    }
+
     setNewGoal({
       ...newGoal,
       name: option.name,
-      currentPrice: option.value || 0,
-      imageUrl: option.icon || ''
+      currentPrice: currentPrice,
+      imageUrl: option.icon || osrsApi.getItemIcon(option.name)
     });
   };
 
@@ -102,10 +118,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       currentPrice: newGoal.currentPrice || 0,
       targetPrice: newGoal.targetPrice,
       quantity: newGoal.quantity || 1,
-      priority: newGoal.priority || 'medium',
+      priority: newGoal.priority || 'A',
       category: newGoal.category || 'gear',
       notes: newGoal.notes || '',
-      imageUrl: newGoal.imageUrl
+      imageUrl: newGoal.imageUrl || osrsApi.getItemIcon(newGoal.name)
     };
 
     setGoals([...goals, goal]);
@@ -114,7 +130,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       currentPrice: 0,
       targetPrice: 0,
       quantity: 1,
-      priority: 'medium',
+      priority: 'A',
       category: 'gear',
       notes: '',
       imageUrl: ''
@@ -132,10 +148,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       ...goal,
       targetPrice: goal.currentPrice,
       quantity: 1,
-      priority: goal.priority as 'low' | 'medium' | 'high' | 'critical',
-      category: goal.category as 'gear' | 'consumables' | 'materials' | 'other',
+      priority: goal.priority as PurchaseGoal['priority'],
+      category: goal.category as PurchaseGoal['category'],
       notes: '',
-      imageUrl: `https://oldschool.runescape.wiki/images/${encodeURIComponent(goal.name.replace(/ /g, '_'))}.png`
+      imageUrl: osrsApi.getItemIcon(goal.name)
     }));
     
     setGoals([...goals, ...newGoals]);
@@ -161,13 +177,25 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     ));
   };
 
+  const cyclePriority = (currentPriority: PurchaseGoal['priority']): PurchaseGoal['priority'] => {
+    const priorities: PurchaseGoal['priority'][] = ['A-', 'B-', 'B', 'B+', 'A-', 'A', 'A+', 'S-', 'S', 'S+'];
+    const currentIndex = priorities.indexOf(currentPriority);
+    const nextIndex = (currentIndex + 1) % priorities.length;
+    return priorities[nextIndex];
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'low': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-      case 'medium': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'high': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-      case 'critical': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'S+': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-300';
+      case 'S': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-200';
+      case 'S-': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border-orange-300';
+      case 'A+': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border-orange-200';
+      case 'A': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-300';
+      case 'A-': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200';
+      case 'B+': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border-blue-300';
+      case 'B': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border-blue-200';
+      case 'B-': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 border-gray-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -196,6 +224,32 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     return (goal.targetPrice || goal.currentPrice) * goal.quantity;
   };
 
+  // Filtering and sorting logic
+  const filteredAndSortedGoals = goals
+    .filter(goal => {
+      if (filterPriority !== 'all' && goal.priority !== filterPriority) return false;
+      if (filterCategory !== 'all' && goal.category !== filterCategory) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const priorityOrder = { 'S+': 9, 'S': 8, 'S-': 7, 'A+': 6, 'A': 5, 'A-': 4, 'B+': 3, 'B': 2, 'B-': 1 };
+      
+      let comparison = 0;
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'price':
+          comparison = getTotalCost(a) - getTotalCost(b);
+          break;
+        case 'priority':
+          comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
   const totalGoalValue = goals.reduce((sum, goal) => sum + getTotalCost(goal), 0);
 
   return (
@@ -215,6 +269,92 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
           </div>
         </CardContent>
+      </Card>
+
+      {/* Filters */}
+      <Card className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+              <Filter className="h-5 w-5" />
+              Filters & Sorting
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {showFilters ? 'Hide' : 'Show'} Filters
+            </Button>
+          </div>
+        </CardHeader>
+        
+        {showFilters && (
+          <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <Label>Filter by Priority</Label>
+              <Select value={filterPriority} onValueChange={setFilterPriority}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="S+">S+</SelectItem>
+                  <SelectItem value="S">S</SelectItem>
+                  <SelectItem value="S-">S-</SelectItem>
+                  <SelectItem value="A+">A+</SelectItem>
+                  <SelectItem value="A">A</SelectItem>
+                  <SelectItem value="A-">A-</SelectItem>
+                  <SelectItem value="B+">B+</SelectItem>
+                  <SelectItem value="B">B</SelectItem>
+                  <SelectItem value="B-">B-</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Filter by Category</Label>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="gear">Gear</SelectItem>
+                  <SelectItem value="consumables">Consumables</SelectItem>
+                  <SelectItem value="materials">Materials</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Sort by</Label>
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'name' | 'price' | 'priority')}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="priority">Priority</SelectItem>
+                  <SelectItem value="price">Price</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Sort Order</Label>
+              <Button
+                variant="outline"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                className="w-full justify-start"
+              >
+                {sortOrder === 'asc' ? <SortAsc className="h-4 w-4 mr-2" /> : <SortDesc className="h-4 w-4 mr-2" />}
+                {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+              </Button>
+            </div>
+          </CardContent>
+        )}
       </Card>
 
       {/* Add New Goal */}
@@ -240,13 +380,13 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             </div>
             
             <div>
-              <Label>Current Price (GP)</Label>
+              <Label>Current Price (GP) - Auto-fetched</Label>
               <Input
                 type="number"
                 value={newGoal.currentPrice || ''}
-                onChange={(e) => setNewGoal({...newGoal, currentPrice: Number(e.target.value)})}
-                placeholder="1200000000"
-                className="bg-white dark:bg-slate-800"
+                readOnly
+                placeholder="Auto-fetched when item selected"
+                className="bg-gray-100 dark:bg-slate-700 cursor-not-allowed"
               />
             </div>
 
@@ -285,10 +425,15 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="S+">S+</SelectItem>
+                  <SelectItem value="S">S</SelectItem>
+                  <SelectItem value="S-">S-</SelectItem>
+                  <SelectItem value="A+">A+</SelectItem>
+                  <SelectItem value="A">A</SelectItem>
+                  <SelectItem value="A-">A-</SelectItem>
+                  <SelectItem value="B+">B+</SelectItem>
+                  <SelectItem value="B">B</SelectItem>
+                  <SelectItem value="B-">B-</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -312,24 +457,14 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             </div>
 
             <div>
-              <Label>Image URL (Optional)</Label>
+              <Label>Notes</Label>
               <Input
-                value={newGoal.imageUrl || ''}
-                onChange={(e) => setNewGoal({...newGoal, imageUrl: e.target.value})}
-                placeholder="https://..."
+                value={newGoal.notes || ''}
+                onChange={(e) => setNewGoal({...newGoal, notes: e.target.value})}
+                placeholder="Additional notes..."
                 className="bg-white dark:bg-slate-800"
               />
             </div>
-          </div>
-
-          <div>
-            <Label>Notes</Label>
-            <Input
-              value={newGoal.notes || ''}
-              onChange={(e) => setNewGoal({...newGoal, notes: e.target.value})}
-              placeholder="Additional notes..."
-              className="bg-white dark:bg-slate-800"
-            />
           </div>
 
           <div className="flex gap-2">
@@ -349,26 +484,23 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
 
       {/* Goals List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {goals
-          .sort((a, b) => {
-            const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-            return priorityOrder[b.priority] - priorityOrder[a.priority] || getTotalCost(b) - getTotalCost(a);
-          })
-          .map((goal) => (
+        {filteredAndSortedGoals.map((goal) => (
           <Card key={goal.id} className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {goal.imageUrl && (
-                    <img 
-                      src={goal.imageUrl} 
-                      alt={goal.name}
-                      className="w-8 h-8 object-contain"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
+                    <div className="w-10 h-10 flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded border p-1">
+                      <img 
+                        src={goal.imageUrl} 
+                        alt={goal.name}
+                        className="w-full h-full object-contain"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    </div>
                   )}
                   <CardTitle className="text-lg text-amber-800 dark:text-amber-200">
                     {goal.name}
@@ -388,7 +520,11 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                 <Badge className={getCategoryColor(goal.category)}>
                   {goal.category}
                 </Badge>
-                <Badge className={getPriorityColor(goal.priority)}>
+                <Badge 
+                  className={`cursor-pointer border ${getPriorityColor(goal.priority)} hover:opacity-80 transition-opacity`}
+                  onClick={() => updateGoal(goal.id, 'priority', cyclePriority(goal.priority))}
+                  title="Click to change priority"
+                >
                   {goal.priority} priority
                 </Badge>
                 <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20">
@@ -400,13 +536,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs text-gray-500">Current Price</Label>
-                  <Input
-                    type="number"
-                    value={goal.currentPrice}
-                    onChange={(e) => updateGoal(goal.id, 'currentPrice', Number(e.target.value))}
-                    className="h-8 text-sm"
-                  />
+                  <Label className="text-xs text-gray-500">Current Price (Auto)</Label>
+                  <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm">
+                    {formatGP(goal.currentPrice)} GP
+                  </div>
                 </div>
                 
                 <div>
@@ -466,6 +599,24 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             </p>
             <Button onClick={addDefaultGoals} variant="outline">
               Add Popular OSRS Goals
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {filteredAndSortedGoals.length === 0 && goals.length > 0 && (
+        <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Filter className="h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-500 mb-2">No goals match your filters</h3>
+            <p className="text-gray-400 text-center mb-4">
+              Try adjusting your filter settings
+            </p>
+            <Button onClick={() => {
+              setFilterPriority('all');
+              setFilterCategory('all');
+            }} variant="outline">
+              Clear All Filters
             </Button>
           </CardContent>
         </Card>

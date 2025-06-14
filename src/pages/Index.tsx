@@ -39,7 +39,7 @@ interface PurchaseGoal {
   currentPrice: number;
   targetPrice?: number;
   quantity: number;
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  priority: 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-';
   category: 'gear' | 'consumables' | 'materials' | 'other';
   notes: string;
   imageUrl?: string;
@@ -126,7 +126,7 @@ const Index = () => {
       currentPrice: 1200000000,
       targetPrice: 1100000000,
       quantity: 1,
-      priority: "critical" as const,
+      priority: "S+" as const,
       category: "gear" as const,
       notes: "Essential for high-level PvM",
       imageUrl: ""
@@ -137,7 +137,7 @@ const Index = () => {
       currentPrice: 800000000,
       targetPrice: 750000000,
       quantity: 1,
-      priority: "high" as const,
+      priority: "S" as const,
       category: "gear" as const,
       notes: "For Theatre of Blood",
       imageUrl: ""
@@ -148,7 +148,7 @@ const Index = () => {
       currentPrice: 150000000,
       targetPrice: 140000000,
       quantity: 1,
-      priority: "medium" as const,
+      priority: "A" as const,
       category: "gear" as const,
       notes: "PvP and some PvM content",
       imageUrl: ""

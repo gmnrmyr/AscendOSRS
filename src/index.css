@@ -1,94 +1,80 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Runescape&family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* OSRS-themed design system with authentic game colors and styling */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 45 15% 85%; /* OSRS parchment color */
+    --foreground: 25 15% 15%; /* Dark brown text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 45 20% 88%;
+    --card-foreground: 25 15% 15%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 45 20% 88%;
+    --popover-foreground: 25 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 45 85% 55%; /* OSRS gold */
+    --primary-foreground: 25 15% 15%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 25 25% 75%; /* Light brown */
+    --secondary-foreground: 25 15% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 25 20% 70%;
+    --muted-foreground: 25 25% 35%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 45 65% 65%; /* Lighter gold */
+    --accent-foreground: 25 15% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 25 30% 60%; /* Brown border */
+    --input: 45 25% 82%;
+    --ring: 45 85% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem; /* Sharper, more pixelated corners */
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* OSRS-specific colors */
+    --osrs-gold: 45 85% 55%;
+    --osrs-bronze: 25 45% 35%;
+    --osrs-silver: 0 0% 75%;
+    --osrs-brown: 25 35% 45%;
+    --osrs-parchment: 45 15% 85%;
+    --osrs-dark-brown: 25 25% 25%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 25 25% 15%; /* Dark stone */
+    --foreground: 45 15% 85%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 25 25% 18%;
+    --card-foreground: 45 15% 85%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 25 25% 18%;
+    --popover-foreground: 45 15% 85%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 45 85% 65%;
+    --primary-foreground: 25 25% 15%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 25 20% 25%;
+    --secondary-foreground: 45 15% 85%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 25 20% 25%;
+    --muted-foreground: 45 10% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 25 20% 25%;
+    --accent-foreground: 45 15% 85%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 45 15% 85%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 25 25% 25%;
+    --input: 25 25% 22%;
+    --ring: 45 85% 65%;
   }
 }
 
@@ -99,5 +85,94 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Cinzel', serif;
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(160, 82, 45, 0.1) 0%, transparent 50%);
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'MedievalSharp', cursive;
+    color: hsl(var(--osrs-gold));
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer components {
+  /* OSRS-style button */
+  .osrs-button {
+    @apply bg-gradient-to-b from-amber-200 to-amber-600 border-2 border-amber-700 text-amber-900 font-bold px-4 py-2 rounded-sm shadow-lg;
+    @apply hover:from-amber-300 hover:to-amber-700 active:from-amber-600 active:to-amber-400;
+    font-family: 'Cinzel', serif;
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  /* OSRS-style card */
+  .osrs-card {
+    @apply bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-600 rounded-sm shadow-lg;
+    background-image: 
+      linear-gradient(45deg, rgba(139, 69, 19, 0.05) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(139, 69, 19, 0.05) 25%, transparent 25%);
+    background-size: 20px 20px;
+  }
+
+  /* OSRS-style input */
+  .osrs-input {
+    @apply bg-amber-50 border-2 border-amber-600 text-amber-900 rounded-sm px-3 py-2;
+    @apply focus:ring-2 focus:ring-amber-500 focus:border-amber-500;
+    font-family: 'Cinzel', serif;
+  }
+
+  /* OSRS progress bar */
+  .osrs-progress {
+    @apply bg-amber-200 border border-amber-700 rounded-sm overflow-hidden;
+  }
+
+  .osrs-progress-fill {
+    @apply bg-gradient-to-r from-green-400 to-green-600 h-full transition-all duration-300;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  /* OSRS tab styling */
+  .osrs-tabs {
+    @apply bg-gradient-to-b from-amber-100 to-amber-200 border-2 border-amber-600 rounded-sm;
+  }
+
+  .osrs-tab {
+    @apply bg-gradient-to-b from-amber-200 to-amber-300 border border-amber-600 text-amber-900 font-bold px-4 py-2;
+    @apply hover:from-amber-300 hover:to-amber-400 data-[state=active]:from-amber-400 data-[state=active]:to-amber-500;
+    font-family: 'Cinzel', serif;
+    border-radius: 4px 4px 0 0;
+    margin-right: 2px;
+  }
+
+  /* OSRS badge styling */
+  .osrs-badge {
+    @apply bg-gradient-to-b from-amber-300 to-amber-500 border border-amber-700 text-amber-900 font-bold px-2 py-1 rounded-sm text-xs;
+    font-family: 'Cinzel', serif;
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, hsl(var(--osrs-gold)), hsl(var(--osrs-bronze)));
+  border-radius: 4px;
+  border: 1px solid hsl(var(--border));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, hsl(var(--accent)), hsl(var(--osrs-gold)));
 }

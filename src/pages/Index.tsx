@@ -52,63 +52,74 @@ const Index = () => {
   }, [characters, moneyMethods, purchaseGoals, bankData, hoursPerDay]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200" 
+         style={{
+           backgroundImage: `
+             radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
+             radial-gradient(circle at 80% 20%, rgba(160, 82, 45, 0.1) 0%, transparent 50%),
+             url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d2691e' fill-opacity='0.03'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20.5h2V20h18v2H22v18h-2v-20zM0 18h18v2H0v-2zm22 2h18v2H22v-2z'/%3E%3C/g%3E%3C/svg%3E")
+           `
+         }}>
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-3">
-              <TrendingUp className="h-8 w-8" />
-              OSRS Tracker Dashboard
+          <div className="osrs-card p-6 flex-1 mr-4">
+            <h1 className="text-5xl font-bold text-amber-800 flex items-center gap-3 mb-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              <TrendingUp className="h-10 w-10 text-amber-600" />
+              ⚔️ OSRS Tracker Dashboard ⚔️
             </h1>
-            <p className="text-amber-600 dark:text-amber-300 mt-2">
-              Track your Old School RuneScape progress, money-making methods, and purchase goals
+            <p className="text-amber-700 text-lg font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
+              🏰 Track thy Old School RuneScape progress, gold-making methods, and purchase goals 🏰
             </p>
+            <div className="mt-3 flex items-center gap-2 text-amber-600">
+              <span className="text-sm">👤 Current User:</span>
+              <span className="font-bold text-amber-800 osrs-badge">Myr</span>
+            </div>
           </div>
           
-          <Card className="p-4 bg-amber-100 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                Hours per day:
+          <div className="osrs-card p-4">
+            <div className="flex items-center gap-3">
+              <label className="text-base font-bold text-amber-800" style={{ fontFamily: 'Cinzel, serif' }}>
+                ⏰ Hours per day:
               </label>
               <Input
                 type="number"
                 value={hoursPerDay}
                 onChange={(e) => setHoursPerDay(Number(e.target.value))}
-                className="w-20 text-center"
+                className="osrs-input w-20 text-center font-bold"
                 min="1"
                 max="24"
               />
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Main Dashboard Tabs */}
         <Tabs defaultValue="summary" className="space-y-6">
-          <TabsList className="grid grid-cols-6 w-full max-w-3xl bg-amber-100 dark:bg-amber-900/20">
-            <TabsTrigger value="summary" className="flex items-center gap-2">
+          <TabsList className="osrs-tabs grid grid-cols-6 w-full max-w-4xl p-2">
+            <TabsTrigger value="summary" className="osrs-tab flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              Summary
+              📊 Summary
             </TabsTrigger>
-            <TabsTrigger value="characters" className="flex items-center gap-2">
+            <TabsTrigger value="characters" className="osrs-tab flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Characters
+              👥 Characters
             </TabsTrigger>
-            <TabsTrigger value="methods" className="flex items-center gap-2">
+            <TabsTrigger value="methods" className="osrs-tab flex items-center gap-2">
               <Coins className="h-4 w-4" />
-              Methods
+              💰 Methods
             </TabsTrigger>
-            <TabsTrigger value="goals" className="flex items-center gap-2">
+            <TabsTrigger value="goals" className="osrs-tab flex items-center gap-2">
               <Target className="h-4 w-4" />
-              Goals
+              🎯 Goals
             </TabsTrigger>
-            <TabsTrigger value="bank" className="flex items-center gap-2">
+            <TabsTrigger value="bank" className="osrs-tab flex items-center gap-2">
               <Coins className="h-4 w-4" />
-              Bank
+              🏦 Bank
             </TabsTrigger>
-            <TabsTrigger value="data" className="flex items-center gap-2">
+            <TabsTrigger value="data" className="osrs-tab flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              Data
+              ⚙️ Data
             </TabsTrigger>
           </TabsList>
 

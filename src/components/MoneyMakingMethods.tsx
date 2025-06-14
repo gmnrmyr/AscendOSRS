@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,27 +37,27 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
   });
   const { toast } = useToast();
 
-  // Default methods based on your spreadsheet
+  // Default methods based on your spreadsheet - now with notes property
   const defaultMethods = [
-    { name: "Brutal Black Dragons", gpHour: 1000000, clickIntensity: 3, requirements: "Tbow", category: "combat" },
-    { name: "Rune Dragons", gpHour: 1200000, clickIntensity: 4, requirements: "High stats, gear", category: "combat" },
-    { name: "Sapphire Ring Crafting (F2P)", gpHour: 120000, clickIntensity: 2, requirements: "None", category: "skilling" },
-    { name: "Fletching Maple (u)", gpHour: 150000, clickIntensity: 1, requirements: "None", category: "skilling" },
-    { name: "Cannonballs", gpHour: 150000, clickIntensity: 1, requirements: "Dwarf Cannon quest, 35 smithing", category: "skilling" },
-    { name: "Magic Tabs", gpHour: 225000, clickIntensity: 2, requirements: "Magic level", category: "skilling" },
-    { name: "Anglerfish", gpHour: 190000, clickIntensity: 1, requirements: "Piscarilius favour", category: "skilling" },
-    { name: "Amethyst Mining", gpHour: 250000, clickIntensity: 1, requirements: "Dragon pickaxe", category: "skilling" },
-    { name: "Kurasks", gpHour: 400000, clickIntensity: 3, requirements: "High slayer, quests, gear", category: "combat" },
-    { name: "Sacred Eels", gpHour: 290000, clickIntensity: 1, requirements: "Cooking levels", category: "skilling" },
-    { name: "Zulrah", gpHour: 2500000, clickIntensity: 5, requirements: "Tbow, high stats", category: "bossing" },
-    { name: "Rune Smithing", gpHour: 400000, clickIntensity: 2, requirements: "99 smithing", category: "skilling" },
-    { name: "Gargoyles", gpHour: 567000, clickIntensity: 3, requirements: "High slayer, gear", category: "combat" },
-    { name: "Magic Logs", gpHour: 112500, clickIntensity: 1, requirements: "Hosidius favour", category: "skilling" },
-    { name: "Giant Mole", gpHour: 800000, clickIntensity: 2, requirements: "Tbow recommended", category: "bossing" },
-    { name: "Yew Logs (F2P)", gpHour: 80000, clickIntensity: 1, requirements: "None", category: "skilling" },
-    { name: "Steel/Iron Smithing (F2P)", gpHour: 80000, clickIntensity: 2, requirements: "None", category: "skilling" },
-    { name: "Adamant Ore (F2P)", gpHour: 80000, clickIntensity: 2, requirements: "None", category: "skilling" },
-    { name: "Wyverns", gpHour: 600000, clickIntensity: 3, requirements: "High slayer, quests", category: "combat" }
+    { name: "Brutal Black Dragons", gpHour: 1000000, clickIntensity: 3, requirements: "Tbow", category: "combat", notes: "" },
+    { name: "Rune Dragons", gpHour: 1200000, clickIntensity: 4, requirements: "High stats, gear", category: "combat", notes: "" },
+    { name: "Sapphire Ring Crafting (F2P)", gpHour: 120000, clickIntensity: 2, requirements: "None", category: "skilling", notes: "" },
+    { name: "Fletching Maple (u)", gpHour: 150000, clickIntensity: 1, requirements: "None", category: "skilling", notes: "" },
+    { name: "Cannonballs", gpHour: 150000, clickIntensity: 1, requirements: "Dwarf Cannon quest, 35 smithing", category: "skilling", notes: "" },
+    { name: "Magic Tabs", gpHour: 225000, clickIntensity: 2, requirements: "Magic level", category: "skilling", notes: "" },
+    { name: "Anglerfish", gpHour: 190000, clickIntensity: 1, requirements: "Piscarilius favour", category: "skilling", notes: "" },
+    { name: "Amethyst Mining", gpHour: 250000, clickIntensity: 1, requirements: "Dragon pickaxe", category: "skilling", notes: "" },
+    { name: "Kurasks", gpHour: 400000, clickIntensity: 3, requirements: "High slayer, quests, gear", category: "combat", notes: "" },
+    { name: "Sacred Eels", gpHour: 290000, clickIntensity: 1, requirements: "Cooking levels", category: "skilling", notes: "" },
+    { name: "Zulrah", gpHour: 2500000, clickIntensity: 5, requirements: "Tbow, high stats", category: "bossing", notes: "" },
+    { name: "Rune Smithing", gpHour: 400000, clickIntensity: 2, requirements: "99 smithing", category: "skilling", notes: "" },
+    { name: "Gargoyles", gpHour: 567000, clickIntensity: 3, requirements: "High slayer, gear", category: "combat", notes: "" },
+    { name: "Magic Logs", gpHour: 112500, clickIntensity: 1, requirements: "Hosidius favour", category: "skilling", notes: "" },
+    { name: "Giant Mole", gpHour: 800000, clickIntensity: 2, requirements: "Tbow recommended", category: "bossing", notes: "" },
+    { name: "Yew Logs (F2P)", gpHour: 80000, clickIntensity: 1, requirements: "None", category: "skilling", notes: "" },
+    { name: "Steel/Iron Smithing (F2P)", gpHour: 80000, clickIntensity: 2, requirements: "None", category: "skilling", notes: "" },
+    { name: "Adamant Ore (F2P)", gpHour: 80000, clickIntensity: 2, requirements: "None", category: "skilling", notes: "" },
+    { name: "Wyverns", gpHour: 600000, clickIntensity: 3, requirements: "High slayer, quests", category: "combat", notes: "" }
   ];
 
   const addMethod = () => {
@@ -193,7 +192,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                   <SelectValue placeholder="Select character (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {characters.map((char) => (
                     <SelectItem key={char.id} value={char.name}>{char.name}</SelectItem>
                   ))}
@@ -342,7 +341,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                     <SelectValue placeholder="None assigned" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {characters.map((char) => (
                       <SelectItem key={char.id} value={char.name}>{char.name}</SelectItem>
                     ))}

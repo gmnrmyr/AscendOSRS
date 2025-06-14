@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -318,7 +317,7 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
                         </Button>
                       </div>
                       
-                      <Badge className={getCategoryColor(item.category)} size="sm">
+                      <Badge className={getCategoryColor(item.category)}>
                         {item.category}
                       </Badge>
                       

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +79,14 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
     }
   };
 
+  const getMembershipColor = (membership: string) => {
+    switch (membership) {
+      case 'f2p': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'p2p': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const formatGP = (amount: number) => {
     if (amount >= 1000000) {
       return `${(amount / 1000000).toFixed(1)}M`;
@@ -138,6 +145,9 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
                     </Badge>
                     <Badge className={getDifficultyColor(guide.difficulty)}>
                       Difficulty {guide.difficulty}
+                    </Badge>
+                    <Badge className={getMembershipColor(guide.membership)}>
+                      {guide.membership.toUpperCase()}
                     </Badge>
                     <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">
                       {formatGP(guide.profit)}/hr

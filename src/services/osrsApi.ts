@@ -1,4 +1,3 @@
-
 export interface OSRSItem {
   id: number;
   name: string;
@@ -25,6 +24,7 @@ export interface MoneyMakingGuide {
   requirements: string[];
   description: string;
   difficulty: number;
+  membership: 'f2p' | 'p2p';
 }
 
 export interface OSRSPlayerStats {
@@ -257,13 +257,15 @@ class OSRSApiService {
 
   getDefaultMoneyMakers(): MoneyMakingGuide[] {
     return [
+      // High-tier P2P Bossing
       {
         name: "Vorkath",
         profit: 3500000,
         category: "bossing",
         requirements: ["Dragon Slayer II", "High combat stats", "Good gear"],
         description: "Consistent dragon boss with valuable drops",
-        difficulty: 4
+        difficulty: 4,
+        membership: "p2p"
       },
       {
         name: "Zulrah",
@@ -271,23 +273,46 @@ class OSRSApiService {
         category: "bossing", 
         requirements: ["Regicide quest", "High magic/range", "Void gear"],
         description: "Snake boss with unique drops and supplies",
-        difficulty: 5
+        difficulty: 5,
+        membership: "p2p"
       },
+      {
+        name: "Theatre of Blood",
+        profit: 4200000,
+        category: "bossing",
+        requirements: ["Very high combat stats", "Elite gear", "Team"],
+        description: "High-level raid with valuable rewards",
+        difficulty: 5,
+        membership: "p2p"
+      },
+      {
+        name: "Chambers of Xeric",
+        profit: 3800000,
+        category: "bossing",
+        requirements: ["High combat stats", "Good gear", "Team recommended"],
+        description: "First OSRS raid with unique rewards",
+        difficulty: 5,
+        membership: "p2p"
+      },
+      {
+        name: "Nightmare",
+        profit: 2200000,
+        category: "bossing",
+        requirements: ["Very high combat stats", "Elite gear"],
+        description: "Group boss with rare unique drops",
+        difficulty: 5,
+        membership: "p2p"
+      },
+      
+      // Mid-tier P2P Combat
       {
         name: "Demonic Gorillas",
         profit: 1800000,
         category: "combat",
         requirements: ["Monkey Madness II", "High combat stats"],
         description: "Slayer monsters with zenyte shard drops",
-        difficulty: 4
-      },
-      {
-        name: "Gargoyles",
-        profit: 600000,
-        category: "combat",
-        requirements: ["75 Slayer", "Decent combat gear"],
-        description: "AFK slayer task with consistent drops",
-        difficulty: 2
+        difficulty: 4,
+        membership: "p2p"
       },
       {
         name: "Brutal Black Dragons",
@@ -295,15 +320,46 @@ class OSRSApiService {
         category: "combat",
         requirements: ["77 Slayer", "Antifire protection"],
         description: "High level dragons with valuable drops",
-        difficulty: 3
+        difficulty: 3,
+        membership: "p2p"
       },
+      {
+        name: "Gargoyles",
+        profit: 600000,
+        category: "combat",
+        requirements: ["75 Slayer", "Decent combat gear"],
+        description: "AFK slayer task with consistent drops",
+        difficulty: 2,
+        membership: "p2p"
+      },
+      {
+        name: "Rune Dragons",
+        profit: 2100000,
+        category: "combat",
+        requirements: ["Dragon Slayer II", "High combat stats"],
+        description: "High-level dragons with valuable drops",
+        difficulty: 4,
+        membership: "p2p"
+      },
+      {
+        name: "Wyrms",
+        profit: 450000,
+        category: "combat",
+        requirements: ["62 Slayer", "Decent combat stats"],
+        description: "Slayer monsters in Karuulm dungeon",
+        difficulty: 2,
+        membership: "p2p"
+      },
+      
+      // P2P Skilling Methods
       {
         name: "Runite Ore Mining",
         profit: 400000,
         category: "skilling",
         requirements: ["85 Mining", "Dragon pickaxe recommended"],
         description: "Mine valuable runite ore",
-        difficulty: 1
+        difficulty: 1,
+        membership: "p2p"
       },
       {
         name: "Nature Rune Crafting",
@@ -311,7 +367,17 @@ class OSRSApiService {
         category: "skilling", 
         requirements: ["44 Runecrafting", "Abyss access"],
         description: "Craft nature runes through the abyss",
-        difficulty: 2
+        difficulty: 2,
+        membership: "p2p"
+      },
+      {
+        name: "Double Nature Runes",
+        profit: 850000,
+        category: "skilling",
+        requirements: ["91 Runecrafting", "Abyss access"],
+        description: "Craft double nature runes through the abyss",
+        difficulty: 2,
+        membership: "p2p"
       },
       {
         name: "Cooking Karambwans",
@@ -319,7 +385,8 @@ class OSRSApiService {
         category: "skilling",
         requirements: ["30 Cooking", "Tai Bwo Wannai Trio"],
         description: "Cook karambwans for profit",
-        difficulty: 1
+        difficulty: 1,
+        membership: "p2p"
       },
       {
         name: "Blast Furnace Steel Bars",
@@ -327,15 +394,217 @@ class OSRSApiService {
         category: "skilling",
         requirements: ["30 Smithing", "Ice gloves", "Stamina potions"],
         description: "Smelt steel bars at blast furnace",
-        difficulty: 2
+        difficulty: 2,
+        membership: "p2p"
       },
       {
-        name: "Hunting Chinchompas",
+        name: "Blast Furnace Rune Bars",
+        profit: 1200000,
+        category: "skilling",
+        requirements: ["85 Smithing", "Ice gloves", "Stamina potions"],
+        description: "Smelt rune bars at blast furnace",
+        difficulty: 2,
+        membership: "p2p"
+      },
+      {
+        name: "Hunting Red Chinchompas",
         profit: 1500000,
         category: "skilling",
         requirements: ["63 Hunter", "Box traps"],
         description: "Catch red chinchompas in the wilderness",
-        difficulty: 3
+        difficulty: 3,
+        membership: "p2p"
+      },
+      {
+        name: "Hunting Black Chinchompas",
+        profit: 2200000,
+        category: "skilling",
+        requirements: ["73 Hunter", "Box traps", "Wilderness survival"],
+        description: "Catch black chinchompas in the wilderness",
+        difficulty: 4,
+        membership: "p2p"
+      },
+      {
+        name: "Farming Ranarr Herbs",
+        profit: 180000,
+        category: "skilling",
+        requirements: ["32 Farming", "Herb patches"],
+        description: "Farm ranarr herbs for consistent profit",
+        difficulty: 1,
+        membership: "p2p"
+      },
+      {
+        name: "Farming Snapdragons",
+        profit: 250000,
+        category: "skilling",
+        requirements: ["62 Farming", "Herb patches"],
+        description: "Farm snapdragon herbs for profit",
+        difficulty: 1,
+        membership: "p2p"
+      },
+      {
+        name: "Making Cannonballs",
+        profit: 160000,
+        category: "skilling",
+        requirements: ["35 Smithing", "Dwarf Cannon quest"],
+        description: "Smith steel bars into cannonballs",
+        difficulty: 1,
+        membership: "p2p"
+      },
+      
+      // F2P Methods
+      {
+        name: "Smithing Rune 2h Swords",
+        profit: 300000,
+        category: "skilling",
+        requirements: ["99 Smithing", "Rune bars"],
+        description: "Smith rune 2h swords for high profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Smithing Rune Platelegs",
+        profit: 280000,
+        category: "skilling",
+        requirements: ["99 Smithing", "Rune bars"],
+        description: "Smith rune platelegs for profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Smithing Rune Plateskirts",
+        profit: 270000,
+        category: "skilling",
+        requirements: ["99 Smithing", "Rune bars"],
+        description: "Smith rune plateskirts for profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Smithing Adamant Platebodies",
+        profit: 150000,
+        category: "skilling",
+        requirements: ["88 Smithing", "Adamant bars"],
+        description: "Smith adamant platebodies",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Mining Iron Ore",
+        profit: 120000,
+        category: "skilling",
+        requirements: ["15 Mining", "Pickaxe"],
+        description: "Mine iron ore for steady profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Mining Coal",
+        profit: 140000,
+        category: "skilling",
+        requirements: ["30 Mining", "Pickaxe"],
+        description: "Mine coal for smithing and profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Smelting Steel Bars",
+        profit: 180000,
+        category: "skilling",
+        requirements: ["30 Smithing", "Iron ore", "Coal"],
+        description: "Smelt steel bars at furnace",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Smelting Mithril Bars",
+        profit: 200000,
+        category: "skilling",
+        requirements: ["50 Smithing", "Mithril ore", "Coal"],
+        description: "Smelt mithril bars at furnace",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Making Oak Longbows",
+        profit: 80000,
+        category: "skilling",
+        requirements: ["25 Fletching", "Oak logs", "Bowstring"],
+        description: "Fletch oak longbows for profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Making Yew Longbows",
+        profit: 160000,
+        category: "skilling",
+        requirements: ["70 Fletching", "Yew logs", "Bowstring"],
+        description: "Fletch yew longbows for good profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Cutting Yew Logs",
+        profit: 100000,
+        category: "skilling",
+        requirements: ["60 Woodcutting", "Axe"],
+        description: "Cut yew logs for profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Fishing Lobsters",
+        profit: 60000,
+        category: "skilling",
+        requirements: ["40 Fishing", "Lobster pot"],
+        description: "Fish lobsters for food and profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Fishing Swordfish",
+        profit: 80000,
+        category: "skilling",
+        requirements: ["50 Fishing", "Harpoon"],
+        description: "Fish swordfish for profit",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Tanning Cowhides",
+        profit: 90000,
+        category: "skilling",
+        requirements: ["Access to Al-Kharid", "Cowhides"],
+        description: "Tan cowhides into leather",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Collecting Big Bones",
+        profit: 70000,
+        category: "combat",
+        requirements: ["Decent combat stats"],
+        description: "Kill hill giants for big bones",
+        difficulty: 1,
+        membership: "f2p"
+      },
+      {
+        name: "Killing Ogresses",
+        profit: 200000,
+        category: "combat",
+        requirements: ["Decent combat stats", "Corsair Cove"],
+        description: "Kill ogresses for rune items and gems",
+        difficulty: 2,
+        membership: "f2p"
+      },
+      {
+        name: "High Alchemy",
+        profit: 150000,
+        category: "other",
+        requirements: ["55 Magic", "High Level Alchemy", "Nature runes"],
+        description: "Alch profitable items for magic XP and GP",
+        difficulty: 1,
+        membership: "f2p"
       }
     ];
   }

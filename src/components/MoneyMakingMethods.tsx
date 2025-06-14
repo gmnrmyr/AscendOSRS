@@ -20,6 +20,7 @@ interface MoneyMethod {
   requirements: string;
   notes: string;
   category: 'combat' | 'skilling' | 'bossing' | 'other';
+  membership?: 'f2p' | 'p2p';
 }
 
 interface MoneyMakingMethodsProps {
@@ -61,7 +62,8 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
         clickIntensity: defaultMethod.difficulty as 1 | 2 | 3 | 4 | 5,
         requirements: defaultMethod.requirements.join(', '),
         notes: defaultMethod.description,
-        category: defaultMethod.category as 'combat' | 'skilling' | 'bossing' | 'other'
+        category: defaultMethod.category as 'combat' | 'skilling' | 'bossing' | 'other',
+        membership: defaultMethod.membership
       });
     }
   };
@@ -84,7 +86,8 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       clickIntensity: newMethod.clickIntensity || 3,
       requirements: newMethod.requirements || '',
       notes: newMethod.notes || '',
-      category: newMethod.category || 'combat'
+      category: newMethod.category || 'combat',
+      membership: newMethod.membership || 'p2p'
     };
 
     setMethods([...methods, method]);
@@ -95,7 +98,8 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       clickIntensity: 3,
       requirements: '',
       notes: '',
-      category: 'combat'
+      category: 'combat',
+      membership: 'p2p'
     });
     
     toast({
@@ -142,6 +146,14 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       case 'bossing': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
       case 'other': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getMembershipColor = (membership?: string) => {
+    switch (membership) {
+      case 'f2p': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'p2p': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
 
@@ -214,7 +226,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <Label>Click Intensity (1-5)</Label>
               <Select 
@@ -248,6 +260,22 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                   <SelectItem value="skilling">Skilling</SelectItem>
                   <SelectItem value="bossing">Bossing</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Membership</Label>
+              <Select 
+                value={newMethod.membership || 'p2p'} 
+                onValueChange={(value) => setNewMethod({...newMethod, membership: value as 'f2p' | 'p2p'})}
+              >
+                <SelectTrigger className="bg-white dark:bg-slate-800">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="f2p">F2P (Free)</SelectItem>
+                  <SelectItem value="p2p">P2P (Members)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -308,6 +336,11 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                 <Badge className={getIntensityColor(method.clickIntensity)}>
                   Intensity {method.clickIntensity}
                 </Badge>
+                {method.membership && (
+                  <Badge className={getMembershipColor(method.membership)}>
+                    {method.membership.toUpperCase()}
+                  </Badge>
+                )}
                 <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20">
                   {formatGP(method.gpHour)}/hr
                 </Badge>

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,7 +20,7 @@ const Index = () => {
     {
       id: "lazy-priest-main",
       name: "Lazy Priest",
-      type: "main",
+      type: "main" as const,
       combatLevel: 126,
       totalLevel: 2000,
       bank: 50000000,
@@ -28,7 +29,7 @@ const Index = () => {
     {
       id: "high-priest-pure",
       name: "High Priest",
-      type: "main",
+      type: "alt" as const,
       combatLevel: 80,
       totalLevel: 1200,
       bank: 15000000,
@@ -42,46 +43,51 @@ const Index = () => {
       id: "brutal-black-dragons",
       name: "Brutal Black Dragons (Tbow)",
       character: "Lazy Priest",
-      profitPerHour: 1000000,
+      gpHour: 1000000,
+      clickIntensity: 3,
+      category: "combat" as const,
       requirements: "Twisted Bow, High combat stats",
-      notes: "1m/hour with Tbow",
-      afkLevel: 3
+      notes: "1m/hour with Tbow"
     },
     {
       id: "rune-dragons",
       name: "Rune Dragons",
       character: "Lazy Priest",
-      profitPerHour: 1200000,
+      gpHour: 1200000,
+      clickIntensity: 2,
+      category: "combat" as const,
       requirements: "High combat, Dragon Slayer II",
-      notes: "1.2m/hour on main",
-      afkLevel: 2
+      notes: "1.2m/hour on main"
     },
     {
       id: "wyverns",
       name: "Wyverns",
       character: "High Priest",
-      profitPerHour: 400000,
+      gpHour: 400000,
+      clickIntensity: 4,
+      category: "combat" as const,
       requirements: "72 Slayer, High combat",
-      notes: "400k-800k/hour depending on gear",
-      afkLevel: 4
+      notes: "400k-800k/hour depending on gear"
     },
     {
       id: "amethyst-mining",
       name: "Amethyst Mining",
       character: "High Priest",
-      profitPerHour: 250000,
+      gpHour: 250000,
+      clickIntensity: 5,
+      category: "skilling" as const,
       requirements: "92 Mining, Dragon Pickaxe",
-      notes: "250k/hour, very AFK",
-      afkLevel: 5
+      notes: "250k/hour, very AFK"
     },
     {
       id: "cannonballs",
       name: "Cannonballs",
       character: "High Priest",
-      profitPerHour: 150000,
+      gpHour: 150000,
+      clickIntensity: 5,
+      category: "skilling" as const,
       requirements: "35 Smithing, Dwarf Cannon quest",
-      notes: "150k/hour, very AFK",
-      afkLevel: 5
+      notes: "150k/hour, very AFK"
     }
   ];
 
@@ -93,7 +99,7 @@ const Index = () => {
       currentPrice: 1200000000,
       targetPrice: 1200000000,
       quantity: 1,
-      priority: "critical",
+      priority: "critical" as const,
       category: "gear",
       notes: "Priority #1 for PvM",
       imageUrl: "https://oldschool.runescape.wiki/images/Twisted_bow.png"
@@ -104,7 +110,7 @@ const Index = () => {
       currentPrice: 800000000,
       targetPrice: 800000000,
       quantity: 1,
-      priority: "high",
+      priority: "high" as const,
       category: "gear",
       notes: "ToB weapon",
       imageUrl: "https://oldschool.runescape.wiki/images/Scythe_of_vitur.png"
@@ -115,7 +121,7 @@ const Index = () => {
       currentPrice: 180000000,
       targetPrice: 180000000,
       quantity: 1,
-      priority: "medium",
+      priority: "medium" as const,
       category: "gear",
       notes: "PvP special weapon"
     },
@@ -125,7 +131,7 @@ const Index = () => {
       currentPrice: 25000000,
       targetPrice: 25000000,
       quantity: 1,
-      priority: "medium",
+      priority: "medium" as const,
       category: "gear",
       notes: "Melee armor"
     },
@@ -135,7 +141,7 @@ const Index = () => {
       currentPrice: 28000000,
       targetPrice: 28000000,
       quantity: 1,
-      priority: "medium",
+      priority: "medium" as const,
       category: "gear",
       notes: "Melee armor"
     }
@@ -144,28 +150,28 @@ const Index = () => {
   // Initial bank data based on STASH units and items mentioned
   const initialBankData = {
     "Lazy Priest": [
-      { id: "1", name: "Coins", quantity: 50000000, estimatedPrice: 1, notes: "Cash stack" },
-      { id: "2", name: "Twisted Bow", quantity: 1, estimatedPrice: 1200000000, notes: "Main weapon" },
-      { id: "3", name: "Bandos Chestplate", quantity: 1, estimatedPrice: 25000000, notes: "Melee armor" },
-      { id: "4", name: "Bandos Tassets", quantity: 1, estimatedPrice: 28000000, notes: "Melee armor" },
-      { id: "5", name: "Dragon Claws", quantity: 1, estimatedPrice: 180000000, notes: "Special weapon" },
-      { id: "6", name: "Rune Pickaxe", quantity: 1, estimatedPrice: 18500, notes: "Mining tool" },
-      { id: "7", name: "Adamant Bars", quantity: 100, estimatedPrice: 1950, notes: "Smithing supplies" },
-      { id: "8", name: "Steel Bars", quantity: 500, estimatedPrice: 361, notes: "Smithing supplies" },
-      { id: "9", name: "Mithril Bars", quantity: 200, estimatedPrice: 617, notes: "Smithing supplies" }
+      { id: "1", name: "Coins", quantity: 50000000, estimatedPrice: 1, category: "currency", character: "Lazy Priest", notes: "Cash stack" },
+      { id: "2", name: "Twisted Bow", quantity: 1, estimatedPrice: 1200000000, category: "weapon", character: "Lazy Priest", notes: "Main weapon" },
+      { id: "3", name: "Bandos Chestplate", quantity: 1, estimatedPrice: 25000000, category: "armor", character: "Lazy Priest", notes: "Melee armor" },
+      { id: "4", name: "Bandos Tassets", quantity: 1, estimatedPrice: 28000000, category: "armor", character: "Lazy Priest", notes: "Melee armor" },
+      { id: "5", name: "Dragon Claws", quantity: 1, estimatedPrice: 180000000, category: "weapon", character: "Lazy Priest", notes: "Special weapon" },
+      { id: "6", name: "Rune Pickaxe", quantity: 1, estimatedPrice: 18500, category: "tool", character: "Lazy Priest", notes: "Mining tool" },
+      { id: "7", name: "Adamant Bars", quantity: 100, estimatedPrice: 1950, category: "resource", character: "Lazy Priest", notes: "Smithing supplies" },
+      { id: "8", name: "Steel Bars", quantity: 500, estimatedPrice: 361, category: "resource", character: "Lazy Priest", notes: "Smithing supplies" },
+      { id: "9", name: "Mithril Bars", quantity: 200, estimatedPrice: 617, category: "resource", character: "Lazy Priest", notes: "Smithing supplies" }
     ],
     "High Priest": [
-      { id: "10", name: "Coins", quantity: 15000000, estimatedPrice: 1, notes: "Cash stack" },
-      { id: "11", name: "Mystic Robe Top", quantity: 1, estimatedPrice: 72000, notes: "STASH unit item" },
-      { id: "12", name: "Rune Heraldic Shield", quantity: 1, estimatedPrice: 45000, notes: "STASH unit item" },
-      { id: "13", name: "Adamant Platelegs", quantity: 1, estimatedPrice: 3200, notes: "STASH unit item" },
-      { id: "14", name: "Blue D'hide Vambraces", quantity: 5, estimatedPrice: 1800, notes: "STASH unit items" },
-      { id: "15", name: "Rune Pickaxe", quantity: 1, estimatedPrice: 18500, notes: "Mining tool" },
-      { id: "16", name: "Steel Full Helm", quantity: 1, estimatedPrice: 950, notes: "STASH unit item" },
-      { id: "17", name: "Purple Gloves", quantity: 1, estimatedPrice: 300, notes: "STASH unit item" },
-      { id: "18", name: "Mystic Hat", quantity: 1, estimatedPrice: 8500, notes: "Magic gear" },
-      { id: "19", name: "Bone Spear", quantity: 1, estimatedPrice: 2000, notes: "Weapon" },
-      { id: "20", name: "Staff of Air", quantity: 1, estimatedPrice: 1500, notes: "Magic weapon" }
+      { id: "10", name: "Coins", quantity: 15000000, estimatedPrice: 1, category: "currency", character: "High Priest", notes: "Cash stack" },
+      { id: "11", name: "Mystic Robe Top", quantity: 1, estimatedPrice: 72000, category: "armor", character: "High Priest", notes: "STASH unit item" },
+      { id: "12", name: "Rune Heraldic Shield", quantity: 1, estimatedPrice: 45000, category: "armor", character: "High Priest", notes: "STASH unit item" },
+      { id: "13", name: "Adamant Platelegs", quantity: 1, estimatedPrice: 3200, category: "armor", character: "High Priest", notes: "STASH unit item" },
+      { id: "14", name: "Blue D'hide Vambraces", quantity: 5, estimatedPrice: 1800, category: "armor", character: "High Priest", notes: "STASH unit items" },
+      { id: "15", name: "Rune Pickaxe", quantity: 1, estimatedPrice: 18500, category: "tool", character: "High Priest", notes: "Mining tool" },
+      { id: "16", name: "Steel Full Helm", quantity: 1, estimatedPrice: 950, category: "armor", character: "High Priest", notes: "STASH unit item" },
+      { id: "17", name: "Purple Gloves", quantity: 1, estimatedPrice: 300, category: "armor", character: "High Priest", notes: "STASH unit item" },
+      { id: "18", name: "Mystic Hat", quantity: 1, estimatedPrice: 8500, category: "armor", character: "High Priest", notes: "Magic gear" },
+      { id: "19", name: "Bone Spear", quantity: 1, estimatedPrice: 2000, category: "weapon", character: "High Priest", notes: "Weapon" },
+      { id: "20", name: "Staff of Air", quantity: 1, estimatedPrice: 1500, category: "weapon", character: "High Priest", notes: "Magic weapon" }
     ]
   };
 

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Users, Target, Coins, Clock, Star } from "lucide-react";
+import { TrendingUp, Users, Target, Coins, Clock, Star, DollarSign } from "lucide-react";
 
 interface SummaryDashboardProps {
   characters: any[];
@@ -41,6 +41,37 @@ export function SummaryDashboard({
     }, 0);
   };
 
+  // Calculate total current GP/hour from all assigned methods
+  const getCurrentGPPerHour = () => {
+    if (!moneyMethods || moneyMethods.length === 0) return 0;
+    
+    return moneyMethods.reduce((total, method) => {
+      // Only count methods that are assigned to a character
+      if (method?.character && method?.character !== 'none' && method?.character !== '') {
+        return total + (method?.gpHour || 0);
+      }
+      return total;
+    }, 0);
+  };
+
+  // Get methods breakdown by character
+  const getMethodsByCharacter = () => {
+    if (!moneyMethods || moneyMethods.length === 0) return {};
+    
+    const methodsByChar: Record<string, any[]> = {};
+    
+    moneyMethods.forEach(method => {
+      if (method?.character && method?.character !== 'none' && method?.character !== '') {
+        if (!methodsByChar[method.character]) {
+          methodsByChar[method.character] = [];
+        }
+        methodsByChar[method.character].push(method);
+      }
+    });
+    
+    return methodsByChar;
+  };
+
   // Calculate best money making method
   const getBestMethod = () => {
     if (!moneyMethods || moneyMethods.length === 0) return null;
@@ -56,10 +87,10 @@ export function SummaryDashboard({
     const totalNeeded = getTotalGoalsValue() - getTotalBankValue();
     if (totalNeeded <= 0) return 0;
     
-    const bestMethod = getBestMethod();
-    if (!bestMethod || !bestMethod.gpHour) return Infinity;
+    const currentGPHour = getCurrentGPPerHour();
+    if (!currentGPHour) return Infinity;
     
-    const dailyEarnings = bestMethod.gpHour * hoursPerDay;
+    const dailyEarnings = currentGPHour * hoursPerDay;
     return Math.ceil(totalNeeded / dailyEarnings);
   };
 
@@ -97,13 +128,15 @@ export function SummaryDashboard({
   const totalBankValue = getTotalBankValue();
   const totalGoalsValue = getTotalGoalsValue();
   const bestMethod = getBestMethod();
+  const currentGPHour = getCurrentGPPerHour();
+  const methodsByCharacter = getMethodsByCharacter();
   const daysToComplete = getTimeToCompleteGoals();
   const completionPercentage = getCompletionPercentage();
 
   return (
     <div className="space-y-6">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="osrs-card p-6 bg-gradient-to-br from-blue-100 to-blue-200 border-blue-600">
           <div className="flex items-center justify-between">
             <div>
@@ -123,6 +156,18 @@ export function SummaryDashboard({
               </p>
             </div>
             <Coins className="h-10 w-10 text-green-700" />
+          </div>
+        </div>
+
+        <div className="osrs-card p-6 bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-600">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-800 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>💸 Current GP/Hr</p>
+              <p className="text-3xl font-bold text-yellow-900" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                {formatGP(currentGPHour)}/hr
+              </p>
+            </div>
+            <DollarSign className="h-10 w-10 text-yellow-700" />
           </div>
         </div>
 
@@ -150,6 +195,69 @@ export function SummaryDashboard({
           </div>
         </div>
       </div>
+
+      {/* Current Earnings Breakdown */}
+      {currentGPHour > 0 && (
+        <div className="osrs-card p-6 bg-gradient-to-r from-green-100 to-emerald-100 border-green-600">
+          <div className="mb-4">
+            <h3 className="text-2xl font-bold text-green-800 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              <DollarSign className="h-6 w-6" />
+              💸 Current Earnings Breakdown
+            </h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="text-center p-4 bg-green-50 border-2 border-green-600 rounded">
+              <p className="text-3xl font-bold text-green-700" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                {formatGP(currentGPHour)}/hr
+              </p>
+              <p className="text-sm text-green-600 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Hourly Rate</p>
+            </div>
+            <div className="text-center p-4 bg-green-50 border-2 border-green-600 rounded">
+              <p className="text-3xl font-bold text-green-700" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                {formatGP(currentGPHour * hoursPerDay)} GP
+              </p>
+              <p className="text-sm text-green-600 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Daily ({hoursPerDay}h)</p>
+            </div>
+            <div className="text-center p-4 bg-green-50 border-2 border-green-600 rounded">
+              <p className="text-3xl font-bold text-green-700" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                {formatGP(currentGPHour * hoursPerDay * 30)} GP
+              </p>
+              <p className="text-sm text-green-600 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Monthly</p>
+            </div>
+          </div>
+
+          {/* Methods by Character */}
+          <div className="space-y-3">
+            <h4 className="text-lg font-bold text-green-800" style={{ fontFamily: 'Cinzel, serif' }}>
+              Methods by Character:
+            </h4>
+            {Object.entries(methodsByCharacter).map(([character, methods]) => {
+              const characterTotal = methods.reduce((sum, method) => sum + (method?.gpHour || 0), 0);
+              return (
+                <div key={character} className="p-3 bg-green-50 border border-green-300 rounded">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-green-800" style={{ fontFamily: 'Cinzel, serif' }}>
+                      ⚔️ {character}
+                    </span>
+                    <span className="osrs-badge bg-green-200 text-green-800">
+                      {formatGP(characterTotal)}/hr
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    {methods.map((method, index) => (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <span className="text-green-700">{method.name}</span>
+                        <span className="text-green-600 font-medium">{formatGP(method.gpHour)}/hr</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Progress Card */}
       <div className="osrs-card p-6 bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-600">
@@ -192,7 +300,7 @@ export function SummaryDashboard({
         </div>
       </div>
 
-      {/* Best Method & Insights */}
+      {/* Best Method & Character Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Best Money Method */}
         <div className="osrs-card p-6">

@@ -1,3 +1,4 @@
+
 export interface OSRSItem {
   id: number;
   name: string;
@@ -40,6 +41,37 @@ class OSRSApiService {
   private readonly PRICES_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs';
   private readonly HISCORES_BASE_URL = 'https://secure.runescape.com/m=hiscore_oldschool';
   
+  // Static mapping of item names to their correct OSRS item IDs
+  private readonly ITEM_ID_MAP: Record<string, number> = {
+    'twisted bow': 20997,
+    'scythe of vitur': 22325,
+    'avernic defender': 22322,
+    'primordial boots': 13239,
+    'pegasian boots': 13237,
+    'eternal boots': 13235,
+    'dragon claws': 13652,
+    'bandos chestplate': 11832,
+    'bandos tassets': 11834,
+    'armadyl chestplate': 11828,
+    'prayer scroll (rigour)': 21034,
+    'prayer scroll (augury)': 21079,
+    'old school bond': 13190,
+    'twisted buckler': 21000,
+    'dragon hunter crossbow': 21012,
+    'dragon hunter lance': 22978,
+    'armadyl crossbow': 11785,
+    'toxic blowpipe': 12926,
+    'trident of the seas': 11905,
+    'abyssal whip': 4151,
+    'godsword shard 1': 11818,
+    'godsword shard 2': 11820,
+    'godsword shard 3': 11822,
+    'armadyl godsword': 11802,
+    'bandos godsword': 11804,
+    'saradomin godsword': 11806,
+    'zamorak godsword': 11808
+  };
+  
   async fetchItemPrices(): Promise<Record<string, OSRSPriceData>> {
     try {
       const response = await fetch(`${this.PRICES_BASE_URL}/latest`);
@@ -53,8 +85,14 @@ class OSRSApiService {
 
   async fetchSingleItemPrice(itemId: number): Promise<OSRSPriceData | null> {
     try {
+      // Validate that itemId is a proper integer
+      if (!Number.isInteger(itemId) || itemId <= 0) {
+        console.error(`Invalid item ID: ${itemId}`);
+        return null;
+      }
+
       console.log(`Fetching price for item ID: ${itemId}`);
-      const response = await fetch(`https://prices.runescape.wiki/osrs/item/${itemId}`);
+      const response = await fetch(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${itemId}`);
       
       if (!response.ok) {
         console.log(`Failed to fetch price for item ${itemId}: ${response.status}`);
@@ -64,16 +102,28 @@ class OSRSApiService {
       const data = await response.json();
       console.log(`Price data for item ${itemId}:`, data);
       
+      // The API returns data in format: { data: { "itemId": { high: x, low: y } } }
+      const itemData = data.data?.[itemId.toString()];
+      if (!itemData) {
+        console.log(`No price data found for item ${itemId}`);
+        return null;
+      }
+      
       return {
-        high: data.high,
-        highTime: data.highTime,
-        low: data.low,
-        lowTime: data.lowTime
+        high: itemData.high,
+        highTime: itemData.highTime,
+        low: itemData.low,
+        lowTime: itemData.lowTime
       };
     } catch (error) {
       console.error(`Error fetching price for item ${itemId}:`, error);
       return null;
     }
+  }
+
+  getItemIdByName(itemName: string): number | null {
+    const normalizedName = itemName.toLowerCase().trim();
+    return this.ITEM_ID_MAP[normalizedName] || null;
   }
 
   async searchItems(query: string): Promise<OSRSItem[]> {
@@ -86,13 +136,32 @@ class OSRSApiService {
       
       if (!data.query?.search) return [];
       
-      // Convert search results to our format and add thumbnails
-      return data.query.search.map((item: any) => ({
-        id: Math.random(), // Wiki doesn't provide item IDs in search
-        name: item.title,
-        wiki_url: `https://oldschool.runescape.wiki/w/${encodeURIComponent(item.title)}`,
-        icon: this.getItemIcon(item.title)
-      }));
+      // Convert search results to our format and try to get proper item IDs
+      const items = data.query.search.map((item: any) => {
+        const itemId = this.getItemIdByName(item.title) || Math.floor(Math.random() * 100000); // Fallback to random if not found
+        return {
+          id: itemId,
+          name: item.title,
+          wiki_url: `https://oldschool.runescape.wiki/w/${encodeURIComponent(item.title)}`,
+          icon: this.getItemIcon(item.title)
+        };
+      });
+
+      // Fetch prices for items with known IDs
+      for (const item of items) {
+        if (this.getItemIdByName(item.name)) {
+          try {
+            const priceData = await this.fetchSingleItemPrice(item.id);
+            if (priceData?.high) {
+              item.current_price = priceData.high;
+            }
+          } catch (error) {
+            console.log(`Could not fetch price for ${item.name}`);
+          }
+        }
+      }
+
+      return items;
     } catch (error) {
       console.error('Error searching items:', error);
       return [];

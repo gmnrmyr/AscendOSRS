@@ -1,4 +1,3 @@
-
 import { WikiPricesApi } from './api/wikiPricesApi';
 import { ItemSearchApi } from './api/itemSearchApi';
 import { getItemIdByName } from './utils/itemMapping';
@@ -67,6 +66,59 @@ class OSRSApi {
       console.error('Error in searchItems:', error);
       return [];
     }
+  }
+
+  // Money making methods
+  async searchMoneyMakers(query: string): Promise<MoneyMakingGuide[]> {
+    console.log(`OSRSApi: Searching for money making methods with query: "${query}"`);
+    
+    const defaultMethods = this.getDefaultMoneyMakers();
+    
+    if (!query || query.length < 2) {
+      return defaultMethods.slice(0, 5);
+    }
+    
+    const filtered = defaultMethods.filter(method => 
+      method.name.toLowerCase().includes(query.toLowerCase()) ||
+      method.category.toLowerCase().includes(query.toLowerCase()) ||
+      method.description.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    return filtered;
+  }
+
+  async searchMoneyMakingMethods(query: string): Promise<OSRSSearchResult[]> {
+    console.log(`OSRSApi: Searching for money making methods with query: "${query}"`);
+    
+    const defaultMethods = this.getDefaultMoneyMakers();
+    
+    if (!query || query.length < 2) {
+      return defaultMethods.slice(0, 5).map(method => ({
+        id: method.name.toLowerCase().replace(/\s+/g, '-'),
+        name: method.name,
+        subtitle: `${this.formatGP(method.profit)}/hr - ${method.category}`,
+        category: 'money-making',
+        value: method.profit,
+        current_price: method.profit,
+        today_trend: 'neutral' as const
+      }));
+    }
+    
+    const filtered = defaultMethods.filter(method => 
+      method.name.toLowerCase().includes(query.toLowerCase()) ||
+      method.category.toLowerCase().includes(query.toLowerCase()) ||
+      method.description.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    return filtered.map(method => ({
+      id: method.name.toLowerCase().replace(/\s+/g, '-'),
+      name: method.name,
+      subtitle: `${this.formatGP(method.profit)}/hr - ${method.category}`,
+      category: 'money-making',
+      value: method.profit,
+      current_price: method.profit,
+      today_trend: 'neutral' as const
+    }));
   }
 
   // Player stats fetching
@@ -170,37 +222,7 @@ class OSRSApi {
     return items;
   }
 
-  // Money making methods
-  async searchMoneyMakingMethods(query: string): Promise<OSRSSearchResult[]> {
-    console.log(`OSRSApi: Searching for money making methods with query: "${query}"`);
-    
-    const defaultMethods = this.getDefaultMoneyMakers();
-    
-    if (!query || query.length < 2) {
-      return defaultMethods.slice(0, 5).map(method => ({
-        id: method.name.toLowerCase().replace(/\s+/g, '-'),
-        name: method.name,
-        subtitle: `${this.formatGP(method.profit)}/hr - ${method.category}`,
-        category: 'money-making',
-        value: method.profit
-      }));
-    }
-    
-    const filtered = defaultMethods.filter(method => 
-      method.name.toLowerCase().includes(query.toLowerCase()) ||
-      method.category.toLowerCase().includes(query.toLowerCase()) ||
-      method.description.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    return filtered.map(method => ({
-      id: method.name.toLowerCase().replace(/\s+/g, '-'),
-      name: method.name,
-      subtitle: `${this.formatGP(method.profit)}/hr - ${method.category}`,
-      category: 'money-making',
-      value: method.profit
-    }));
-  }
-
+  // Default money makers
   getDefaultMoneyMakers(): MoneyMakingGuide[] {
     return [
       {

@@ -41,7 +41,7 @@ class OSRSApiService {
   private readonly PRICES_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs';
   private readonly HISCORES_BASE_URL = 'https://secure.runescape.com/m=hiscore_oldschool';
   
-  // Static mapping of item names to their correct OSRS item IDs
+  // Expanded mapping of item names to their correct OSRS item IDs
   private readonly ITEM_ID_MAP: Record<string, number> = {
     'twisted bow': 20997,
     'scythe of vitur': 22325,
@@ -53,6 +53,7 @@ class OSRSApiService {
     'bandos chestplate': 11832,
     'bandos tassets': 11834,
     'armadyl chestplate': 11828,
+    'armadyl chainskirt': 11830,
     'prayer scroll (rigour)': 21034,
     'prayer scroll (augury)': 21079,
     'old school bond': 13190,
@@ -62,6 +63,7 @@ class OSRSApiService {
     'armadyl crossbow': 11785,
     'toxic blowpipe': 12926,
     'trident of the seas': 11905,
+    'trident of the swamp': 12899,
     'abyssal whip': 4151,
     'godsword shard 1': 11818,
     'godsword shard 2': 11820,
@@ -69,7 +71,85 @@ class OSRSApiService {
     'armadyl godsword': 11802,
     'bandos godsword': 11804,
     'saradomin godsword': 11806,
-    'zamorak godsword': 11808
+    'zamorak godsword': 11808,
+    'ancestral hat': 21018,
+    'ancestral robe top': 21021,
+    'ancestral robe bottom': 21024,
+    'dragon warhammer': 13576,
+    'dharoks helmet': 4716,
+    'dharoks platebody': 4720,
+    'dharoks platelegs': 4722,
+    'dharoks greataxe': 4718,
+    'berserker ring': 6737,
+    'warrior ring': 6735,
+    'seers ring': 6731,
+    'archers ring': 6733,
+    'ring of suffering': 19550,
+    'amulet of fury': 6585,
+    'amulet of torture': 19553,
+    'necklace of anguish': 19547,
+    'occult necklace': 12002,
+    'barrows gloves': 7462,
+    'fire cape': 6570,
+    'infernal cape': 21295,
+    'ava\'s assembler': 22109,
+    'ranger boots': 2577,
+    'robin hood hat': 2581,
+    'third age platebody': 10348,
+    'third age platelegs': 10350,
+    'third age full helmet': 10346,
+    'elysian spirit shield': 12817,
+    'spectral spirit shield': 12821,
+    'arcane spirit shield': 12825,
+    'blessed spirit shield': 12831,
+    'dragon full helm': 11335,
+    'dragon platebody': 14479,
+    'dragon platelegs': 4087,
+    'dragon plateskirt': 4585,
+    'dragon boots': 11840,
+    'granite maul': 4153,
+    'obsidian cape': 6568,
+    'berserker necklace': 11128,
+    'dragon defender': 12954,
+    'rune defender': 8850,
+    'black mask': 8901,
+    'slayer helmet': 11864,
+    'serpentine helm': 12931,
+    'magma helm': 12929,
+    'tanzanite helm': 12888,
+    'helm of neitiznot': 10828,
+    'fighter torso': 10551,
+    'void knight top': 8839,
+    'void knight robe': 8840,
+    'void knight gloves': 8842,
+    'void knight mace': 8841,
+    'void melee helm': 11665,
+    'void ranger helm': 11664,
+    'void mage helm': 11663,
+    'elite void top': 13072,
+    'elite void robe': 13073,
+    'ghrazi rapier': 22324,
+    'blade of saeldor': 23995,
+    'inquisitor\'s great helm': 24417,
+    'inquisitor\'s hauberk': 24420,
+    'inquisitor\'s plateskirt': 24423,
+    'inquisitor\'s mace': 24417,
+    'justiciar faceguard': 22326,
+    'justiciar chestguard': 22327,
+    'justiciar legguards': 22328,
+    'crystal crown': 23971,
+    'crystal legs': 23983,
+    'crystal body': 23977,
+    'bowfa': 25865,
+    'enhanced crystal weapon seed': 23951,
+    'crystal armour seed': 23962,
+    'zenyte': 19529,
+    'onyx': 6573,
+    'dragonstone': 1615,
+    'diamond': 1601,
+    'ruby': 1603,
+    'emerald': 1605,
+    'sapphire': 1607
   };
   
   async fetchItemPrices(): Promise<Record<string, OSRSPriceData>> {
@@ -92,29 +172,52 @@ class OSRSApiService {
       }
 
       console.log(`Fetching price for item ID: ${itemId}`);
-      const response = await fetch(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${itemId}`);
       
-      if (!response.ok) {
-        console.log(`Failed to fetch price for item ${itemId}: ${response.status}`);
-        return null;
+      // Try multiple price endpoints for better coverage
+      const endpoints = [
+        `${this.PRICES_BASE_URL}/latest?id=${itemId}`,
+        `${this.PRICES_BASE_URL}/latest`, // Get all prices and filter
+        `${this.PRICES_BASE_URL}/1h?id=${itemId}` // Try 1 hour average
+      ];
+
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint);
+          
+          if (!response.ok) {
+            console.log(`Failed to fetch from ${endpoint}: ${response.status}`);
+            continue;
+          }
+          
+          const data = await response.json();
+          console.log(`Price data from ${endpoint}:`, data);
+          
+          let itemData;
+          if (endpoint.includes('latest?id=') || endpoint.includes('1h?id=')) {
+            // Single item endpoint
+            itemData = data.data?.[itemId.toString()];
+          } else {
+            // All items endpoint - filter for our item
+            itemData = data.data?.[itemId.toString()];
+          }
+          
+          if (itemData && (itemData.high || itemData.low)) {
+            console.log(`Found price data for item ${itemId}:`, itemData);
+            return {
+              high: itemData.high,
+              highTime: itemData.highTime,
+              low: itemData.low,
+              lowTime: itemData.lowTime
+            };
+          }
+        } catch (endpointError) {
+          console.log(`Error with endpoint ${endpoint}:`, endpointError);
+          continue;
+        }
       }
       
-      const data = await response.json();
-      console.log(`Price data for item ${itemId}:`, data);
-      
-      // The API returns data in format: { data: { "itemId": { high: x, low: y } } }
-      const itemData = data.data?.[itemId.toString()];
-      if (!itemData) {
-        console.log(`No price data found for item ${itemId}`);
-        return null;
-      }
-      
-      return {
-        high: itemData.high,
-        highTime: itemData.highTime,
-        low: itemData.low,
-        lowTime: itemData.lowTime
-      };
+      console.log(`No price data found for item ${itemId} from any endpoint`);
+      return null;
     } catch (error) {
       console.error(`Error fetching price for item ${itemId}:`, error);
       return null;
@@ -123,49 +226,99 @@ class OSRSApiService {
 
   getItemIdByName(itemName: string): number | null {
     const normalizedName = itemName.toLowerCase().trim();
-    return this.ITEM_ID_MAP[normalizedName] || null;
+    const directMatch = this.ITEM_ID_MAP[normalizedName];
+    
+    if (directMatch) {
+      return directMatch;
+    }
+    
+    // Try partial matching for items with variations
+    for (const [key, value] of Object.entries(this.ITEM_ID_MAP)) {
+      if (key.includes(normalizedName) || normalizedName.includes(key)) {
+        console.log(`Found partial match: ${normalizedName} -> ${key} (ID: ${value})`);
+        return value;
+      }
+    }
+    
+    return null;
   }
 
   async searchItems(query: string): Promise<OSRSItem[]> {
     try {
-      // Use the OSRS Wiki search API
+      // First try to find items in our mapping
+      const mappedItems = this.searchMappedItems(query);
+      
+      // Then search the wiki for additional results
       const response = await fetch(
         `${this.WIKI_BASE_URL}?action=query&format=json&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=0&srlimit=10&origin=*`
       );
       const data = await response.json();
       
-      if (!data.query?.search) return [];
+      const wikiItems = data.query?.search || [];
       
-      // Convert search results to our format and try to get proper item IDs
-      const items = data.query.search.map((item: any) => {
-        const itemId = this.getItemIdByName(item.title) || Math.floor(Math.random() * 100000); // Fallback to random if not found
-        return {
-          id: itemId,
-          name: item.title,
-          wiki_url: `https://oldschool.runescape.wiki/w/${encodeURIComponent(item.title)}`,
-          icon: this.getItemIcon(item.title)
-        };
-      });
+      // Combine and deduplicate results
+      const allItems = [...mappedItems];
+      
+      for (const wikiItem of wikiItems) {
+        const existingItem = allItems.find(item => 
+          item.name.toLowerCase() === wikiItem.title.toLowerCase()
+        );
+        
+        if (!existingItem) {
+          const itemId = this.getItemIdByName(wikiItem.title) || 0;
+          allItems.push({
+            id: itemId,
+            name: wikiItem.title,
+            wiki_url: `https://oldschool.runescape.wiki/w/${encodeURIComponent(wikiItem.title)}`,
+            icon: this.getItemIcon(wikiItem.title)
+          });
+        }
+      }
 
-      // Fetch prices for items with known IDs
-      for (const item of items) {
-        if (this.getItemIdByName(item.name)) {
+      // Fetch prices for items with valid IDs
+      for (const item of allItems) {
+        if (item.id > 0) {
           try {
             const priceData = await this.fetchSingleItemPrice(item.id);
             if (priceData?.high) {
               item.current_price = priceData.high;
+            } else if (priceData?.low) {
+              item.current_price = priceData.low;
             }
           } catch (error) {
-            console.log(`Could not fetch price for ${item.name}`);
+            console.log(`Could not fetch price for ${item.name}: ${error}`);
           }
         }
       }
 
-      return items;
+      return allItems.slice(0, 10); // Limit results
     } catch (error) {
       console.error('Error searching items:', error);
       return [];
     }
+  }
+
+  private searchMappedItems(query: string): OSRSItem[] {
+    const normalizedQuery = query.toLowerCase().trim();
+    const results: OSRSItem[] = [];
+    
+    for (const [itemName, itemId] of Object.entries(this.ITEM_ID_MAP)) {
+      if (itemName.includes(normalizedQuery) || normalizedQuery.includes(itemName)) {
+        results.push({
+          id: itemId,
+          name: this.capitalizeWords(itemName),
+          icon: this.getItemIcon(itemName)
+        });
+      }
+    }
+    
+    return results;
+  }
+
+  private capitalizeWords(str: string): string {
+    return str.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
   }
 
   getItemIcon(itemName: string): string {
@@ -327,7 +480,9 @@ class OSRSApiService {
       { id: 11828, name: 'Armadyl chestplate' },
       { id: 21034, name: 'Prayer scroll (rigour)' },
       { id: 21079, name: 'Prayer scroll (augury)' },
-      { id: 13190, name: 'Old school bond' }
+      { id: 13190, name: 'Old school bond' },
+      { id: 22324, name: 'Ghrazi rapier' },
+      { id: 21000, name: 'Twisted buckler' }
     ];
 
     const itemsWithPrices = [];
@@ -335,11 +490,19 @@ class OSRSApiService {
     for (const item of popularItems) {
       try {
         const priceData = await this.fetchSingleItemPrice(item.id);
+        const currentPrice = priceData?.high || priceData?.low || 0;
+        
         itemsWithPrices.push({
           ...item,
-          current_price: priceData?.high || 0,
+          current_price: currentPrice,
           icon: this.getItemIcon(item.name)
         });
+        
+        if (currentPrice > 0) {
+          console.log(`Successfully fetched price for ${item.name}: ${currentPrice}`);
+        } else {
+          console.log(`No price data available for ${item.name}`);
+        }
       } catch (error) {
         console.error(`Error fetching price for ${item.name}:`, error);
         itemsWithPrices.push({

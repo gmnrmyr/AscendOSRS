@@ -20,6 +20,7 @@ interface PurchaseGoal {
   category: 'gear' | 'consumables' | 'materials' | 'other';
   notes: string;
   imageUrl?: string;
+  itemId?: number; // Add itemId for proper price fetching
 }
 
 interface PurchaseGoalsProps {
@@ -36,7 +37,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     priority: 'A',
     category: 'gear',
     notes: '',
-    imageUrl: ''
+    imageUrl: '',
+    itemId: undefined
   });
   
   // Filtering and sorting states
@@ -48,21 +50,21 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   
   const { toast } = useToast();
 
-  // Default popular OSRS purchase goals
+  // Default popular OSRS purchase goals with correct item IDs
   const defaultGoals = [
-    { name: "Twisted Bow", currentPrice: 1200000000, category: "gear", priority: "S+" },
-    { name: "Scythe of Vitur", currentPrice: 800000000, category: "gear", priority: "S" },
-    { name: "Avernic Defender", currentPrice: 150000000, category: "gear", priority: "A+" },
-    { name: "Primordial Boots", currentPrice: 32000000, category: "gear", priority: "A" },
-    { name: "Pegasian Boots", currentPrice: 38000000, category: "gear", priority: "A" },
-    { name: "Eternal Boots", currentPrice: 5000000, category: "gear", priority: "A-" },
-    { name: "Dragon Claws", currentPrice: 180000000, category: "gear", priority: "A" },
-    { name: "Bandos Chestplate", currentPrice: 25000000, category: "gear", priority: "A-" },
-    { name: "Bandos Tassets", currentPrice: 28000000, category: "gear", priority: "A-" },
-    { name: "Armadyl Chestplate", currentPrice: 35000000, category: "gear", priority: "A" },
-    { name: "Prayer Scroll (Rigour)", currentPrice: 45000000, category: "other", priority: "S-" },
-    { name: "Prayer Scroll (Augury)", currentPrice: 25000000, category: "other", priority: "A+" },
-    { name: "Bonds x10", currentPrice: 50000000, category: "other", priority: "B+" }
+    { name: "Twisted bow", currentPrice: 1200000000, category: "gear", priority: "S+", itemId: 20997 },
+    { name: "Scythe of vitur", currentPrice: 800000000, category: "gear", priority: "S", itemId: 22325 },
+    { name: "Avernic defender", currentPrice: 150000000, category: "gear", priority: "A+", itemId: 22322 },
+    { name: "Primordial boots", currentPrice: 32000000, category: "gear", priority: "A", itemId: 13239 },
+    { name: "Pegasian boots", currentPrice: 38000000, category: "gear", priority: "A", itemId: 13237 },
+    { name: "Eternal boots", currentPrice: 5000000, category: "gear", priority: "A-", itemId: 13235 },
+    { name: "Dragon claws", currentPrice: 180000000, category: "gear", priority: "A", itemId: 13652 },
+    { name: "Bandos chestplate", currentPrice: 25000000, category: "gear", priority: "A-", itemId: 11832 },
+    { name: "Bandos tassets", currentPrice: 28000000, category: "gear", priority: "A-", itemId: 11834 },
+    { name: "Armadyl chestplate", currentPrice: 35000000, category: "gear", priority: "A", itemId: 11828 },
+    { name: "Prayer scroll (rigour)", currentPrice: 45000000, category: "other", priority: "S-", itemId: 21034 },
+    { name: "Prayer scroll (augury)", currentPrice: 25000000, category: "other", priority: "A+", itemId: 21079 },
+    { name: "Old school bond", currentPrice: 5000000, category: "other", priority: "B+", itemId: 13190 }
   ];
 
   // Only search for items, not money-making methods
@@ -90,7 +92,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     let itemIcon = option.icon;
     
     // If no price from search, try to fetch it
-    if (!currentPrice) {
+    if (!currentPrice && option.id) {
       try {
         const prices = await osrsApi.fetchItemPrices();
         const itemPrice = prices[option.id];
@@ -113,7 +115,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       ...newGoal,
       name: option.name,
       currentPrice: currentPrice,
-      imageUrl: itemIcon
+      imageUrl: itemIcon,
+      itemId: option.id
     });
   };
 
@@ -142,7 +145,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       priority: newGoal.priority || 'A',
       category: newGoal.category || 'gear',
       notes: newGoal.notes || '',
-      imageUrl: finalImageUrl
+      imageUrl: finalImageUrl,
+      itemId: newGoal.itemId
     };
 
     console.log('Adding goal with price:', goal.currentPrice, 'and image:', goal.imageUrl);
@@ -155,7 +159,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       priority: 'A',
       category: 'gear',
       notes: '',
-      imageUrl: ''
+      imageUrl: '',
+      itemId: undefined
     });
     
     toast({
@@ -165,13 +170,13 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   };
 
   const addDefaultGoals = async () => {
-    // Fetch current prices for default goals
+    // Fetch current prices for default goals using their item IDs
     const prices = await osrsApi.fetchItemPrices();
     
     const newGoals = defaultGoals.map(goal => ({
       id: Date.now().toString() + Math.random(),
       ...goal,
-      currentPrice: prices[goal.name] ? (prices[goal.name].high || goal.currentPrice) : goal.currentPrice,
+      currentPrice: goal.itemId && prices[goal.itemId] ? (prices[goal.itemId].high || goal.currentPrice) : goal.currentPrice,
       targetPrice: goal.currentPrice,
       quantity: 1,
       priority: goal.priority as PurchaseGoal['priority'],
@@ -399,7 +404,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                 value={newGoal.name || ''}
                 onChange={(value) => setNewGoal({...newGoal, name: value})}
                 onSelect={handleItemSelect}
-                placeholder="e.g., Twisted Bow, Bandos Chestplate"
+                placeholder="e.g., Twisted bow, Bandos chestplate"
                 searchFunction={searchItems}
                 className="bg-white dark:bg-slate-800"
               />

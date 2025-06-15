@@ -1,22 +1,53 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Search, TrendingUp, TrendingDown, Minus, X } from "lucide-react";
 import { osrsApi, OSRSItem } from "@/services/osrsApi";
 
 interface ItemSearchProps {
   onItemSelect: (item: OSRSItem) => void;
   placeholder?: string;
+  onClose?: () => void;
 }
 
-export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items..." }: ItemSearchProps) {
+export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items...", onClose }: ItemSearchProps) {
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<OSRSItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [popularItems, setPopularItems] = useState<OSRSItem[]>([]);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside to close search
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
+  // Handle escape key to close search
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [onClose]);
 
   useEffect(() => {
     // Load popular items on component mount
@@ -50,6 +81,11 @@ export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items..." 
     }
   };
 
+  const handleItemSelect = (item: OSRSItem) => {
+    onItemSelect(item);
+    onClose?.();
+  };
+
   const formatPrice = (price: number) => {
     if (price >= 1000000) {
       return `${(price / 1000000).toFixed(1)}M`;
@@ -68,7 +104,7 @@ export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items..." 
   const displayItems = query.trim() ? items : popularItems;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={containerRef}>
       <div className="flex gap-2">
         <Input
           value={query}
@@ -80,6 +116,11 @@ export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items..." 
         <Button onClick={handleSearch} disabled={loading}>
           <Search className="h-4 w-4" />
         </Button>
+        {onClose && (
+          <Button variant="outline" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {displayItems.length > 0 && (
@@ -88,7 +129,7 @@ export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items..." 
             <Card 
               key={`${item.id}-${index}`} 
               className="cursor-pointer hover:bg-amber-50 transition-colors"
-              onClick={() => onItemSelect(item)}
+              onClick={() => handleItemSelect(item)}
             >
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">

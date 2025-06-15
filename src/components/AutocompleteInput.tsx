@@ -40,6 +40,22 @@ export function AutocompleteInput({
   
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+        setSelectedIndex(-1);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const searchItems = async () => {
@@ -71,7 +87,10 @@ export function AutocompleteInput({
   const handleSelect = (option: AutocompleteOption) => {
     onChange(option.name);
     setShowDropdown(false);
+    setSelectedIndex(-1);
+    setOptions([]);
     onSelect?.(option);
+    inputRef.current?.blur();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -95,6 +114,7 @@ export function AutocompleteInput({
       case 'Escape':
         setShowDropdown(false);
         setSelectedIndex(-1);
+        inputRef.current?.blur();
         break;
     }
   };
@@ -109,7 +129,7 @@ export function AutocompleteInput({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <div className="relative">
         <Input
           ref={inputRef}

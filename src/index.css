@@ -1,80 +1,81 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Runescape&family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* OSRS-themed design system with authentic game colors and styling */
+/* Modern pixel-inspired design system with high contrast */
 
 @layer base {
   :root {
-    --background: 45 15% 85%; /* OSRS parchment color */
-    --foreground: 25 15% 15%; /* Dark brown text */
+    --background: 0 0% 100%; /* Pure white */
+    --foreground: 0 0% 8%; /* Near black */
 
-    --card: 45 20% 88%;
-    --card-foreground: 25 15% 15%;
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 8%;
 
-    --popover: 45 20% 88%;
-    --popover-foreground: 25 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
 
-    --primary: 45 85% 55%; /* OSRS gold */
-    --primary-foreground: 25 15% 15%;
+    --primary: 142 76% 36%; /* Modern green */
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 25 25% 75%; /* Light brown */
-    --secondary-foreground: 25 15% 15%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 25 20% 70%;
-    --muted-foreground: 25 25% 35%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 45 65% 65%; /* Lighter gold */
-    --accent-foreground: 25 15% 15%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
 
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 25 30% 60%; /* Brown border */
-    --input: 45 25% 82%;
-    --ring: 45 85% 55%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 142 76% 36%;
 
-    --radius: 0.25rem; /* Sharper, more pixelated corners */
+    --radius: 0.25rem; /* Sharp, pixel-like corners */
 
-    /* OSRS-specific colors */
-    --osrs-gold: 45 85% 55%;
-    --osrs-bronze: 25 45% 35%;
-    --osrs-silver: 0 0% 75%;
-    --osrs-brown: 25 35% 45%;
-    --osrs-parchment: 45 15% 85%;
-    --osrs-dark-brown: 25 25% 25%;
+    /* Pixel-inspired colors */
+    --pixel-green: 142 76% 36%;
+    --pixel-blue: 217 91% 60%;
+    --pixel-purple: 262 83% 58%;
+    --pixel-orange: 25 95% 53%;
+    --pixel-red: 0 84% 60%;
+    --pixel-yellow: 48 96% 53%;
+    --pixel-gray: 215 28% 17%;
   }
 
   .dark {
-    --background: 25 25% 15%; /* Dark stone */
-    --foreground: 45 15% 85%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 25 25% 18%;
-    --card-foreground: 45 15% 85%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 25 25% 18%;
-    --popover-foreground: 45 15% 85%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 45 85% 65%;
-    --primary-foreground: 25 25% 15%;
+    --primary: 142 76% 36%;
+    --primary-foreground: 222.2 84% 4.9%;
 
-    --secondary: 25 20% 25%;
-    --secondary-foreground: 45 15% 85%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 25 20% 25%;
-    --muted-foreground: 45 10% 60%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 25 20% 25%;
-    --accent-foreground: 45 15% 85%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 45 15% 85%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 25 25% 25%;
-    --input: 25 25% 22%;
-    --ring: 45 85% 65%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142 76% 36%;
   }
 }
 
@@ -85,94 +86,89 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Cinzel', serif;
-    background-image: 
-      radial-gradient(circle at 25% 25%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, rgba(160, 82, 45, 0.1) 0%, transparent 50%);
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'MedievalSharp', cursive;
-    color: hsl(var(--osrs-gold));
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
 }
 
 @layer components {
-  /* OSRS-style button */
-  .osrs-button {
-    @apply bg-gradient-to-b from-amber-200 to-amber-600 border-2 border-amber-700 text-amber-900 font-bold px-4 py-2 rounded-sm shadow-lg;
-    @apply hover:from-amber-300 hover:to-amber-700 active:from-amber-600 active:to-amber-400;
-    font-family: 'Cinzel', serif;
-    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.3);
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 2px 4px rgba(0, 0, 0, 0.3);
+  /* Modern pixel-inspired components */
+  .pixel-button {
+    @apply bg-white border-2 border-gray-900 text-gray-900 font-medium px-4 py-2 shadow-[4px_4px_0px_0px_theme(colors.gray.900)];
+    @apply hover:shadow-[2px_2px_0px_0px_theme(colors.gray.900)] hover:translate-x-[2px] hover:translate-y-[2px];
+    @apply active:shadow-[0px_0px_0px_0px_theme(colors.gray.900)] active:translate-x-[4px] active:translate-y-[4px];
+    @apply transition-all duration-150 ease-out;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  /* OSRS-style card */
-  .osrs-card {
-    @apply bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-600 rounded-sm shadow-lg;
-    background-image: 
-      linear-gradient(45deg, rgba(139, 69, 19, 0.05) 25%, transparent 25%),
-      linear-gradient(-45deg, rgba(139, 69, 19, 0.05) 25%, transparent 25%);
-    background-size: 20px 20px;
+  .pixel-button-primary {
+    @apply bg-green-500 border-2 border-green-700 text-white font-medium px-4 py-2 shadow-[4px_4px_0px_0px_theme(colors.green.700)];
+    @apply hover:shadow-[2px_2px_0px_0px_theme(colors.green.700)] hover:translate-x-[2px] hover:translate-y-[2px];
+    @apply active:shadow-[0px_0px_0px_0px_theme(colors.green.700)] active:translate-x-[4px] active:translate-y-[4px];
+    @apply transition-all duration-150 ease-out;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  /* OSRS-style input */
-  .osrs-input {
-    @apply bg-amber-50 border-2 border-amber-600 text-amber-900 rounded-sm px-3 py-2;
-    @apply focus:ring-2 focus:ring-amber-500 focus:border-amber-500;
-    font-family: 'Cinzel', serif;
+  .pixel-card {
+    @apply bg-white border-2 border-gray-900 shadow-[8px_8px_0px_0px_theme(colors.gray.900)];
+    @apply rounded-none;
   }
 
-  /* OSRS progress bar */
-  .osrs-progress {
-    @apply bg-amber-200 border border-amber-700 rounded-sm overflow-hidden;
+  .pixel-input {
+    @apply bg-white border-2 border-gray-900 text-gray-900 px-3 py-2;
+    @apply focus:ring-0 focus:border-blue-500 focus:shadow-[4px_4px_0px_0px_theme(colors.blue.500)];
+    @apply transition-all duration-150 ease-out;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .osrs-progress-fill {
-    @apply bg-gradient-to-r from-green-400 to-green-600 h-full transition-all duration-300;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  .pixel-badge {
+    @apply bg-gray-900 text-white font-medium px-2 py-1 text-xs border-2 border-gray-900;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  /* OSRS tab styling */
-  .osrs-tabs {
-    @apply bg-gradient-to-b from-amber-100 to-amber-200 border-2 border-amber-600 rounded-sm;
+  .pixel-tab {
+    @apply bg-white border-2 border-gray-900 text-gray-900 font-medium px-4 py-2;
+    @apply hover:bg-gray-50 data-[state=active]:bg-gray-900 data-[state=active]:text-white;
+    @apply transition-colors duration-150;
+    font-family: 'JetBrains Mono', monospace;
   }
 
-  .osrs-tab {
-    @apply bg-gradient-to-b from-amber-200 to-amber-300 border border-amber-600 text-amber-900 font-bold px-4 py-2;
-    @apply hover:from-amber-300 hover:to-amber-400 data-[state=active]:from-amber-400 data-[state=active]:to-amber-500;
-    font-family: 'Cinzel', serif;
-    border-radius: 4px 4px 0 0;
-    margin-right: 2px;
+  .navbar-blur {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
 
-  /* OSRS badge styling */
-  .osrs-badge {
-    @apply bg-gradient-to-b from-amber-300 to-amber-500 border border-amber-700 text-amber-900 font-bold px-2 py-1 rounded-sm text-xs;
-    font-family: 'Cinzel', serif;
-    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.3);
+  .navbar-hidden {
+    transform: translateY(-100%);
+  }
+
+  .navbar-visible {
+    transform: translateY(0);
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with pixel styling */
 ::-webkit-scrollbar {
   width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-  border-radius: 4px;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, hsl(var(--osrs-gold)), hsl(var(--osrs-bronze)));
-  border-radius: 4px;
-  border: 1px solid hsl(var(--border));
+  background: #374151;
+  border: 2px solid #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, hsl(var(--accent)), hsl(var(--osrs-gold)));
+  background: #1f2937;
 }

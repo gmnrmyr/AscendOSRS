@@ -1,6 +1,4 @@
 
-import { Card } from "@/components/ui/card";
-
 interface AdBannerProps {
   className?: string;
   size?: 'banner' | 'square' | 'skyscraper';
@@ -14,18 +12,18 @@ export function AdBanner({ className = '', size = 'banner' }: AdBannerProps) {
   };
 
   return (
-    <Card className={`osrs-card border-dashed border-amber-300 ${dimensions[size]} ${className}`}>
-      <div className="h-full w-full flex items-center justify-center bg-amber-50">
+    <div className={`pixel-card ${dimensions[size]} ${className}`}>
+      <div className="h-full w-full flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="text-amber-600 font-bold text-lg mb-2">Advertisement</div>
-          <div className="text-amber-500 text-sm">
+          <div className="text-gray-800 font-bold text-lg mb-2 font-mono">Advertisement</div>
+          <div className="text-gray-600 text-sm font-mono">
             {size === 'banner' && '728 x 90'}
             {size === 'square' && '250 x 250'}
             {size === 'skyscraper' && '160 x 600'}
           </div>
-          <div className="text-amber-500 text-xs mt-1">Google AdSense</div>
+          <div className="text-gray-500 text-xs mt-1 font-mono">Google AdSense</div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

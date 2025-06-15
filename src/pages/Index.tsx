@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
-import { Header } from "@/components/Header";
-import { Navigation } from "@/components/Navigation";
+import { ModernNavbar } from "@/components/ModernNavbar";
 import { Footer } from "@/components/Footer";
 import { AdBanner } from "@/components/AdBanner";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -267,29 +266,22 @@ const Index = () => {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200" 
-           style={{
-             backgroundImage: `
-               radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
-               radial-gradient(circle at 80% 20%, rgba(160, 82, 45, 0.1) 0%, transparent 50%),
-               url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d2691e' fill-opacity='0.03'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20.5h2V20h18v2H22v18h-2v-20zM0 18h18v2H0v-2zm22 2h18v2H22v-2z'/%3E%3C/g%3E%3C/svg%3E")
-             `
-           }}>
-        <div className="container mx-auto p-6 space-y-6">
-          {/* Header */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-            <Header />
-            
-            <div className="osrs-card p-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        <ModernNavbar activeTab={activeTab} onTabChange={setActiveTab} />
+        
+        <div className="container mx-auto p-6 space-y-8">
+          {/* Hours per day setting */}
+          <div className="flex justify-center">
+            <div className="pixel-card p-4">
               <div className="flex items-center gap-3">
-                <label className="text-base font-bold text-amber-800" style={{ fontFamily: 'Cinzel, serif' }}>
+                <label className="text-base font-semibold text-gray-900 font-mono">
                   ⏰ Hours per day:
                 </label>
                 <Input
                   type="number"
                   value={hoursPerDay}
                   onChange={(e) => setHoursPerDay(Number(e.target.value))}
-                  className="osrs-input w-20 text-center font-bold"
+                  className="pixel-input w-20 text-center font-mono font-bold"
                   min="1"
                   max="24"
                 />
@@ -302,71 +294,78 @@ const Index = () => {
             <AdBanner size="banner" />
           </div>
 
-          {/* Navigation */}
-          <div className="flex justify-center">
-            <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-          </div>
-
           {/* Main Dashboard Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
             <TabsContent value="summary">
-              <SummaryDashboard 
-                characters={activeCharacters}
-                moneyMethods={moneyMethods}
-                purchaseGoals={purchaseGoals}
-                bankData={activeBankData}
-                hoursPerDay={hoursPerDay}
-              />
+              <div className="pixel-card p-6">
+                <SummaryDashboard 
+                  characters={activeCharacters}
+                  moneyMethods={moneyMethods}
+                  purchaseGoals={purchaseGoals}
+                  bankData={activeBankData}
+                  hoursPerDay={hoursPerDay}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="characters">
-              <CharacterManager 
-                characters={characters}
-                setCharacters={setCharacters}
-              />
+              <div className="pixel-card p-6">
+                <CharacterManager 
+                  characters={characters}
+                  setCharacters={setCharacters}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="methods">
-              <MoneyMakingMethods 
-                methods={moneyMethods}
-                setMethods={setMoneyMethods}
-                characters={activeCharacters}
-              />
+              <div className="pixel-card p-6">
+                <MoneyMakingMethods 
+                  methods={moneyMethods}
+                  setMethods={setMoneyMethods}
+                  characters={activeCharacters}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="goals">
-              <PurchaseGoals 
-                goals={purchaseGoals}
-                setGoals={setPurchaseGoals}
-              />
+              <div className="pixel-card p-6">
+                <PurchaseGoals 
+                  goals={purchaseGoals}
+                  setGoals={setPurchaseGoals}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="bank">
-              <BankTracker 
-                bankData={bankData}
-                setBankData={setBankData}
-                characters={characters}
-              />
+              <div className="pixel-card p-6">
+                <BankTracker 
+                  bankData={bankData}
+                  setBankData={setBankData}
+                  characters={characters}
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="data">
-              <DataManager 
-                characters={characters}
-                moneyMethods={moneyMethods}
-                purchaseGoals={purchaseGoals}
-                bankData={bankData}
-                hoursPerDay={hoursPerDay}
-                setCharacters={setCharacters}
-                setMoneyMethods={setMoneyMethods}
-                setPurchaseGoals={setPurchaseGoals}
-                setBankData={setBankData}
-                setHoursPerDay={setHoursPerDay}
-              />
+              <div className="pixel-card p-6">
+                <DataManager 
+                  characters={characters}
+                  moneyMethods={moneyMethods}
+                  purchaseGoals={purchaseGoals}
+                  bankData={bankData}
+                  hoursPerDay={hoursPerDay}
+                  setCharacters={setCharacters}
+                  setMoneyMethods={setMoneyMethods}
+                  setPurchaseGoals={setPurchaseGoals}
+                  setBankData={setBankData}
+                  setHoursPerDay={setHoursPerDay}
+                />
+              </div>
             </TabsContent>
           </Tabs>
 
           {/* Side Ad for larger screens */}
-          <div className="hidden xl:block fixed right-4 top-1/2 transform -translate-y-1/2">
+          <div className="hidden xl:block fixed right-4 top-1/2 transform -translate-y-1/2 z-40">
             <AdBanner size="skyscraper" />
           </div>
         </div>

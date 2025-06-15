@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
 import { Header } from "@/components/Header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
+import { AdBanner } from "@/components/AdBanner";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { CharacterManager } from "@/components/CharacterManager";
 import { MoneyMakingMethods } from "@/components/MoneyMakingMethods";
@@ -9,9 +12,8 @@ import { PurchaseGoals } from "@/components/PurchaseGoals";
 import { BankTracker } from "@/components/BankTracker";
 import { DataManager } from "@/components/DataManager";
 import { SummaryDashboard } from "@/components/SummaryDashboard";
-import { TrendingUp, Target, Coins, Users, Settings } from "lucide-react";
 
-// Type definitions to match the component interfaces
+// Type definitions with updated Character interface
 interface Character {
   id: string;
   name: string;
@@ -20,6 +22,7 @@ interface Character {
   totalLevel: number;
   bank: number;
   notes: string;
+  isActive: boolean;
 }
 
 interface MoneyMethod {
@@ -55,6 +58,7 @@ interface BankItem {
 }
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState("summary");
   const [characters, setCharacters] = useState<Character[]>([
     {
       id: "1",
@@ -63,7 +67,8 @@ const Index = () => {
       combatLevel: 126,
       totalLevel: 2100,
       bank: 500000000,
-      notes: "Main account for high-level PvM content"
+      notes: "Main account for high-level PvM content",
+      isActive: true
     },
     {
       id: "2", 
@@ -72,7 +77,8 @@ const Index = () => {
       combatLevel: 100,
       totalLevel: 1500,
       bank: 50000000,
-      notes: "Alt for money making and skilling"
+      notes: "Alt for money making and skilling",
+      isActive: true
     }
   ]);
 
@@ -220,6 +226,16 @@ const Index = () => {
 
   const [hoursPerDay, setHoursPerDay] = useState(10);
 
+  // Filter active characters for calculations
+  const activeCharacters = characters.filter(char => char.isActive);
+
+  // Filter bank data for active characters only
+  const activeBankData = Object.fromEntries(
+    Object.entries(bankData).filter(([characterName]) => 
+      activeCharacters.some(char => char.name === characterName)
+    )
+  );
+
   // Load data from localStorage on component mount
   useEffect(() => {
     const savedData = localStorage.getItem('osrs-dashboard-data');
@@ -261,7 +277,7 @@ const Index = () => {
            }}>
         <div className="container mx-auto p-6 space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <Header />
             
             <div className="osrs-card p-4">
@@ -281,41 +297,24 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Main Dashboard Tabs */}
-          <Tabs defaultValue="summary" className="space-y-6">
-            <TabsList className="osrs-tabs grid grid-cols-6 w-full max-w-4xl p-2">
-              <TabsTrigger value="summary" className="osrs-tab flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                📊 Summary
-              </TabsTrigger>
-              <TabsTrigger value="characters" className="osrs-tab flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                👥 Characters
-              </TabsTrigger>
-              <TabsTrigger value="methods" className="osrs-tab flex items-center gap-2">
-                <Coins className="h-4 w-4" />
-                💰 Methods
-              </TabsTrigger>
-              <TabsTrigger value="goals" className="osrs-tab flex items-center gap-2">
-                <Target className="h-4 w-4" />
-                🎯 Goals
-              </TabsTrigger>
-              <TabsTrigger value="bank" className="osrs-tab flex items-center gap-2">
-                <Coins className="h-4 w-4" />
-                🏦 Bank
-              </TabsTrigger>
-              <TabsTrigger value="data" className="osrs-tab flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                ⚙️ Data
-              </TabsTrigger>
-            </TabsList>
+          {/* Ad Banner */}
+          <div className="flex justify-center">
+            <AdBanner size="banner" />
+          </div>
 
+          {/* Navigation */}
+          <div className="flex justify-center">
+            <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          </div>
+
+          {/* Main Dashboard Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsContent value="summary">
               <SummaryDashboard 
-                characters={characters}
+                characters={activeCharacters}
                 moneyMethods={moneyMethods}
                 purchaseGoals={purchaseGoals}
-                bankData={bankData}
+                bankData={activeBankData}
                 hoursPerDay={hoursPerDay}
               />
             </TabsContent>
@@ -331,7 +330,7 @@ const Index = () => {
               <MoneyMakingMethods 
                 methods={moneyMethods}
                 setMethods={setMoneyMethods}
-                characters={characters}
+                characters={activeCharacters}
               />
             </TabsContent>
 
@@ -365,7 +364,14 @@ const Index = () => {
               />
             </TabsContent>
           </Tabs>
+
+          {/* Side Ad for larger screens */}
+          <div className="hidden xl:block fixed right-4 top-1/2 transform -translate-y-1/2">
+            <AdBanner size="skyscraper" />
+          </div>
         </div>
+
+        <Footer />
       </div>
     </AuthGuard>
   );

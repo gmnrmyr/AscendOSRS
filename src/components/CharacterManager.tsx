@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Users, Search } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, X, Users, Search, RefreshCcw, Tag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { osrsApi } from "@/services/osrsApi";
 
@@ -18,6 +18,7 @@ interface Character {
   totalLevel: number;
   bank: number;
   notes: string;
+  isActive: boolean;
 }
 
 interface CharacterManagerProps {
@@ -32,7 +33,8 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
     combatLevel: 3,
     totalLevel: 32,
     bank: 0,
-    notes: ''
+    notes: '',
+    isActive: true
   });
   const [fetchingStats, setFetchingStats] = useState(false);
   const { toast } = useToast();
@@ -84,6 +86,79 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
     }
   };
 
+  const toggleCharacterType = (id: string) => {
+    const typeOrder: Character['type'][] = ['main', 'alt', 'ironman', 'hardcore', 'ultimate'];
+    const character = characters.find(c => c.id === id);
+    if (!character) return;
+
+    const currentIndex = typeOrder.indexOf(character.type);
+    const nextIndex = (currentIndex + 1) % typeOrder.length;
+    const newType = typeOrder[nextIndex];
+
+    updateCharacter(id, 'type', newType);
+    
+    toast({
+      title: "Character Type Updated",
+      description: `${character.name} is now a ${newType} account`
+    });
+  };
+
+  const toggleCharacterActive = (id: string) => {
+    const character = characters.find(c => c.id === id);
+    if (!character) return;
+
+    updateCharacter(id, 'isActive', !character.isActive);
+    
+    toast({
+      title: character.isActive ? "Character Deactivated" : "Character Activated",
+      description: `${character.name} ${character.isActive ? 'will not count towards bank totals' : 'will count towards bank totals'}`
+    });
+  };
+
+  const refreshCharacterStats = async (id: string) => {
+    const character = characters.find(c => c.id === id);
+    if (!character) return;
+
+    setFetchingStats(true);
+    try {
+      const stats = await osrsApi.fetchPlayerStats(character.name);
+      
+      if (stats) {
+        updateCharacter(id, 'combatLevel', stats.combat_level);
+        updateCharacter(id, 'totalLevel', stats.total_level);
+        
+        // Update type if it changed
+        const newType = stats.account_type === 'regular' ? 'main' : 
+                       stats.account_type === 'ironman' ? 'ironman' :
+                       stats.account_type === 'hardcore' ? 'hardcore' :
+                       stats.account_type === 'ultimate' ? 'ultimate' : 'main';
+        
+        if (newType !== character.type) {
+          updateCharacter(id, 'type', newType);
+        }
+        
+        toast({
+          title: "Stats Refreshed",
+          description: `Updated ${character.name}: Combat ${stats.combat_level}, Total ${stats.total_level}`
+        });
+      } else {
+        toast({
+          title: "Player Not Found",
+          description: "Could not refresh player stats. Player may be banned or name changed.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh player stats",
+        variant: "destructive"
+      });
+    } finally {
+      setFetchingStats(false);
+    }
+  };
+
   const addCharacter = () => {
     if (!newCharacter.name?.trim()) {
       toast({
@@ -101,7 +176,8 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
       combatLevel: newCharacter.combatLevel || 3,
       totalLevel: newCharacter.totalLevel || 32,
       bank: newCharacter.bank || 0,
-      notes: newCharacter.notes || ''
+      notes: newCharacter.notes || '',
+      isActive: true
     };
 
     setCharacters([...characters, character]);
@@ -111,7 +187,8 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
       combatLevel: 3,
       totalLevel: 32,
       bank: 0,
-      notes: ''
+      notes: '',
+      isActive: true
     });
     
     toast({
@@ -284,24 +361,57 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
       {/* Character List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {characters.map((character) => (
-          <Card key={character.id} className="osrs-card">
+          <Card key={character.id} className={`osrs-card ${!character.isActive ? 'opacity-60' : ''}`}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="osrs-title text-lg">
                   {character.name}
+                  {!character.isActive && (
+                    <Badge variant="outline" className="ml-2 text-xs bg-red-100 text-red-800">
+                      Inactive
+                    </Badge>
+                  )}
                 </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeCharacter(character.id)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => refreshCharacterStats(character.id)}
+                    disabled={fetchingStats}
+                    className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 p-1"
+                    title="Refresh stats from OSRS Hiscores"
+                  >
+                    <RefreshCcw className={`h-4 w-4 ${fetchingStats ? 'animate-spin' : ''}`} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeCharacter(character.id)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <Badge className={getTypeColor(character.type)}>
-                {character.type.charAt(0).toUpperCase() + character.type.slice(1)}
-              </Badge>
+              
+              <div className="flex items-center justify-between">
+                <Badge 
+                  className={`${getTypeColor(character.type)} cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1`}
+                  onClick={() => toggleCharacterType(character.id)}
+                  title="Click to cycle through account types"
+                >
+                  <Tag className="h-3 w-3" />
+                  {character.type.charAt(0).toUpperCase() + character.type.slice(1)}
+                </Badge>
+                
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs text-amber-700">Active:</Label>
+                  <Switch
+                    checked={character.isActive}
+                    onCheckedChange={() => toggleCharacterActive(character.id)}
+                  />
+                </div>
+              </div>
             </CardHeader>
             
             <CardContent className="space-y-3">

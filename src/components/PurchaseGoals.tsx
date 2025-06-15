@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,7 @@ interface PurchaseGoal {
   category: 'gear' | 'consumables' | 'materials' | 'other';
   notes: string;
   imageUrl?: string;
-  itemId?: number; // Add itemId for proper price fetching
+  itemId?: number;
 }
 
 interface PurchaseGoalsProps {
@@ -49,6 +49,13 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const [showFilters, setShowFilters] = useState(false);
   
   const { toast } = useToast();
+
+  // Auto-save goals whenever they change
+  useEffect(() => {
+    if (goals.length > 0) {
+      localStorage.setItem('purchaseGoals', JSON.stringify(goals));
+    }
+  }, [goals]);
 
   // Default popular OSRS purchase goals with correct item IDs
   const defaultGoals = [
@@ -87,21 +94,33 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const handleItemSelect = async (option: any) => {
     console.log('Selected item:', option);
     
-    // Use the value from search results or fetch fresh price
-    let currentPrice = option.value || 0;
+    let currentPrice = 0;
     let itemIcon = option.icon;
-    
-    // If no price from search, try to fetch it
-    if (!currentPrice && option.id) {
+    let itemId = option.id;
+
+    // Try to get item ID from name if not provided
+    if (!itemId) {
+      const defaultItem = defaultGoals.find(g => g.name.toLowerCase() === option.name.toLowerCase());
+      if (defaultItem) {
+        itemId = defaultItem.itemId;
+      }
+    }
+
+    // Fetch current price using item ID if available
+    if (itemId) {
       try {
-        const prices = await osrsApi.fetchItemPrices();
-        const itemPrice = prices[option.id];
-        if (itemPrice?.high) {
-          currentPrice = itemPrice.high;
+        console.log(`Fetching price for item ID: ${itemId}`);
+        const priceData = await osrsApi.fetchSingleItemPrice(itemId);
+        if (priceData?.high) {
+          currentPrice = priceData.high;
+          console.log(`Successfully fetched price: ${currentPrice}`);
         }
       } catch (error) {
-        console.log('Could not fetch current price, using default');
+        console.log('Could not fetch current price, using search value');
+        currentPrice = option.value || 0;
       }
+    } else {
+      currentPrice = option.value || 0;
     }
 
     // Ensure we have a valid image URL
@@ -116,7 +135,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       name: option.name,
       currentPrice: currentPrice,
       imageUrl: itemIcon,
-      itemId: option.id
+      itemId: itemId
     });
   };
 
@@ -170,25 +189,49 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   };
 
   const addDefaultGoals = async () => {
-    // Fetch current prices for default goals using their item IDs
-    const prices = await osrsApi.fetchItemPrices();
+    console.log('Adding default goals with live prices...');
     
-    const newGoals = defaultGoals.map(goal => ({
-      id: Date.now().toString() + Math.random(),
-      ...goal,
-      currentPrice: goal.itemId && prices[goal.itemId] ? (prices[goal.itemId].high || goal.currentPrice) : goal.currentPrice,
-      targetPrice: goal.currentPrice,
-      quantity: 1,
-      priority: goal.priority as PurchaseGoal['priority'],
-      category: goal.category as PurchaseGoal['category'],
-      notes: '',
-      imageUrl: osrsApi.getItemIcon(goal.name)
-    }));
+    const newGoals = [];
+    
+    for (const goal of defaultGoals) {
+      try {
+        console.log(`Fetching price for ${goal.name} (ID: ${goal.itemId})`);
+        const priceData = await osrsApi.fetchSingleItemPrice(goal.itemId);
+        const currentPrice = priceData?.high || goal.currentPrice;
+        
+        newGoals.push({
+          id: Date.now().toString() + Math.random(),
+          ...goal,
+          currentPrice: currentPrice,
+          targetPrice: currentPrice,
+          quantity: 1,
+          priority: goal.priority as PurchaseGoal['priority'],
+          category: goal.category as PurchaseGoal['category'],
+          notes: '',
+          imageUrl: osrsApi.getItemIcon(goal.name)
+        });
+        
+        console.log(`Added ${goal.name} with price: ${currentPrice}`);
+      } catch (error) {
+        console.error(`Error fetching price for ${goal.name}:`, error);
+        // Add with default price if API fails
+        newGoals.push({
+          id: Date.now().toString() + Math.random(),
+          ...goal,
+          targetPrice: goal.currentPrice,
+          quantity: 1,
+          priority: goal.priority as PurchaseGoal['priority'],
+          category: goal.category as PurchaseGoal['category'],
+          notes: '',
+          imageUrl: osrsApi.getItemIcon(goal.name)
+        });
+      }
+    }
     
     setGoals([...goals, ...newGoals]);
     toast({
       title: "Success",
-      description: `Added ${newGoals.length} default purchase goals`
+      description: `Added ${newGoals.length} default purchase goals with live prices`
     });
   };
 
@@ -255,6 +298,41 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     return (goal.targetPrice || goal.currentPrice) * goal.quantity;
   };
 
+  // Add function to refresh prices for existing goals
+  const refreshPrices = async () => {
+    console.log('Refreshing prices for all goals...');
+    
+    const updatedGoals = [];
+    
+    for (const goal of goals) {
+      if (goal.itemId) {
+        try {
+          const priceData = await osrsApi.fetchSingleItemPrice(goal.itemId);
+          if (priceData?.high) {
+            updatedGoals.push({
+              ...goal,
+              currentPrice: priceData.high
+            });
+            console.log(`Updated price for ${goal.name}: ${priceData.high}`);
+          } else {
+            updatedGoals.push(goal);
+          }
+        } catch (error) {
+          console.error(`Error refreshing price for ${goal.name}:`, error);
+          updatedGoals.push(goal);
+        }
+      } else {
+        updatedGoals.push(goal);
+      }
+    }
+    
+    setGoals(updatedGoals);
+    toast({
+      title: "Prices Updated",
+      description: "Refreshed current prices from OSRS Wiki"
+    });
+  };
+
   // Filtering and sorting logic
   const filteredAndSortedGoals = goals
     .filter(goal => {
@@ -297,7 +375,19 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                 {goals.length} goals • {formatGP(totalGoalValue)} GP total
               </p>
             </div>
-            <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+            <div className="flex items-center gap-2">
+              {goals.length > 0 && (
+                <Button
+                  onClick={refreshPrices}
+                  variant="outline"
+                  size="sm"
+                  className="text-amber-700 border-amber-300 hover:bg-amber-50"
+                >
+                  Refresh Prices
+                </Button>
+              )}
+              <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+            </div>
           </div>
         </CardContent>
       </Card>

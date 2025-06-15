@@ -1,4 +1,3 @@
-
 export interface OSRSItem {
   id: number;
   name: string;
@@ -49,6 +48,31 @@ class OSRSApiService {
     } catch (error) {
       console.error('Error fetching item prices:', error);
       return {};
+    }
+  }
+
+  async fetchSingleItemPrice(itemId: number): Promise<OSRSPriceData | null> {
+    try {
+      console.log(`Fetching price for item ID: ${itemId}`);
+      const response = await fetch(`https://prices.runescape.wiki/osrs/item/${itemId}`);
+      
+      if (!response.ok) {
+        console.log(`Failed to fetch price for item ${itemId}: ${response.status}`);
+        return null;
+      }
+      
+      const data = await response.json();
+      console.log(`Price data for item ${itemId}:`, data);
+      
+      return {
+        high: data.high,
+        highTime: data.highTime,
+        low: data.low,
+        lowTime: data.lowTime
+      };
+    } catch (error) {
+      console.error(`Error fetching price for item ${itemId}:`, error);
+      return null;
     }
   }
 
@@ -220,40 +244,44 @@ class OSRSApiService {
   }
 
   async fetchPopularItems(): Promise<OSRSItem[]> {
-    // Predefined list of popular OSRS items with their wiki item IDs
+    // Predefined list of popular OSRS items with their correct item IDs
     const popularItems = [
-      { id: 4151, name: 'Abyssal whip' },
-      { id: 11802, name: 'Barrows gloves' },
-      { id: 6585, name: 'Amulet of fury' },
-      { id: 12002, name: 'Twisted bow' },
-      { id: 13576, name: 'Dragon warhammer' },
-      { id: 11804, name: 'Bandos chestplate' },
-      { id: 11806, name: 'Bandos tassets' },
-      { id: 12904, name: 'Toxic blowpipe' },
-      { id: 19481, name: 'Heavy ballista' },
-      { id: 11785, name: 'Armadyl crossbow' },
-      { id: 2577, name: 'Ranger boots' },
-      { id: 6889, name: 'Mages book' },
-      { id: 11773, name: 'Berserker ring (i)' },
-      { id: 6737, name: 'Berserker ring' },
-      { id: 11771, name: 'Archers ring (i)' }
+      { id: 20997, name: 'Twisted bow' },
+      { id: 22325, name: 'Scythe of vitur' },
+      { id: 22322, name: 'Avernic defender' },
+      { id: 13239, name: 'Primordial boots' },
+      { id: 13237, name: 'Pegasian boots' },
+      { id: 13235, name: 'Eternal boots' },
+      { id: 13652, name: 'Dragon claws' },
+      { id: 11832, name: 'Bandos chestplate' },
+      { id: 11834, name: 'Bandos tassets' },
+      { id: 11828, name: 'Armadyl chestplate' },
+      { id: 21034, name: 'Prayer scroll (rigour)' },
+      { id: 21079, name: 'Prayer scroll (augury)' },
+      { id: 13190, name: 'Old school bond' }
     ];
 
-    try {
-      const prices = await this.fetchItemPrices();
-      
-      return popularItems.map(item => ({
-        ...item,
-        current_price: prices[item.id]?.high || 0,
-        icon: this.getItemIcon(item.name)
-      }));
-    } catch (error) {
-      console.error('Error fetching popular items:', error);
-      return popularItems.map(item => ({
-        ...item,
-        icon: this.getItemIcon(item.name)
-      }));
+    const itemsWithPrices = [];
+    
+    for (const item of popularItems) {
+      try {
+        const priceData = await this.fetchSingleItemPrice(item.id);
+        itemsWithPrices.push({
+          ...item,
+          current_price: priceData?.high || 0,
+          icon: this.getItemIcon(item.name)
+        });
+      } catch (error) {
+        console.error(`Error fetching price for ${item.name}:`, error);
+        itemsWithPrices.push({
+          ...item,
+          current_price: 0,
+          icon: this.getItemIcon(item.name)
+        });
+      }
     }
+    
+    return itemsWithPrices;
   }
 
   getDefaultMoneyMakers(): MoneyMakingGuide[] {

@@ -68,12 +68,16 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   // Only search for items, not money-making methods
   const searchItems = async (query: string) => {
     const items = await osrsApi.searchItems(query);
+    
+    // Fetch current prices for all search results
+    const prices = await osrsApi.fetchItemPrices();
+    
     return items.map(item => ({
       id: item.id,
       name: item.name,
       subtitle: 'OSRS Item',
       icon: item.icon,
-      value: item.current_price,
+      value: item.current_price || (prices[item.id]?.high) || 0,
       category: 'item'
     }));
   };
@@ -81,18 +85,21 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const handleItemSelect = async (option: any) => {
     console.log('Selected item:', option);
     
-    // Fetch current price if available
+    // Use the value from search results or fetch fresh price
     let currentPrice = option.value || 0;
     let itemIcon = option.icon;
     
-    try {
-      const prices = await osrsApi.fetchItemPrices();
-      const itemPrice = prices[option.id];
-      if (itemPrice?.high) {
-        currentPrice = itemPrice.high;
+    // If no price from search, try to fetch it
+    if (!currentPrice) {
+      try {
+        const prices = await osrsApi.fetchItemPrices();
+        const itemPrice = prices[option.id];
+        if (itemPrice?.high) {
+          currentPrice = itemPrice.high;
+        }
+      } catch (error) {
+        console.log('Could not fetch current price, using default');
       }
-    } catch (error) {
-      console.log('Could not fetch current price, using default');
     }
 
     // Ensure we have a valid image URL
@@ -100,7 +107,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       itemIcon = osrsApi.getItemIcon(option.name);
     }
 
-    console.log('Setting item icon:', itemIcon);
+    console.log('Setting item with price:', currentPrice, 'and icon:', itemIcon);
 
     setNewGoal({
       ...newGoal,
@@ -138,7 +145,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       imageUrl: finalImageUrl
     };
 
-    console.log('Adding goal with image:', goal.imageUrl);
+    console.log('Adding goal with price:', goal.currentPrice, 'and image:', goal.imageUrl);
     setGoals([...goals, goal]);
     setNewGoal({
       name: '',
@@ -157,10 +164,14 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     });
   };
 
-  const addDefaultGoals = () => {
+  const addDefaultGoals = async () => {
+    // Fetch current prices for default goals
+    const prices = await osrsApi.fetchItemPrices();
+    
     const newGoals = defaultGoals.map(goal => ({
       id: Date.now().toString() + Math.random(),
       ...goal,
+      currentPrice: prices[goal.name] ? (prices[goal.name].high || goal.currentPrice) : goal.currentPrice,
       targetPrice: goal.currentPrice,
       quantity: 1,
       priority: goal.priority as PurchaseGoal['priority'],
@@ -193,7 +204,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   };
 
   const cyclePriority = (currentPriority: PurchaseGoal['priority']): PurchaseGoal['priority'] => {
-    const priorities: PurchaseGoal['priority'][] = ['A-', 'B-', 'B', 'B+', 'A-', 'A', 'A+', 'S-', 'S', 'S+'];
+    const priorities: PurchaseGoal['priority'][] = ['B-', 'B', 'B+', 'A-', 'A', 'A+', 'S-', 'S', 'S+'];
     const currentIndex = priorities.indexOf(currentPriority);
     const nextIndex = (currentIndex + 1) % priorities.length;
     return priorities[nextIndex];
@@ -395,7 +406,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             </div>
             
             <div>
-              <Label>Current Price (GP) - Auto-fetched from Wiki</Label>
+              <Label>Current Price (GP) - From OSRS Wiki</Label>
               <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
                 {newGoal.currentPrice ? formatGP(newGoal.currentPrice) : 'Select an item to fetch price'}
               </div>

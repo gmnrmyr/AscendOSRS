@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, TrendingUp, TrendingDown, Minus, X } from "lucide-react";
-import { osrsApi, OSRSItem } from "@/services/osrsApi";
+import { osrsApi, OSRSItem, OSRSSearchResult } from "@/services/osrsApi";
 
 interface ItemSearchProps {
   onItemSelect: (item: OSRSItem) => void;
@@ -15,7 +15,7 @@ interface ItemSearchProps {
 
 export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items...", onClose }: ItemSearchProps) {
   const [query, setQuery] = useState("");
-  const [items, setItems] = useState<OSRSItem[]>([]);
+  const [items, setItems] = useState<OSRSSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [popularItems, setPopularItems] = useState<OSRSItem[]>([]);
   
@@ -81,8 +81,17 @@ export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items...",
     }
   };
 
-  const handleItemSelect = (item: OSRSItem) => {
-    onItemSelect(item);
+  const handleItemSelect = (item: OSRSItem | OSRSSearchResult) => {
+    // Convert OSRSSearchResult to OSRSItem if needed
+    const osrsItem: OSRSItem = {
+      id: typeof item.id === 'number' ? item.id : parseInt(item.id.toString()) || 0,
+      name: item.name,
+      icon: item.icon,
+      current_price: item.current_price || 0,
+      today_trend: item.today_trend
+    };
+    
+    onItemSelect(osrsItem);
     onClose?.();
   };
 
@@ -95,12 +104,13 @@ export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items...",
     return price.toLocaleString();
   };
 
-  const getTrendIcon = (trend: string) => {
+  const getTrendIcon = (trend?: string) => {
     if (trend === 'positive') return <TrendingUp className="h-3 w-3 text-green-600" />;
     if (trend === 'negative') return <TrendingDown className="h-3 w-3 text-red-600" />;
     return <Minus className="h-3 w-3 text-gray-400" />;
   };
 
+  // Use search results if query exists, otherwise show popular items
   const displayItems = query.trim() ? items : popularItems;
 
   return (

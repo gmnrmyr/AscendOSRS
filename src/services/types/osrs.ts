@@ -10,6 +10,7 @@ export interface OSRSItem {
   value?: number;
   icon?: string;
   current_price?: number;
+  today_trend?: 'positive' | 'negative' | 'neutral';
 }
 
 export interface OSRSPriceData {
@@ -26,6 +27,8 @@ export interface OSRSSearchResult {
   icon?: string;
   value?: number;
   category?: string;
+  current_price?: number;
+  today_trend?: 'positive' | 'negative' | 'neutral';
 }
 
 export interface OSRSMoneyMakingMethod {
@@ -36,6 +39,23 @@ export interface OSRSMoneyMakingMethod {
   requirements: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   description: string;
+}
+
+export interface MoneyMakingGuide {
+  name: string;
+  profit: number;
+  difficulty: number;
+  requirements: string[];
+  description: string;
+  category: string;
+  membership: 'f2p' | 'p2p';
+}
+
+export interface PlayerStats {
+  name: string;
+  combat_level: number;
+  total_level: number;
+  account_type: 'regular' | 'ironman' | 'hardcore' | 'ultimate';
 }
 
 export interface ItemMapping {

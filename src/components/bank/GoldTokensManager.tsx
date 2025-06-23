@@ -56,6 +56,9 @@ export function GoldTokensManager({
         <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
           Total Gold Value: {formatGP(getCharacterGoldValue(selectedCharacter))} GP
         </p>
+        <p className="text-xs text-yellow-600 dark:text-yellow-300 mt-1">
+          You can edit these values anytime, even after CSV import
+        </p>
       </div>
     </div>
   );

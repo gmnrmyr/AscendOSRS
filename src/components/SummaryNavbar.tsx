@@ -44,7 +44,7 @@ export function SummaryNavbar() {
   // Calculate current GP/hour from methods where isActive is true
   const getCurrentGPPerHour = () => {
     return moneyMethods
-      .filter(method => method.isActive === true)
+      .filter(method => 'isActive' in method && method.isActive === true)
       .reduce((total, method) => {
         return total + (method?.gpHour || 0);
       }, 0);
@@ -96,7 +96,7 @@ export function SummaryNavbar() {
   const totalBankValue = getTotalBankValue();
   const totalGoldValue = getTotalGoldValue();
   const totalGoalsValue = getTotalGoalsValue();
-  const activeMethodsCount = moneyMethods.filter(method => method.isActive === true).length;
+  const activeMethodsCount = moneyMethods.filter(method => 'isActive' in method && method.isActive === true).length;
 
   return (
     <div 

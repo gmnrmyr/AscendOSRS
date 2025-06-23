@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -6,6 +7,7 @@ import { Plus, RefreshCw } from "lucide-react";
 import { BankCSVImporter } from "./BankCSVImporter";
 import { BankSummary } from "./bank/BankSummary";
 import { GoldTokensManager } from "./bank/GoldTokensManager";
+import { BankValueManager } from "./bank/BankValueManager";
 import { BankItemForm } from "./bank/BankItemForm";
 import { CharacterBankDisplay } from "./bank/CharacterBankDisplay";
 import { useBankTracker, useBankCalculations } from "./bank/BankTrackerLogic";
@@ -121,12 +123,19 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
           </div>
 
           {selectedCharacter && (
-            <>
+            <div className="space-y-6">
               <GoldTokensManager 
                 selectedCharacter={selectedCharacter}
                 getCharacterCoins={getCharacterCoins}
                 getCharacterPlatTokens={getCharacterPlatTokens}
                 updateGoldTokens={updateGoldTokens}
+                getCharacterGoldValue={getCharacterGoldValue}
+                formatGP={formatGP}
+              />
+
+              <BankValueManager
+                selectedCharacter={selectedCharacter}
+                getCharacterBankValue={getCharacterBankValue}
                 getCharacterGoldValue={getCharacterGoldValue}
                 formatGP={formatGP}
               />
@@ -137,7 +146,7 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
                 onAddItem={addItem}
                 onAddQuickItems={addQuickItems}
               />
-            </>
+            </div>
           )}
         </CardContent>
       </Card>

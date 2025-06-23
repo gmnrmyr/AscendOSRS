@@ -92,7 +92,7 @@ export function DataManager({
       if (parsed.characters) setCharacters(parsed.characters);
       if (parsed.moneyMethods) setMoneyMethods(parsed.moneyMethods);
       if (parsed.purchaseGoals) setPurchaseGoals(parsed.purchaseGoals);
-      if (parsed.bankData) setB;
+      if (parsed.bankData) setBankData(parsed.bankData);
       if (parsed.hoursPerDay) setHoursPerDay(parsed.hoursPerDay);
 
       setImportData("");

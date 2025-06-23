@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, Users, Target, Coins, Clock, Star, DollarSign } from "lucide-react";
+import { TrendingUp, Users, Target, Coins, Clock, Star, DollarSign, Wallet } from "lucide-react";
 
 interface SummaryDashboardProps {
   characters: any[];
@@ -29,6 +29,16 @@ export function SummaryDashboard({
         const price = item?.estimatedPrice || 0;
         return sum + (quantity * price);
       }, 0);
+    }, 0);
+  };
+
+  // Calculate total gold value (coins + plat tokens) across all characters
+  const getTotalGoldValue = () => {
+    return Object.keys(bankData).reduce((total, character) => {
+      const items = bankData[character] || [];
+      const coins = items.find(item => item?.name?.toLowerCase().includes('coin'))?.quantity || 0;
+      const platTokens = items.find(item => item?.name?.toLowerCase().includes('platinum'))?.quantity || 0;
+      return total + coins + (platTokens * 1000);
     }, 0);
   };
 
@@ -82,9 +92,9 @@ export function SummaryDashboard({
     });
   };
 
-  // Calculate time to complete all goals
+  // Calculate time to complete all goals using GOLD VALUE instead of total bank value
   const getTimeToCompleteGoals = () => {
-    const totalNeeded = getTotalGoalsValue() - getTotalBankValue();
+    const totalNeeded = getTotalGoalsValue() - getTotalGoldValue();
     if (totalNeeded <= 0) return 0;
     
     const currentGPHour = getCurrentGPPerHour();
@@ -94,12 +104,12 @@ export function SummaryDashboard({
     return Math.ceil(totalNeeded / dailyEarnings);
   };
 
-  // Calculate completion percentage
+  // Calculate completion percentage using GOLD VALUE
   const getCompletionPercentage = () => {
     const totalGoals = getTotalGoalsValue();
-    const totalBank = getTotalBankValue();
+    const totalGold = getTotalGoldValue();
     if (totalGoals === 0) return 100;
-    return Math.min(100, (totalBank / totalGoals) * 100);
+    return Math.min(100, (totalGold / totalGoals) * 100);
   };
 
   const formatGP = (amount: number | undefined | null) => {
@@ -126,6 +136,7 @@ export function SummaryDashboard({
   };
 
   const totalBankValue = getTotalBankValue();
+  const totalGoldValue = getTotalGoldValue();
   const totalGoalsValue = getTotalGoalsValue();
   const bestMethod = getBestMethod();
   const currentGPHour = getCurrentGPPerHour();
@@ -136,7 +147,7 @@ export function SummaryDashboard({
   return (
     <div className="space-y-6">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <div className="osrs-card p-6 bg-gradient-to-br from-blue-100 to-blue-200 border-blue-600">
           <div className="flex items-center justify-between">
             <div>
@@ -162,12 +173,24 @@ export function SummaryDashboard({
         <div className="osrs-card p-6 bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-yellow-800 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>💸 Current GP/Hr</p>
+              <p className="text-yellow-800 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>🪙 Gold Value</p>
               <p className="text-3xl font-bold text-yellow-900" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                {formatGP(totalGoldValue)} GP
+              </p>
+            </div>
+            <Wallet className="h-10 w-10 text-yellow-700" />
+          </div>
+        </div>
+
+        <div className="osrs-card p-6 bg-gradient-to-br from-indigo-100 to-indigo-200 border-indigo-600">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-indigo-800 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>💸 Current GP/Hr</p>
+              <p className="text-3xl font-bold text-indigo-900" style={{ fontFamily: 'MedievalSharp, cursive' }}>
                 {formatGP(currentGPHour)}/hr
               </p>
             </div>
-            <DollarSign className="h-10 w-10 text-yellow-700" />
+            <DollarSign className="h-10 w-10 text-indigo-700" />
           </div>
         </div>
 
@@ -259,13 +282,16 @@ export function SummaryDashboard({
         </div>
       )}
 
-      {/* Progress Card */}
+      {/* Progress Card - Now using Gold Value for calculations */}
       <div className="osrs-card p-6 bg-gradient-to-r from-amber-100 to-yellow-100 border-amber-600">
         <div className="mb-4">
           <h3 className="text-2xl font-bold text-amber-800 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
             <TrendingUp className="h-6 w-6" />
-            📈 Overall Progress
+            📈 Overall Progress (Based on Gold)
           </h3>
+          <p className="text-sm text-amber-600 mt-1" style={{ fontFamily: 'Cinzel, serif' }}>
+            Progress is calculated using Coins + Platinum Tokens only
+          </p>
         </div>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -284,15 +310,15 @@ export function SummaryDashboard({
           </div>
           
           <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="text-center p-4 bg-green-50 border-2 border-green-600 rounded">
-              <p className="text-3xl font-bold text-green-700" style={{ fontFamily: 'MedievalSharp, cursive' }}>
-                {formatGP(totalBankValue)} GP
+            <div className="text-center p-4 bg-yellow-50 border-2 border-yellow-600 rounded">
+              <p className="text-3xl font-bold text-yellow-700" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                {formatGP(totalGoldValue)} GP
               </p>
-              <p className="text-sm text-green-600 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Current Bank</p>
+              <p className="text-sm text-yellow-600 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Current Gold</p>
             </div>
             <div className="text-center p-4 bg-purple-50 border-2 border-purple-600 rounded">
               <p className="text-3xl font-bold text-purple-700" style={{ fontFamily: 'MedievalSharp, cursive' }}>
-                {formatGP(Math.max(0, totalGoalsValue - totalBankValue))} GP
+                {formatGP(Math.max(0, totalGoalsValue - totalGoldValue))} GP
               </p>
               <p className="text-sm text-purple-600 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Still Needed</p>
             </div>

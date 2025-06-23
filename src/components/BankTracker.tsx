@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Coins, TrendingUp } from "lucide-react";
+import { Plus, X, Coins, TrendingUp, Wallet } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BankCSVImporter } from "./BankCSVImporter";
 
@@ -155,8 +156,21 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     return items.reduce((total, item) => total + (item.quantity * item.estimatedPrice), 0);
   };
 
+  // Get gold + platinum tokens value for a character
+  const getCharacterGoldValue = (character: string) => {
+    const items = bankData[character] || [];
+    const coins = items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
+    const platTokens = items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
+    return coins + (platTokens * 1000);
+  };
+
   const getTotalBankValue = () => {
     return Object.keys(bankData).reduce((total, character) => total + getCharacterBankValue(character), 0);
+  };
+
+  // Get total gold value across all characters (coins + plat tokens)
+  const getTotalGoldValue = () => {
+    return Object.keys(bankData).reduce((total, character) => total + getCharacterGoldValue(character), 0);
   };
 
   const getCategoryColor = (category: string) => {
@@ -167,6 +181,54 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
       case 'other': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  // Add/update gold and plat tokens for a character
+  const updateGoldTokens = (character: string, type: 'coins' | 'platinum', quantity: number) => {
+    const currentItems = bankData[character] || [];
+    const itemName = type === 'coins' ? 'Coins' : 'Platinum Tokens';
+    const itemPrice = type === 'coins' ? 1 : 1000;
+    
+    const existingItemIndex = currentItems.findIndex(item => 
+      item.name.toLowerCase().includes(type === 'coins' ? 'coin' : 'platinum')
+    );
+
+    if (existingItemIndex >= 0) {
+      // Update existing item
+      const updatedItems = [...currentItems];
+      updatedItems[existingItemIndex] = {
+        ...updatedItems[existingItemIndex],
+        quantity: quantity
+      };
+      setBankData({
+        ...bankData,
+        [character]: updatedItems
+      });
+    } else {
+      // Add new item
+      const newItem: BankItem = {
+        id: Date.now().toString(),
+        name: itemName,
+        quantity: quantity,
+        estimatedPrice: itemPrice,
+        category: 'stackable',
+        character: character
+      };
+      setBankData({
+        ...bankData,
+        [character]: [...currentItems, newItem]
+      });
+    }
+  };
+
+  const getCharacterCoins = (character: string) => {
+    const items = bankData[character] || [];
+    return items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
+  };
+
+  const getCharacterPlatTokens = (character: string) => {
+    const items = bankData[character] || [];
+    return items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
   };
 
   return (
@@ -180,19 +242,36 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
       {/* Total Bank Value Summary */}
       <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200 dark:border-amber-800">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200">
-                Total Bank Value
-              </h3>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
-                {formatGP(getTotalBankValue())} GP
-              </p>
-              <p className="text-amber-600 dark:text-amber-300">
-                Across {characters.length} characters
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200">
+                  Total Bank Value
+                </h3>
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
+                  {formatGP(getTotalBankValue())} GP
+                </p>
+                <p className="text-amber-600 dark:text-amber-300">
+                  Across {characters.length} characters
+                </p>
+              </div>
+              <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
             </div>
-            <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200">
+                  Total Gold Value
+                </h3>
+                <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-2">
+                  {formatGP(getTotalGoldValue())} GP
+                </p>
+                <p className="text-amber-600 dark:text-amber-300">
+                  Coins + Plat Tokens
+                </p>
+              </div>
+              <Wallet className="h-12 w-12 text-yellow-600 dark:text-yellow-400" />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -222,13 +301,52 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
 
           {selectedCharacter && (
             <>
+              {/* Gold & Platinum Tokens Section */}
+              <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                <h4 className="text-lg font-bold text-yellow-800 dark:text-yellow-200 mb-3 flex items-center gap-2">
+                  <Coins className="h-5 w-5" />
+                  Gold & Platinum Tokens
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Coins</Label>
+                    <Input
+                      type="number"
+                      value={getCharacterCoins(selectedCharacter)}
+                      onChange={(e) => updateGoldTokens(selectedCharacter, 'coins', Number(e.target.value))}
+                      placeholder="0"
+                      className="bg-white dark:bg-slate-800"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Value: 1 GP each</p>
+                  </div>
+                  
+                  <div>
+                    <Label>Platinum Tokens</Label>
+                    <Input
+                      type="number"
+                      value={getCharacterPlatTokens(selectedCharacter)}
+                      onChange={(e) => updateGoldTokens(selectedCharacter, 'platinum', Number(e.target.value))}
+                      placeholder="0"
+                      className="bg-white dark:bg-slate-800"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Value: 1,000 GP each</p>
+                  </div>
+                </div>
+                
+                <div className="mt-3 p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded border">
+                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Total Gold Value: {formatGP(getCharacterGoldValue(selectedCharacter))} GP
+                  </p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <Label>Item Name</Label>
                   <Input
                     value={newItem.name || ''}
                     onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                    placeholder="e.g., Coins, Prayer Potion(4)"
+                    placeholder="e.g., Prayer Potion(4)"
                     className="bg-white dark:bg-slate-800"
                   />
                 </div>
@@ -293,6 +411,7 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
       {characters.map((character) => {
         const characterItems = bankData[character.name] || [];
         const bankValue = getCharacterBankValue(character.name);
+        const goldValue = getCharacterGoldValue(character.name);
         
         return (
           <Card key={character.id} className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
@@ -301,9 +420,12 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
                 <CardTitle className="text-xl text-amber-800 dark:text-amber-200">
                   {character.name}'s Bank
                 </CardTitle>
-                <div className="text-right">
+                <div className="text-right space-y-1">
                   <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20 text-lg px-3 py-1">
                     {formatGP(bankValue)} GP
+                  </Badge>
+                  <Badge variant="outline" className="text-yellow-700 border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 text-sm px-2 py-1 block">
+                    Gold: {formatGP(goldValue)} GP
                   </Badge>
                   <p className="text-sm text-gray-500 mt-1">
                     {characterItems.length} items

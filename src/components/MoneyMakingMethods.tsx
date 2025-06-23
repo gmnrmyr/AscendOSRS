@@ -437,45 +437,6 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       )}
     </div>
   );
-
-  // Helper functions
-  function getIntensityColor(intensity: number) {
-    switch (intensity) {
-      case 1: return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 2: return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 3: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 4: return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-      case 5: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  }
-
-  function getCategoryColor(category: string) {
-    switch (category) {
-      case 'combat': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'skilling': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'bossing': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
-      case 'other': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  }
-
-  function getMembershipColor(membership?: string) {
-    switch (membership) {
-      case 'f2p': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-      case 'p2p': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  }
-
-  function formatGP(amount: number) {
-    if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(0)}K`;
-    }
-    return amount.toLocaleString();
-  }
 }
 
 // Extract MethodCard component to keep main component smaller

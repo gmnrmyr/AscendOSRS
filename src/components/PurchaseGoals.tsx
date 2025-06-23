@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -122,8 +123,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       try {
         console.log(`Fetching price for item ID: ${itemId}`);
         const priceData = await osrsApi.fetchSingleItemPrice(itemId);
-        if (priceData?.high) {
-          currentPrice = priceData.high;
+        if (typeof priceData === 'number') {
+          currentPrice = priceData;
           console.log(`Successfully fetched price: ${currentPrice}`);
         }
       } catch (error) {
@@ -136,7 +137,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
 
     // Ensure we have a valid image URL
     if (!itemIcon || itemIcon === '') {
-      itemIcon = osrsApi.getItemIcon(option.name);
+      itemIcon = osrsApi.getItemIcon(itemId || 995);
     }
 
     console.log('Setting item with price:', currentPrice, 'and icon:', itemIcon);
@@ -169,7 +170,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     // Ensure we have an image URL
     let finalImageUrl = newGoal.imageUrl;
     if (!finalImageUrl || finalImageUrl === '') {
-      finalImageUrl = osrsApi.getItemIcon(newGoal.name);
+      finalImageUrl = osrsApi.getItemIcon(finalItemId || 995);
     }
 
     const goal: PurchaseGoal = {
@@ -214,7 +215,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       try {
         console.log(`Fetching price for ${goal.name} (ID: ${goal.itemId})`);
         const priceData = await osrsApi.fetchSingleItemPrice(goal.itemId);
-        const currentPrice = priceData?.high || goal.currentPrice;
+        const currentPrice = typeof priceData === 'number' ? priceData : goal.currentPrice;
         
         newGoals.push({
           id: Date.now().toString() + Math.random(),
@@ -225,7 +226,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           priority: goal.priority as PurchaseGoal['priority'],
           category: goal.category as PurchaseGoal['category'],
           notes: '',
-          imageUrl: osrsApi.getItemIcon(goal.name)
+          imageUrl: osrsApi.getItemIcon(goal.itemId)
         });
         
         console.log(`Added ${goal.name} with price: ${currentPrice}`);
@@ -240,7 +241,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           priority: goal.priority as PurchaseGoal['priority'],
           category: goal.category as PurchaseGoal['category'],
           notes: '',
-          imageUrl: osrsApi.getItemIcon(goal.name)
+          imageUrl: osrsApi.getItemIcon(goal.itemId)
         });
       }
     }
@@ -347,10 +348,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
         try {
           console.log(`Refreshing price for ${goal.name} (ID: ${updatedGoal.itemId})`);
           const priceData = await osrsApi.fetchSingleItemPrice(updatedGoal.itemId);
-          if (priceData?.high) {
-            updatedGoal.currentPrice = priceData.high;
+          if (typeof priceData === 'number') {
+            updatedGoal.currentPrice = priceData;
             successCount++;
-            console.log(`Updated price for ${goal.name}: ${priceData.high}`);
+            console.log(`Updated price for ${goal.name}: ${priceData}`);
           } else {
             console.log(`No price data returned for ${goal.name}`);
           }
@@ -651,7 +652,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                         onError={(e) => {
                           console.log('Image failed to load:', goal.imageUrl);
                           const target = e.target as HTMLImageElement;
-                          const fallbackUrl = osrsApi.getItemIcon(goal.name);
+                          const fallbackUrl = osrsApi.getItemIcon(goal.itemId || 995);
                           if (target.src !== fallbackUrl) {
                             target.src = fallbackUrl;
                           } else {

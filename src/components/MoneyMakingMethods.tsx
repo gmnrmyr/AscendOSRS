@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Coins, TrendingUp } from "lucide-react";
+import { Plus, X, Coins, TrendingUp, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MoneyMakerImporter } from "./MoneyMakerImporter";
 import { AutocompleteInput } from "./AutocompleteInput";
@@ -22,6 +21,7 @@ interface MoneyMethod {
   notes: string;
   category: 'combat' | 'skilling' | 'bossing' | 'other';
   membership?: 'f2p' | 'p2p';
+  isActive?: boolean;
 }
 
 interface MoneyMakingMethodsProps {
@@ -38,8 +38,10 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     clickIntensity: 3,
     requirements: '',
     notes: '',
-    category: 'combat'
+    category: 'combat',
+    isActive: false
   });
+  const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
   const { toast } = useToast();
 
   const searchMoneyMakers = async (query: string) => {
@@ -89,7 +91,8 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       requirements: newMethod.requirements || '',
       notes: newMethod.notes || '',
       category: newMethod.category || 'combat',
-      membership: newMethod.membership || 'p2p'
+      membership: newMethod.membership || 'p2p',
+      isActive: false
     };
 
     setMethods([...methods, method]);
@@ -101,13 +104,90 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       requirements: '',
       notes: '',
       category: 'combat',
-      membership: 'p2p'
+      membership: 'p2p',
+      isActive: false
     });
     
     toast({
       title: "Success",
       description: `Method ${method.name} added successfully`
     });
+  };
+
+  const toggleMethodActive = (methodId: string) => {
+    const method = methods.find(m => m.id === methodId);
+    if (!method) return;
+
+    // If activating a method, deactivate all other methods for the same character
+    if (!method.isActive && method.character) {
+      const updatedMethods = methods.map(m => {
+        if (m.character === method.character && m.id !== methodId) {
+          return { ...m, isActive: false };
+        }
+        if (m.id === methodId) {
+          return { ...m, isActive: true };
+        }
+        return m;
+      });
+      setMethods(updatedMethods);
+      
+      toast({
+        title: "Method Activated",
+        description: `${method.name} is now active for ${method.character}`,
+      });
+    } else {
+      // Just toggle the method
+      const updatedMethods = methods.map(m => 
+        m.id === methodId ? { ...m, isActive: !m.isActive } : m
+      );
+      setMethods(updatedMethods);
+      
+      toast({
+        title: method.isActive ? "Method Deactivated" : "Method Activated",
+        description: `${method.name} ${method.isActive ? 'deactivated' : 'activated'}`,
+      });
+    }
+  };
+
+  const updateMoneyPerHour = async () => {
+    setIsUpdatingPrices(true);
+    let updatedCount = 0;
+
+    try {
+      const updatedMethods = await Promise.all(
+        methods.map(async (method) => {
+          try {
+            const searchResults = await osrsApi.searchMoneyMakers(method.name);
+            const matchingMethod = searchResults.find(m => 
+              m.name.toLowerCase() === method.name.toLowerCase()
+            );
+            
+            if (matchingMethod && matchingMethod.profit !== method.gpHour) {
+              updatedCount++;
+              return { ...method, gpHour: matchingMethod.profit };
+            }
+            return method;
+          } catch (error) {
+            console.error(`Failed to update ${method.name}:`, error);
+            return method;
+          }
+        })
+      );
+
+      setMethods(updatedMethods);
+      toast({
+        title: "Prices Updated",
+        description: `Updated ${updatedCount} out of ${methods.length} methods`
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update money per hour rates",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingPrices(false);
+    }
   };
 
   const importMethods = (newMethods: MoneyMethod[]) => {
@@ -168,6 +248,9 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     return amount.toLocaleString();
   };
 
+  const activeMethods = methods.filter(m => m.isActive);
+  const inactiveMethods = methods.filter(m => !m.isActive);
+
   return (
     <div className="space-y-6">
       {/* Import from OSRS Wiki */}
@@ -179,10 +262,28 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       {/* Add New Method */}
       <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-            <Plus className="h-5 w-5" />
-            Add Money-Making Method
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+              <Plus className="h-5 w-5" />
+              Add Money-Making Method
+            </CardTitle>
+            {methods.length > 0 && (
+              <Button
+                onClick={updateMoneyPerHour}
+                disabled={isUpdatingPrices}
+                variant="outline"
+                size="sm"
+                className="text-amber-700 border-amber-300 hover:bg-amber-50"
+              >
+                {isUpdatingPrices ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                {isUpdatingPrices ? 'Updating...' : 'Update MP/H'}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -267,87 +368,61 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
         </CardContent>
       </Card>
 
-      {/* Methods List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {methods
-          .sort((a, b) => b.gpHour - a.gpHour)
-          .map((method) => (
-          <Card key={method.id} className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg text-amber-800 dark:text-amber-200">
-                  {method.name}
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeMethod(method.id)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                <Badge className={getCategoryColor(method.category)}>
-                  {method.category}
-                </Badge>
-                <Badge className={getIntensityColor(method.clickIntensity)}>
-                  Intensity {method.clickIntensity}
-                </Badge>
-                {method.membership && (
-                  <Badge className={getMembershipColor(method.membership)}>
-                    {method.membership.toUpperCase()}
-                  </Badge>
-                )}
-                <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20">
-                  {formatGP(method.gpHour)}/hr
-                </Badge>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-3">
-              <div>
-                <Label className="text-xs text-gray-500">Character Assignment</Label>
-                <Select 
-                  value={method.character} 
-                  onValueChange={(value) => updateMethod(method.id, 'character', value)}
-                >
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue placeholder="None assigned" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {characters.map((char) => (
-                      <SelectItem key={char.id} value={char.name}>{char.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* Active Methods */}
+      {activeMethods.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold text-green-800 dark:text-green-200 mb-4 flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Active Methods ({activeMethods.length})
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {activeMethods
+              .sort((a, b) => b.gpHour - a.gpHour)
+              .map((method) => (
+              <MethodCard 
+                key={method.id}
+                method={method}
+                characters={characters}
+                onToggleActive={() => toggleMethodActive(method.id)}
+                onRemove={() => removeMethod(method.id)}
+                onUpdate={updateMethod}
+                formatGP={formatGP}
+                getCategoryColor={getCategoryColor}
+                getIntensityColor={getIntensityColor}
+                getMembershipColor={getMembershipColor}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-              {method.requirements && (
-                <div>
-                  <Label className="text-xs text-gray-500">Requirements</Label>
-                  <div className="bg-gray-50 dark:bg-gray-800 border rounded px-2 py-1 text-xs max-h-16 overflow-y-auto">
-                    {method.requirements}
-                  </div>
-                </div>
-              )}
-
-              {method.notes && (
-                <div>
-                  <Label className="text-xs text-gray-500">Personal Notes</Label>
-                  <Input
-                    value={method.notes}
-                    onChange={(e) => updateMethod(method.id, 'notes', e.target.value)}
-                    className="h-8 text-sm"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Inactive Methods */}
+      {inactiveMethods.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2">
+            <Coins className="h-5 w-5" />
+            Inactive Methods ({inactiveMethods.length})
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {inactiveMethods
+              .sort((a, b) => b.gpHour - a.gpHour)
+              .map((method) => (
+              <MethodCard 
+                key={method.id}
+                method={method}
+                characters={characters}
+                onToggleActive={() => toggleMethodActive(method.id)}
+                onRemove={() => removeMethod(method.id)}
+                onUpdate={updateMethod}
+                formatGP={formatGP}
+                getCategoryColor={getCategoryColor}
+                getIntensityColor={getIntensityColor}
+                getMembershipColor={getMembershipColor}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {methods.length === 0 && (
         <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
@@ -361,5 +436,152 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
         </Card>
       )}
     </div>
+  );
+
+  // Helper functions
+  function getIntensityColor(intensity: number) {
+    switch (intensity) {
+      case 1: return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 2: return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 3: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 4: return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 5: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  function getCategoryColor(category: string) {
+    switch (category) {
+      case 'combat': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'skilling': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'bossing': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'other': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  function getMembershipColor(membership?: string) {
+    switch (membership) {
+      case 'f2p': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case 'p2p': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  }
+
+  function formatGP(amount: number) {
+    if (amount >= 1000000) {
+      return `${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      return `${(amount / 1000).toFixed(0)}K`;
+    }
+    return amount.toLocaleString();
+  }
+}
+
+// Extract MethodCard component to keep main component smaller
+interface MethodCardProps {
+  method: MoneyMethod;
+  characters: any[];
+  onToggleActive: () => void;
+  onRemove: () => void;
+  onUpdate: (id: string, field: keyof MoneyMethod, value: any) => void;
+  formatGP: (amount: number) => string;
+  getCategoryColor: (category: string) => string;
+  getIntensityColor: (intensity: number) => string;
+  getMembershipColor: (membership?: string) => string;
+}
+
+function MethodCard({ 
+  method, 
+  characters, 
+  onToggleActive, 
+  onRemove, 
+  onUpdate, 
+  formatGP,
+  getCategoryColor,
+  getIntensityColor,
+  getMembershipColor
+}: MethodCardProps) {
+  return (
+    <Card className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg text-amber-800 dark:text-amber-200">
+            {method.name}
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRemove}
+            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          <Badge className={getCategoryColor(method.category)}>
+            {method.category}
+          </Badge>
+          <Badge className={getIntensityColor(method.clickIntensity)}>
+            Intensity {method.clickIntensity}
+          </Badge>
+          {method.membership && (
+            <Badge className={getMembershipColor(method.membership)}>
+              {method.membership.toUpperCase()}
+            </Badge>
+          )}
+          <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20">
+            {formatGP(method.gpHour)}/hr
+          </Badge>
+          <Badge 
+            className={`cursor-pointer ${method.isActive ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+            onClick={onToggleActive}
+          >
+            {method.isActive ? 'Active' : 'Inactive'}
+          </Badge>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="space-y-3">
+        <div>
+          <Label className="text-xs text-gray-500">Character Assignment</Label>
+          <Select 
+            value={method.character} 
+            onValueChange={(value) => onUpdate(method.id, 'character', value)}
+          >
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue placeholder="None assigned" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              {characters.map((char) => (
+                <SelectItem key={char.id} value={char.name}>{char.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {method.requirements && (
+          <div>
+            <Label className="text-xs text-gray-500">Requirements</Label>
+            <div className="bg-gray-50 dark:bg-gray-800 border rounded px-2 py-1 text-xs max-h-16 overflow-y-auto">
+              {method.requirements}
+            </div>
+          </div>
+        )}
+
+        {method.notes && (
+          <div>
+            <Label className="text-xs text-gray-500">Personal Notes</Label>
+            <Input
+              value={method.notes}
+              onChange={(e) => onUpdate(method.id, 'notes', e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ModernNavbar } from "@/components/ModernNavbar";
+import { SummaryNavbar } from "@/components/SummaryNavbar";
 import { Footer } from "@/components/Footer";
 import { AdBanner } from "@/components/AdBanner";
 import { AppStateProvider } from "@/components/AppStateProvider";
@@ -16,6 +17,11 @@ const IndexContent = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <ModernNavbar activeTab={activeTab} onTabChange={setActiveTab} />
+      
+      {/* Summary Navbar - Always visible */}
+      <div className="container mx-auto px-6 pt-2">
+        <SummaryNavbar />
+      </div>
       
       <div className="container mx-auto p-6 space-y-8">
         {/* Hours per day setting */}

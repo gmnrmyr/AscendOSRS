@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -52,11 +51,18 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     getCategoryColor
   } = useBankCalculations(bankData);
 
-  const handleImportBank = (items: BankItem[], character: string) => {
-    setBankData({
-      ...bankData,
-      [character]: [...(bankData[character] || []), ...items]
-    });
+  const handleImportBank = (items: BankItem[], character: string, isUpdate?: boolean) => {
+    if (isUpdate) {
+      setBankData({
+        ...bankData,
+        [character]: items
+      });
+    } else {
+      setBankData({
+        ...bankData,
+        [character]: [...(bankData[character] || []), ...items]
+      });
+    }
   };
 
   return (
@@ -64,6 +70,7 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
       <BankCSVImporter 
         onImportBank={handleImportBank}
         characters={characters}
+        bankData={bankData}
       />
 
       <BankSummary 

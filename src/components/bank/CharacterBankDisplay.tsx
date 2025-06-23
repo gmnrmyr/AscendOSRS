@@ -46,11 +46,19 @@ export function CharacterBankDisplay({
   updateItem
 }: CharacterBankDisplayProps) {
   const [expandedCharacters, setExpandedCharacters] = useState<Record<string, boolean>>({});
+  const [expandedItemLists, setExpandedItemLists] = useState<Record<string, boolean>>({});
   const [sortBy, setSortBy] = useState<SortOption>('value');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const toggleCharacterExpansion = (characterName: string) => {
     setExpandedCharacters(prev => ({
+      ...prev,
+      [characterName]: !prev[characterName]
+    }));
+  };
+
+  const toggleItemListExpansion = (characterName: string) => {
+    setExpandedItemLists(prev => ({
       ...prev,
       [characterName]: !prev[characterName]
     }));
@@ -136,7 +144,8 @@ export function CharacterBankDisplay({
         const sortedItems = sortItems(characterItems);
         const bankValue = getCharacterBankValue(character.name);
         const goldValue = getCharacterGoldValue(character.name);
-        const isExpanded = expandedCharacters[character.name] ?? true; // Default to expanded
+        const isExpanded = expandedCharacters[character.name] ?? true;
+        const isItemListExpanded = expandedItemLists[character.name] ?? true;
         
         return (
           <Card key={character.id} className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
@@ -177,57 +186,94 @@ export function CharacterBankDisplay({
               <>
                 {characterItems.length > 0 ? (
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {sortedItems.map((item) => (
-                        <div key={item.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 border">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-amber-800 dark:text-amber-200 truncate">
-                              {item.name}
-                            </h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeItem(character.name, item.id)}
-                              className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                          
-                          <Badge className={getCategoryColor(item.category)}>
-                            {item.category}
-                          </Badge>
-                          
-                          <div className="grid grid-cols-2 gap-2 mt-2">
-                            <div>
-                              <Label className="text-xs text-gray-500">Quantity</Label>
-                              <Input
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) => updateItem(character.name, item.id, 'quantity', Number(e.target.value))}
-                                className="h-7 text-xs"
-                              />
+                    <div className="mb-3 flex items-center justify-between">
+                      <h4 className="font-semibold text-amber-800 dark:text-amber-200">Items</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleItemListExpansion(character.name)}
+                        className="p-1 h-6 w-6"
+                      >
+                        {isItemListExpanded ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {isItemListExpanded ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {sortedItems.map((item) => (
+                          <div key={item.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 border">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-amber-800 dark:text-amber-200 truncate">
+                                {item.name}
+                              </h4>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeItem(character.name, item.id)}
+                                className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
                             </div>
                             
-                            <div>
-                              <Label className="text-xs text-gray-500">Price Each</Label>
-                              <Input
-                                type="number"
-                                value={item.estimatedPrice}
-                                onChange={(e) => updateItem(character.name, item.id, 'estimatedPrice', Number(e.target.value))}
-                                className="h-7 text-xs"
-                              />
+                            <Badge className={getCategoryColor(item.category)}>
+                              {item.category}
+                            </Badge>
+                            
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              <div>
+                                <Label className="text-xs text-gray-500">Quantity</Label>
+                                <Input
+                                  type="number"
+                                  value={item.quantity}
+                                  onChange={(e) => updateItem(character.name, item.id, 'quantity', Number(e.target.value))}
+                                  className="h-7 text-xs"
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label className="text-xs text-gray-500">Price Each</Label>
+                                <Input
+                                  type="number"
+                                  value={item.estimatedPrice}
+                                  onChange={(e) => updateItem(character.name, item.id, 'estimatedPrice', Number(e.target.value))}
+                                  className="h-7 text-xs"
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="mt-2 pt-2 border-t text-center">
+                              <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                                {formatGP(item.quantity * item.estimatedPrice)} GP
+                              </span>
                             </div>
                           </div>
-                          
-                          <div className="mt-2 pt-2 border-t text-center">
-                            <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                              {formatGP(item.quantity * item.estimatedPrice)} GP
-                            </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        {sortedItems.slice(0, 5).map((item) => (
+                          <div key={item.id} className="flex items-center justify-between py-1 px-2 bg-gray-50 dark:bg-gray-900/50 rounded text-sm">
+                            <span className="truncate">{item.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-500">{item.quantity}x</span>
+                              <span className="font-medium text-green-600">
+                                {formatGP(item.quantity * item.estimatedPrice)}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                        {characterItems.length > 5 && (
+                          <p className="text-xs text-gray-500 text-center py-1">
+                            +{characterItems.length - 5} more items
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 ) : (
                   <CardContent>

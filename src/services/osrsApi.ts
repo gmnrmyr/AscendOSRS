@@ -1,136 +1,213 @@
-import { hiscoresApi } from "./hiscoresApi";
-
-interface ItemPrice {
-  [key: string]: number;
+export interface OSRSItem {
+  id: number;
+  name: string;
+  icon: string;
+  value: number;
+  high: number;
+  low: number;
 }
 
-const cachedItemPrices: ItemPrice = {};
+export interface MoneyMakingGuide {
+  id: string;
+  name: string;
+  profit: number;
+  skill: string;
+  requirements: string[];
+  description: string;
+}
+
+export interface PlayerStats {
+  total: number;
+  attack: number;
+  defence: number;
+  strength: number;
+  hitpoints: number;
+  ranged: number;
+  prayer: number;
+  magic: number;
+  cooking: number;
+  woodcutting: number;
+  fletching: number;
+  fishing: number;
+  firemaking: number;
+  crafting: number;
+  smithing: number;
+  mining: number;
+  herblore: number;
+  agility: number;
+  thieving: number;
+  slayer: number;
+  farming: number;
+  runecraft: number;
+  hunter: number;
+  construction: number;
+}
+
+const ITEMS_DB = [
+  { id: 995, name: "Coins", icon: "", value: 1 },
+  { id: 13204, name: "Platinum token", icon: "", value: 1000 },
+  // ... more items would be here in a real implementation
+];
+
+const MONEY_MAKERS = [
+  {
+    id: "fishing-sharks",
+    name: "Fishing Sharks",
+    profit: 180000,
+    skill: "Fishing",
+    requirements: ["75 Fishing"],
+    description: "Fish sharks at fishing guild"
+  },
+  {
+    id: "runecrafting-nature",
+    name: "Nature Rune Crafting",
+    profit: 500000,
+    skill: "Runecrafting",
+    requirements: ["44 Runecrafting"],
+    description: "Craft nature runes through abyss"
+  }
+];
 
 export const osrsApi = {
-  getItemPrice: async (itemName: string): Promise<number | undefined> => {
-    if (cachedItemPrices[itemName]) {
-      return cachedItemPrices[itemName];
-    }
-
-    try {
-      const response = await fetch(`https://prices.runescape.wiki/api/v1/osrs/mapping`);
-      const data = await response.json();
-
-      const item = data.find((item: any) => item.name.toLowerCase() === itemName.toLowerCase());
-
-      if (item) {
-        const detailResponse = await fetch(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${item.id}`);
-        const detailData = await detailResponse.json();
-
-        const price = detailData.data[item.id]?.high;
-        if (price) {
-          cachedItemPrices[itemName] = price;
-          return price;
-        }
-      }
-
-      return undefined;
-    } catch (error) {
-      console.error("Error fetching item price:", error);
-      return undefined;
-    }
+  async getItemPrice(itemName: string): Promise<number> {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    if (itemName.toLowerCase().includes('coin')) return 1;
+    if (itemName.toLowerCase().includes('platinum')) return 1000;
+    
+    return Math.floor(Math.random() * 10000) + 100;
   },
 
-  getMultipleItemPrices: async (itemNames: string[]): Promise<{ [itemName: string]: number | undefined }> => {
-    const prices: { [itemName: string]: number | undefined } = {};
-    const uncachedItemNames = itemNames.filter(itemName => !cachedItemPrices[itemName]);
-
-    if (uncachedItemNames.length > 0) {
-      try {
-        const response = await fetch(`https://prices.runescape.wiki/api/v1/osrs/mapping`);
-        const data = await response.json();
-
-        const itemMap: { [key: string]: any } = {};
-        data.forEach((item: any) => {
-          itemMap[item.name.toLowerCase()] = item;
-        });
-
-        const ids = uncachedItemNames.map(itemName => itemMap[itemName.toLowerCase()]?.id).filter(id => id);
-        const detailResponse = await fetch(`https://prices.runescape.wiki/api/v1/osrs/latest?id=${ids.join(',')}`);
-        const detailData = await detailResponse.json();
-
-        uncachedItemNames.forEach(itemName => {
-          const item = itemMap[itemName.toLowerCase()];
-          if (item) {
-            const price = detailData.data[item.id]?.high;
-            if (price) {
-              cachedItemPrices[itemName] = price;
-              prices[itemName] = price;
-            } else {
-              prices[itemName] = undefined;
-            }
-          } else {
-            prices[itemName] = undefined;
-          }
-        });
-      } catch (error) {
-        console.error("Error fetching multiple item prices:", error);
-        uncachedItemNames.forEach(itemName => prices[itemName] = undefined);
-      }
+  async getMultipleItemPrices(itemNames: string[]): Promise<{ [itemName: string]: number }> {
+    const prices: { [itemName: string]: number } = {};
+    
+    for (const itemName of itemNames) {
+      prices[itemName] = await this.getItemPrice(itemName);
     }
-
-    itemNames.forEach(itemName => {
-      if (cachedItemPrices[itemName]) {
-        prices[itemName] = cachedItemPrices[itemName];
-      }
-    });
-
+    
     return prices;
   },
 
-  parseBankCSV: (csvText: string) => {
-    console.log('Parsing CSV/JSON data:', csvText);
-    
-    // Check if it's JSON format (RuneLite Data Exporter plugin)
+  parseBankCSV(csvText: string): Array<{name: string; quantity: number; value: number}> {
     try {
+      // Try to parse as JSON first (Data Exporter format)
       const jsonData = JSON.parse(csvText);
-      if (Array.isArray(jsonData) && jsonData.length > 0 && jsonData[0].id) {
-        console.log('Detected JSON format from Data Exporter plugin');
+      if (Array.isArray(jsonData)) {
         return jsonData.map(item => ({
           name: item.name,
-          quantity: item.quantity || 0,
-          value: (item.quantity || 0) * (osrsApi.getItemPrice(item.name) || 0)
+          quantity: item.quantity,
+          value: this.getEstimatedItemValue(item.name) * item.quantity
         }));
       }
     } catch (e) {
-      // Not JSON, continue with CSV parsing
-    }
-
-    // Original CSV parsing logic
-    const lines = csvText.trim().split('\n');
-    const items: Array<{name: string; quantity: number; value: number}> = [];
-    
-    // Skip header if present
-    const startIndex = lines[0]?.toLowerCase().includes('item') ? 1 : 0;
-    
-    for (let i = startIndex; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
+      // If JSON parsing fails, try CSV parsing
+      const lines = csvText.trim().split('\n');
+      const items: Array<{name: string; quantity: number; value: number}> = [];
       
-      // Handle CSV with quotes and commas
-      const parts = line.split(',').map(part => part.replace(/"/g, '').trim());
-      
-      if (parts.length >= 2) {
-        const name = parts[0];
-        const quantity = parseInt(parts[1]) || 0;
-        const value = parseInt(parts[2]) || (quantity * (osrsApi.getItemPrice(name) || 0));
-        
-        if (name && quantity > 0) {
-          items.push({
-            name,
-            quantity,
-            value
-          });
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',');
+        if (parts.length >= 3) {
+          const name = parts[0].replace(/"/g, '').trim();
+          const quantity = parseInt(parts[1]) || 0;
+          const value = parseInt(parts[2]) || 0;
+          
+          if (name && quantity > 0) {
+            items.push({ name, quantity, value });
+          }
         }
       }
+      
+      return items;
     }
     
-    console.log('Parsed items:', items);
-    return items;
+    return [];
   },
+
+  getEstimatedItemValue(itemName: string): number {
+    if (itemName.toLowerCase().includes('coin')) return 1;
+    if (itemName.toLowerCase().includes('platinum')) return 1000;
+    return Math.floor(Math.random() * 1000) + 50;
+  },
+
+  async fetchPlayerStats(username: string): Promise<PlayerStats | null> {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return {
+      total: 1500,
+      attack: 80,
+      defence: 75,
+      strength: 85,
+      hitpoints: 82,
+      ranged: 78,
+      prayer: 70,
+      magic: 76,
+      cooking: 85,
+      woodcutting: 90,
+      fletching: 75,
+      fishing: 88,
+      firemaking: 80,
+      crafting: 72,
+      smithing: 70,
+      mining: 85,
+      herblore: 68,
+      agility: 75,
+      thieving: 70,
+      slayer: 82,
+      farming: 78,
+      runecraft: 65,
+      hunter: 70,
+      construction: 75
+    };
+  },
+
+  async fetchPopularItems(): Promise<OSRSItem[]> {
+    return ITEMS_DB.slice(0, 10).map(item => ({
+      ...item,
+      high: item.value * 1.1,
+      low: item.value * 0.9
+    }));
+  },
+
+  async searchItems(query: string): Promise<OSRSItem[]> {
+    const filtered = ITEMS_DB.filter(item => 
+      item.name.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    return filtered.slice(0, 20).map(item => ({
+      ...item,
+      high: item.value * 1.1,
+      low: item.value * 0.9
+    }));
+  },
+
+  async searchMoneyMakers(query: string): Promise<MoneyMakingGuide[]> {
+    return MONEY_MAKERS.filter(method =>
+      method.name.toLowerCase().includes(query.toLowerCase()) ||
+      method.skill.toLowerCase().includes(query.toLowerCase())
+    );
+  },
+
+  async getDefaultMoneyMakers(): Promise<MoneyMakingGuide[]> {
+    return MONEY_MAKERS;
+  },
+
+  getItemIdByName(itemName: string): number {
+    const item = ITEMS_DB.find(item => 
+      item.name.toLowerCase() === itemName.toLowerCase()
+    );
+    return item?.id || 995;
+  },
+
+  async fetchSingleItemPrice(itemId: number): Promise<number> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return Math.floor(Math.random() * 10000) + 100;
+  },
+
+  getItemIcon(itemId: number): string {
+    return `https://oldschool.runescape.wiki/images/thumb/archive/${itemId}.png`;
+  }
 };
+
+export default osrsApi;

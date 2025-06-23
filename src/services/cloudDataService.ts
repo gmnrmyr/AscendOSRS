@@ -59,20 +59,6 @@ export class CloudDataService {
     try {
       console.log('Starting cloud save process...');
 
-      // Save or update user settings
-      const { error: settingsError } = await supabase
-        .from('user_settings')
-        .upsert({
-          user_id: user.id,
-          hours_per_day: hoursPerDay,
-          updated_at: new Date().toISOString()
-        });
-
-      if (settingsError) {
-        console.error('Settings save error:', settingsError);
-        throw settingsError;
-      }
-
       // Clear existing data for this user
       await Promise.all([
         supabase.from('characters').delete().eq('user_id', user.id),
@@ -192,13 +178,6 @@ export class CloudDataService {
     try {
       console.log('Starting cloud load process...');
 
-      // Load user settings
-      const { data: settings } = await supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
       // Load characters
       const { data: charactersData, error: charError } = await supabase
         .from('characters')
@@ -282,7 +261,7 @@ export class CloudDataService {
         });
       });
 
-      const hoursPerDay = settings?.hours_per_day || 10;
+      const hoursPerDay = 10; // Default value since we removed user_settings
 
       console.log('Cloud load completed successfully');
       return {

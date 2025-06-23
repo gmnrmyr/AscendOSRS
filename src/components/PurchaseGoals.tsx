@@ -1,15 +1,14 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, X, Target, TrendingUp, Filter, SortAsc, SortDesc, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, Target, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { AutocompleteInput } from "./AutocompleteInput";
 import { osrsApi } from "@/services/osrsApi";
+import { GoalForm } from "./goals/GoalForm";
+import { GoalFilters } from "./goals/GoalFilters";
+import { GoalCard } from "./goals/GoalCard";
 
 interface PurchaseGoal {
   id: string;
@@ -30,18 +29,6 @@ interface PurchaseGoalsProps {
 }
 
 export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
-  const [newGoal, setNewGoal] = useState<Partial<PurchaseGoal>>({
-    name: '',
-    currentPrice: 0,
-    targetPrice: 0,
-    quantity: 1,
-    priority: 'A',
-    category: 'gear',
-    notes: '',
-    imageUrl: '',
-    itemId: undefined
-  });
-  
   // Filtering and sorting states
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
@@ -54,7 +41,6 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
 
   // Auto-save goals whenever they change
   useEffect(() => {
-    console.log('Saving goals to localStorage:', goals.length);
     localStorage.setItem('purchaseGoals', JSON.stringify(goals));
   }, [goals]);
 
@@ -64,7 +50,6 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     if (savedGoals) {
       try {
         const parsedGoals = JSON.parse(savedGoals);
-        console.log('Loaded goals from localStorage:', parsedGoals.length);
         setGoals(parsedGoals);
       } catch (error) {
         console.error('Error parsing saved goals:', error);
@@ -89,131 +74,11 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     { name: "Old school bond", currentPrice: 5000000, category: "other", priority: "B+", itemId: 13190 }
   ];
 
-  // Only search for items, not money-making methods
-  const searchItems = async (query: string) => {
-    const items = await osrsApi.searchItems(query);
-    
-    return items.map(item => ({
-      id: item.id,
-      name: item.name,
-      subtitle: 'OSRS Item',
-      icon: item.icon,
-      value: item.current_price || 0,
-      category: 'item'
-    }));
-  };
-
-  const handleItemSelect = async (option: any) => {
-    console.log('Selected item:', option);
-    
-    let currentPrice = 0;
-    let itemIcon = option.icon;
-    let itemId = option.id;
-
-    // Try to get item ID from our mapping if not provided
-    if (!itemId || !Number.isInteger(itemId)) {
-      const mappedId = osrsApi.getItemIdByName(option.name);
-      if (mappedId) {
-        itemId = mappedId;
-      }
-    }
-
-    // Fetch current price using item ID if available and valid
-    if (itemId && Number.isInteger(itemId) && itemId > 0) {
-      try {
-        console.log(`Fetching price for item ID: ${itemId}`);
-        const priceData = await osrsApi.fetchSingleItemPrice(itemId);
-        if (typeof priceData === 'number') {
-          currentPrice = priceData;
-          console.log(`Successfully fetched price: ${currentPrice}`);
-        }
-      } catch (error) {
-        console.log('Could not fetch current price, using search value');
-        currentPrice = option.value || 0;
-      }
-    } else {
-      currentPrice = option.value || 0;
-    }
-
-    // Ensure we have a valid image URL
-    if (!itemIcon || itemIcon === '') {
-      itemIcon = osrsApi.getItemIcon(itemId || 995);
-    }
-
-    console.log('Setting item with price:', currentPrice, 'and icon:', itemIcon);
-
-    setNewGoal({
-      ...newGoal,
-      name: option.name,
-      currentPrice: currentPrice,
-      imageUrl: itemIcon,
-      itemId: itemId
-    });
-  };
-
-  const addGoal = () => {
-    if (!newGoal.name?.trim()) {
-      toast({
-        title: "Error",
-        description: "Goal name is required",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Try to get proper item ID if not set
-    let finalItemId = newGoal.itemId;
-    if (!finalItemId || !Number.isInteger(finalItemId)) {
-      finalItemId = osrsApi.getItemIdByName(newGoal.name);
-    }
-
-    // Ensure we have an image URL
-    let finalImageUrl = newGoal.imageUrl;
-    if (!finalImageUrl || finalImageUrl === '') {
-      finalImageUrl = osrsApi.getItemIcon(finalItemId || 995);
-    }
-
-    const goal: PurchaseGoal = {
-      id: Date.now().toString(),
-      name: newGoal.name,
-      currentPrice: newGoal.currentPrice || 0,
-      targetPrice: newGoal.targetPrice,
-      quantity: newGoal.quantity || 1,
-      priority: newGoal.priority || 'A',
-      category: newGoal.category || 'gear',
-      notes: newGoal.notes || '',
-      imageUrl: finalImageUrl,
-      itemId: finalItemId
-    };
-
-    console.log('Adding goal with price:', goal.currentPrice, 'and image:', goal.imageUrl);
-    setGoals([...goals, goal]);
-    setNewGoal({
-      name: '',
-      currentPrice: 0,
-      targetPrice: 0,
-      quantity: 1,
-      priority: 'A',
-      category: 'gear',
-      notes: '',
-      imageUrl: '',
-      itemId: undefined
-    });
-    
-    toast({
-      title: "Success",
-      description: `Goal ${goal.name} added successfully`
-    });
-  };
-
   const addDefaultGoals = async () => {
-    console.log('Adding default goals with live prices...');
-    
     const newGoals = [];
     
     for (const goal of defaultGoals) {
       try {
-        console.log(`Fetching price for ${goal.name} (ID: ${goal.itemId})`);
         const priceData = await osrsApi.fetchSingleItemPrice(goal.itemId);
         const currentPrice = typeof priceData === 'number' ? priceData : goal.currentPrice;
         
@@ -228,11 +93,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           notes: '',
           imageUrl: osrsApi.getItemIcon(goal.itemId)
         });
-        
-        console.log(`Added ${goal.name} with price: ${currentPrice}`);
       } catch (error) {
-        console.error(`Error fetching price for ${goal.name}:`, error);
-        // Add with default price if API fails
         newGoals.push({
           id: Date.now().toString() + Math.random(),
           ...goal,
@@ -316,7 +177,6 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     return (goal.targetPrice || goal.currentPrice) * goal.quantity;
   };
 
-  // Improved function to refresh prices for existing goals
   const refreshPrices = async () => {
     if (goals.length === 0) {
       toast({
@@ -327,7 +187,6 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     }
 
     setIsRefreshing(true);
-    console.log('Refreshing prices for all goals...');
     
     const updatedGoals = [];
     let successCount = 0;
@@ -335,7 +194,6 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     for (const goal of goals) {
       let updatedGoal = { ...goal };
       
-      // Try to get item ID if it's missing or invalid
       if (!goal.itemId || !Number.isInteger(goal.itemId) || goal.itemId <= 0) {
         const mappedId = osrsApi.getItemIdByName(goal.name);
         if (mappedId) {
@@ -343,23 +201,16 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
         }
       }
       
-      // Fetch price if we have a valid item ID
       if (updatedGoal.itemId && Number.isInteger(updatedGoal.itemId) && updatedGoal.itemId > 0) {
         try {
-          console.log(`Refreshing price for ${goal.name} (ID: ${updatedGoal.itemId})`);
           const priceData = await osrsApi.fetchSingleItemPrice(updatedGoal.itemId);
           if (typeof priceData === 'number') {
             updatedGoal.currentPrice = priceData;
             successCount++;
-            console.log(`Updated price for ${goal.name}: ${priceData}`);
-          } else {
-            console.log(`No price data returned for ${goal.name}`);
           }
         } catch (error) {
           console.error(`Error refreshing price for ${goal.name}:`, error);
         }
-      } else {
-        console.log(`Skipping ${goal.name} - no valid item ID`);
       }
       
       updatedGoals.push(updatedGoal);
@@ -416,336 +267,49 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                 {goals.length} goals • {formatGP(totalGoalValue)} GP total
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {goals.length > 0 && (
-                <Button
-                  onClick={refreshPrices}
-                  disabled={isRefreshing}
-                  variant="outline"
-                  size="sm"
-                  className="text-amber-700 border-amber-300 hover:bg-amber-50"
-                >
-                  {isRefreshing ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                  )}
-                  {isRefreshing ? 'Refreshing...' : 'Refresh Prices'}
-                </Button>
-              )}
-              <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
-            </div>
+            <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
           </div>
         </CardContent>
       </Card>
 
       {/* Filters */}
-      <Card className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-              <Filter className="h-5 w-5" />
-              Filters & Sorting
-            </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              {showFilters ? 'Hide' : 'Show'} Filters
-            </Button>
-          </div>
-        </CardHeader>
-        
-        {showFilters && (
-          <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label>Filter by Priority</Label>
-              <Select value={filterPriority} onValueChange={setFilterPriority}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="S+">S+</SelectItem>
-                  <SelectItem value="S">S</SelectItem>
-                  <SelectItem value="S-">S-</SelectItem>
-                  <SelectItem value="A+">A+</SelectItem>
-                  <SelectItem value="A">A</SelectItem>
-                  <SelectItem value="A-">A-</SelectItem>
-                  <SelectItem value="B+">B+</SelectItem>
-                  <SelectItem value="B">B</SelectItem>
-                  <SelectItem value="B-">B-</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Filter by Category</Label>
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="gear">Gear</SelectItem>
-                  <SelectItem value="consumables">Consumables</SelectItem>
-                  <SelectItem value="materials">Materials</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Sort by</Label>
-              <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'name' | 'price' | 'priority')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="priority">Priority</SelectItem>
-                  <SelectItem value="price">Price</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Sort Order</Label>
-              <Button
-                variant="outline"
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="w-full justify-start"
-              >
-                {sortOrder === 'asc' ? <SortAsc className="h-4 w-4 mr-2" /> : <SortDesc className="h-4 w-4 mr-2" />}
-                {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-              </Button>
-            </div>
-          </CardContent>
-        )}
-      </Card>
+      <GoalFilters
+        filterPriority={filterPriority}
+        setFilterPriority={setFilterPriority}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        showFilters={showFilters}
+        setShowFilters={setShowFilters}
+        onRefreshPrices={refreshPrices}
+        isRefreshing={isRefreshing}
+        goalsCount={goals.length}
+      />
 
       {/* Add New Goal */}
-      <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-            <Plus className="h-5 w-5" />
-            Add Purchase Goal
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Item Name</Label>
-              <AutocompleteInput
-                value={newGoal.name || ''}
-                onChange={(value) => setNewGoal({...newGoal, name: value})}
-                onSelect={handleItemSelect}
-                placeholder="e.g., Twisted bow, Bandos chestplate"
-                searchFunction={searchItems}
-                className="bg-white dark:bg-slate-800"
-              />
-            </div>
-            
-            <div>
-              <Label>Current Price (GP) - From OSRS Wiki</Label>
-              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
-                {newGoal.currentPrice ? formatGP(newGoal.currentPrice) : 'Select an item to fetch price'}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label>Quantity</Label>
-              <Input
-                type="number"
-                value={newGoal.quantity || ''}
-                onChange={(e) => setNewGoal({...newGoal, quantity: Number(e.target.value)})}
-                placeholder="1"
-                min="1"
-                className="bg-white dark:bg-slate-800"
-              />
-            </div>
-
-            <div>
-              <Label>Priority</Label>
-              <Select 
-                value={newGoal.priority} 
-                onValueChange={(value) => setNewGoal({...newGoal, priority: value as PurchaseGoal['priority']})}
-              >
-                <SelectTrigger className="bg-white dark:bg-slate-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="S+">S+</SelectItem>
-                  <SelectItem value="S">S</SelectItem>
-                  <SelectItem value="S-">S-</SelectItem>
-                  <SelectItem value="A+">A+</SelectItem>
-                  <SelectItem value="A">A</SelectItem>
-                  <SelectItem value="A-">A-</SelectItem>
-                  <SelectItem value="B+">B+</SelectItem>
-                  <SelectItem value="B">B</SelectItem>
-                  <SelectItem value="B-">B-</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Category</Label>
-              <Select 
-                value={newGoal.category} 
-                onValueChange={(value) => setNewGoal({...newGoal, category: value as PurchaseGoal['category']})}
-              >
-                <SelectTrigger className="bg-white dark:bg-slate-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gear">Gear</SelectItem>
-                  <SelectItem value="consumables">Consumables</SelectItem>
-                  <SelectItem value="materials">Materials</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Notes</Label>
-              <Input
-                value={newGoal.notes || ''}
-                onChange={(e) => setNewGoal({...newGoal, notes: e.target.value})}
-                placeholder="Additional notes..."
-                className="bg-white dark:bg-slate-800"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button onClick={addGoal} className="bg-amber-600 hover:bg-amber-700 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Goal
-            </Button>
-            
-            {goals.length === 0 && (
-              <Button onClick={addDefaultGoals} variant="outline">
-                Add Popular OSRS Goals
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <GoalForm 
+        goals={goals}
+        setGoals={setGoals}
+        onAddDefaultGoals={addDefaultGoals}
+      />
 
       {/* Goals List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {filteredAndSortedGoals.map((goal) => (
-          <Card key={goal.id} className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {goal.imageUrl && (
-                    <div className="w-10 h-10 flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded border p-1">
-                      <img 
-                        src={goal.imageUrl} 
-                        alt={goal.name}
-                        className="w-full h-full object-contain"
-                        onLoad={() => console.log('Image loaded successfully:', goal.imageUrl)}
-                        onError={(e) => {
-                          console.log('Image failed to load:', goal.imageUrl);
-                          const target = e.target as HTMLImageElement;
-                          const fallbackUrl = osrsApi.getItemIcon(goal.itemId || 995);
-                          if (target.src !== fallbackUrl) {
-                            target.src = fallbackUrl;
-                          } else {
-                            target.style.display = 'none';
-                          }
-                        }}
-                      />
-                    </div>
-                  )}
-                  <CardTitle className="text-lg text-amber-800 dark:text-amber-200">
-                    {goal.name}
-                  </CardTitle>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeGoal(goal.id)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="flex flex-wrap gap-2">
-                <Badge className={getCategoryColor(goal.category)}>
-                  {goal.category}
-                </Badge>
-                <Badge 
-                  className={`cursor-pointer border ${getPriorityColor(goal.priority)} hover:opacity-80 transition-opacity`}
-                  onClick={() => updateGoal(goal.id, 'priority', cyclePriority(goal.priority))}
-                  title="Click to change priority"
-                >
-                  {goal.priority} priority
-                </Badge>
-                <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20">
-                  {formatGP(getTotalCost(goal))} GP
-                </Badge>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs text-gray-500">Current Price (Wiki)</Label>
-                  <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm">
-                    {formatGP(goal.currentPrice)} GP
-                  </div>
-                </div>
-                
-                <div>
-                  <Label className="text-xs text-gray-500">Target Price (Optional)</Label>
-                  <Input
-                    type="number"
-                    value={goal.targetPrice || ''}
-                    onChange={(e) => updateGoal(goal.id, 'targetPrice', Number(e.target.value) || undefined)}
-                    className="h-8 text-sm"
-                    placeholder="Use current"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs text-gray-500">Quantity</Label>
-                <Input
-                  type="number"
-                  value={goal.quantity}
-                  onChange={(e) => updateGoal(goal.id, 'quantity', Number(e.target.value))}
-                  className="h-8 text-sm"
-                  min="1"
-                />
-              </div>
-
-              {goal.notes && (
-                <div>
-                  <Label className="text-xs text-gray-500">Notes</Label>
-                  <Input
-                    value={goal.notes}
-                    onChange={(e) => updateGoal(goal.id, 'notes', e.target.value)}
-                    className="h-8 text-sm"
-                  />
-                </div>
-              )}
-
-              <div className="pt-2 border-t">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Total Cost:</span>
-                  <span className="font-medium text-amber-700 dark:text-amber-300">
-                    {formatGP(getTotalCost(goal))} GP
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <GoalCard
+            key={goal.id}
+            goal={goal}
+            onRemove={removeGoal}
+            onUpdate={updateGoal}
+            formatGP={formatGP}
+            getTotalCost={getTotalCost}
+            cyclePriority={cyclePriority}
+            getPriorityColor={getPriorityColor}
+            getCategoryColor={getCategoryColor}
+          />
         ))}
       </div>
 

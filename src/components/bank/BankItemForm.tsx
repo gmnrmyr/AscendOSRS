@@ -1,9 +1,9 @@
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, Zap } from "lucide-react";
 
 interface BankItem {
   id: string;
@@ -23,14 +23,16 @@ interface BankItemFormProps {
 
 export function BankItemForm({ newItem, setNewItem, onAddItem, onAddQuickItems }: BankItemFormProps) {
   return (
-    <>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="space-y-4">
+      <h4 className="text-lg font-bold text-amber-800 dark:text-amber-200">Add Bank Items</h4>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <Label>Item Name</Label>
           <Input
             value={newItem.name || ''}
             onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-            placeholder="e.g., Prayer Potion(4)"
+            placeholder="e.g., Dragon scimitar"
             className="bg-white dark:bg-slate-800"
           />
         </div>
@@ -42,25 +44,27 @@ export function BankItemForm({ newItem, setNewItem, onAddItem, onAddQuickItems }
             value={newItem.quantity || ''}
             onChange={(e) => setNewItem({...newItem, quantity: Number(e.target.value)})}
             placeholder="1"
+            min="1"
             className="bg-white dark:bg-slate-800"
           />
         </div>
-
+        
         <div>
-          <Label>Price Each (GP)</Label>
+          <Label>Estimated Price (each)</Label>
           <Input
             type="number"
             value={newItem.estimatedPrice || ''}
             onChange={(e) => setNewItem({...newItem, estimatedPrice: Number(e.target.value)})}
             placeholder="0"
+            min="0"
             className="bg-white dark:bg-slate-800"
           />
         </div>
-
+        
         <div>
           <Label>Category</Label>
           <Select 
-            value={newItem.category} 
+            value={newItem.category || 'other'} 
             onValueChange={(value) => setNewItem({...newItem, category: value as BankItem['category']})}
           >
             <SelectTrigger className="bg-white dark:bg-slate-800">
@@ -82,10 +86,11 @@ export function BankItemForm({ newItem, setNewItem, onAddItem, onAddQuickItems }
           Add Item
         </Button>
         
-        <Button onClick={onAddQuickItems} variant="outline">
+        <Button onClick={onAddQuickItems} variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50">
+          <Zap className="h-4 w-4 mr-2" />
           Add Common Items
         </Button>
       </div>
-    </>
+    </div>
   );
 }

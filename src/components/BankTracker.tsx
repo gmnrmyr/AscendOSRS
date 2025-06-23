@@ -3,13 +3,14 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BankCSVImporter } from "./BankCSVImporter";
 import { BankSummary } from "./bank/BankSummary";
 import { GoldTokensManager } from "./bank/GoldTokensManager";
 import { BankItemForm } from "./bank/BankItemForm";
 import { CharacterBankDisplay } from "./bank/CharacterBankDisplay";
+import { osrsApi } from "@/services/osrsApi";
 
 interface BankItem {
   id: string;
@@ -34,6 +35,7 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     estimatedPrice: 0,
     category: 'other'
   });
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
   const addItem = () => {
@@ -143,6 +145,54 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     });
   };
 
+  const refreshAllPrices = async () => {
+    if (Object.keys(bankData).length === 0) {
+      toast({
+        title: "No Bank Data",
+        description: "No items to refresh prices for",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsRefreshing(true);
+    let totalUpdated = 0;
+    let totalItems = 0;
+
+    const updatedBankData = { ...bankData };
+
+    for (const [character, items] of Object.entries(bankData)) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        totalItems++;
+
+        // Skip coins and platinum tokens
+        if (item.name.toLowerCase().includes('coin') || item.name.toLowerCase().includes('platinum')) {
+          continue;
+        }
+
+        try {
+          // Try to get a price estimate
+          const newPrice = await osrsApi.getEstimatedItemValue(item.name);
+          if (newPrice && newPrice !== item.estimatedPrice) {
+            updatedBankData[character][i] = { ...item, estimatedPrice: newPrice };
+            totalUpdated++;
+          }
+        } catch (error) {
+          console.error(`Failed to update price for ${item.name}:`, error);
+        }
+      }
+    }
+
+    setBankData(updatedBankData);
+    setIsRefreshing(false);
+
+    toast({
+      title: "Prices Refreshed",
+      description: `Updated ${totalUpdated} out of ${totalItems} item prices`
+    });
+  };
+
   const formatGP = (amount: number) => {
     if (amount >= 1000000000) {
       return `${(amount / 1000000000).toFixed(1)}B`;
@@ -245,10 +295,28 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
 
       <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-            <Plus className="h-5 w-5" />
-            Bank Management
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+              <Plus className="h-5 w-5" />
+              Bank Management
+            </CardTitle>
+            {Object.keys(bankData).length > 0 && (
+              <Button
+                onClick={refreshAllPrices}
+                disabled={isRefreshing}
+                variant="outline"
+                size="sm"
+                className="text-amber-700 border-amber-300 hover:bg-amber-50"
+              >
+                {isRefreshing ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                {isRefreshing ? 'Refreshing...' : 'Refresh All Prices'}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>

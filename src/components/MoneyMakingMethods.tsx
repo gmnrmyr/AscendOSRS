@@ -53,17 +53,18 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     }));
   };
 
-  const handleMethodSelect = (option: any) => {
-    const defaultMethod = osrsApi.getDefaultMoneyMakers().find(m => m.name === option.name);
+  const handleMethodSelect = async (option: any) => {
+    const defaultMethods = await osrsApi.getDefaultMoneyMakers();
+    const defaultMethod = defaultMethods.find(m => m.name === option.name);
     if (defaultMethod) {
       setNewMethod({
         ...newMethod,
         name: option.name,
         gpHour: defaultMethod.profit,
-        clickIntensity: defaultMethod.difficulty as 1 | 2 | 3 | 4 | 5,
+        clickIntensity: defaultMethod.difficulty,
         requirements: defaultMethod.requirements.join(', '),
         notes: defaultMethod.description,
-        category: defaultMethod.category as 'combat' | 'skilling' | 'bossing' | 'other',
+        category: defaultMethod.category,
         membership: defaultMethod.membership
       });
     }

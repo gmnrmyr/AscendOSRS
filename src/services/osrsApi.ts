@@ -5,6 +5,8 @@ export interface OSRSItem {
   value: number;
   high: number;
   low: number;
+  current_price?: number;
+  today_trend?: string;
 }
 
 export interface MoneyMakingGuide {
@@ -14,6 +16,9 @@ export interface MoneyMakingGuide {
   skill: string;
   requirements: string[];
   description: string;
+  category: 'combat' | 'skilling' | 'bossing' | 'other';
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  membership: 'f2p' | 'p2p';
 }
 
 export interface PlayerStats {
@@ -41,6 +46,10 @@ export interface PlayerStats {
   runecraft: number;
   hunter: number;
   construction: number;
+  combat_level: number;
+  total_level: number;
+  account_type: 'regular' | 'ironman' | 'hardcore' | 'ultimate';
+  name: string;
 }
 
 const ITEMS_DB = [
@@ -49,14 +58,17 @@ const ITEMS_DB = [
   // ... more items would be here in a real implementation
 ];
 
-const MONEY_MAKERS = [
+const MONEY_MAKERS: MoneyMakingGuide[] = [
   {
     id: "fishing-sharks",
     name: "Fishing Sharks",
     profit: 180000,
     skill: "Fishing",
     requirements: ["75 Fishing"],
-    description: "Fish sharks at fishing guild"
+    description: "Fish sharks at fishing guild",
+    category: "skilling",
+    difficulty: 2,
+    membership: "p2p"
   },
   {
     id: "runecrafting-nature",
@@ -64,7 +76,10 @@ const MONEY_MAKERS = [
     profit: 500000,
     skill: "Runecrafting",
     requirements: ["44 Runecrafting"],
-    description: "Craft nature runes through abyss"
+    description: "Craft nature runes through abyss",
+    category: "skilling",
+    difficulty: 4,
+    membership: "p2p"
   }
 ];
 
@@ -158,7 +173,11 @@ export const osrsApi = {
       farming: 78,
       runecraft: 65,
       hunter: 70,
-      construction: 75
+      construction: 75,
+      combat_level: 126,
+      total_level: 1500,
+      account_type: 'regular',
+      name: username
     };
   },
 
@@ -166,7 +185,9 @@ export const osrsApi = {
     return ITEMS_DB.slice(0, 10).map(item => ({
       ...item,
       high: item.value * 1.1,
-      low: item.value * 0.9
+      low: item.value * 0.9,
+      current_price: item.value,
+      today_trend: Math.random() > 0.5 ? 'positive' : 'negative'
     }));
   },
 
@@ -178,7 +199,9 @@ export const osrsApi = {
     return filtered.slice(0, 20).map(item => ({
       ...item,
       high: item.value * 1.1,
-      low: item.value * 0.9
+      low: item.value * 0.9,
+      current_price: item.value,
+      today_trend: Math.random() > 0.5 ? 'positive' : 'negative'
     }));
   },
 

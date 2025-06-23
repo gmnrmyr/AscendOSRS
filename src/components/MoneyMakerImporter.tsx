@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,10 +17,10 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const loadDefaultGuides = () => {
+  const loadDefaultGuides = async () => {
     setLoading(true);
     try {
-      const defaultGuides = osrsApi.getDefaultMoneyMakers();
+      const defaultGuides = await osrsApi.getDefaultMoneyMakers();
       setGuides(defaultGuides);
       toast({
         title: "Success",
@@ -42,10 +43,11 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
       name: guide.name,
       character: '',
       gpHour: guide.profit,
-      clickIntensity: guide.difficulty as 1 | 2 | 3 | 4 | 5,
+      clickIntensity: guide.difficulty,
       requirements: guide.requirements.join(', '),
       notes: guide.description,
-      category: guide.category as 'combat' | 'skilling' | 'bossing' | 'other'
+      category: guide.category,
+      membership: guide.membership
     }));
 
     onImportMethods(methods);

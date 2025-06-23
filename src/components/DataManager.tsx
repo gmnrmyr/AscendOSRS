@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Download, Upload, X } from "lucide-react";
+import { Settings, Download, Upload, X, Cloud, CloudUpload, CloudDownload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CloudDataService } from "@/services/cloudDataService";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DataManagerProps {
   characters: any[];
@@ -35,7 +36,86 @@ export function DataManager({
   setHoursPerDay
 }: DataManagerProps) {
   const [importData, setImportData] = useState('');
+  const [isCloudSaving, setIsCloudSaving] = useState(false);
+  const [isCloudLoading, setIsCloudLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  const saveToCloud = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to save data to the cloud",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsCloudSaving(true);
+    try {
+      await CloudDataService.saveUserData(
+        characters,
+        moneyMethods,
+        purchaseGoals,
+        bankData,
+        hoursPerDay
+      );
+
+      toast({
+        title: "Cloud Save Successful",
+        description: "Your OSRS tracker data has been saved to the cloud"
+      });
+    } catch (error) {
+      console.error('Cloud save error:', error);
+      toast({
+        title: "Cloud Save Failed",
+        description: "Failed to save data to cloud. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCloudSaving(false);
+    }
+  };
+
+  const loadFromCloud = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to load data from the cloud",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!window.confirm("This will replace all your current data with data from the cloud. Are you sure?")) {
+      return;
+    }
+
+    setIsCloudLoading(true);
+    try {
+      const cloudData = await CloudDataService.loadUserData();
+      
+      setCharacters(cloudData.characters);
+      setMoneyMethods(cloudData.moneyMethods);
+      setPurchaseGoals(cloudData.purchaseGoals);
+      setBankData(cloudData.bankData);
+      setHoursPerDay(cloudData.hoursPerDay);
+
+      toast({
+        title: "Cloud Load Successful",
+        description: "Your OSRS tracker data has been loaded from the cloud"
+      });
+    } catch (error) {
+      console.error('Cloud load error:', error);
+      toast({
+        title: "Cloud Load Failed",
+        description: "Failed to load data from cloud. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCloudLoading(false);
+    }
+  };
 
   const exportData = () => {
     const dataToExport = {
@@ -209,18 +289,80 @@ export function DataManager({
         </CardContent>
       </Card>
 
+      {/* Cloud Save/Load */}
+      {user && (
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-200 dark:border-blue-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+              <Cloud className="h-5 w-5" />
+              Cloud Storage
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-600 dark:text-gray-400">
+              Save your data to the cloud and access it from any device. Your data is securely stored 
+              and synchronized with your account.
+            </p>
+            
+            <div className="flex gap-4">
+              <Button 
+                onClick={saveToCloud}
+                disabled={isCloudSaving}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isCloudSaving ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                ) : (
+                  <CloudUpload className="h-4 w-4 mr-2" />
+                )}
+                {isCloudSaving ? 'Saving...' : 'Save to Cloud'}
+              </Button>
+              
+              <Button 
+                onClick={loadFromCloud}
+                disabled={isCloudLoading}
+                variant="outline"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                {isCloudLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2" />
+                ) : (
+                  <CloudDownload className="h-4 w-4 mr-2" />
+                )}
+                {isCloudLoading ? 'Loading...' : 'Load from Cloud'}
+              </Button>
+            </div>
+            
+            <p className="text-sm text-blue-600 dark:text-blue-300">
+              💡 Your data is automatically saved locally. Use cloud storage to sync across devices.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!user && (
+        <Card className="bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800">
+          <CardContent className="p-4">
+            <p className="text-yellow-800 dark:text-yellow-200">
+              🔒 Log in to enable cloud storage and sync your data across devices.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Export Data */}
       <Card className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
             <Download className="h-5 w-5" />
-            Export Data
+            Export Data (Data Exporter Compatible)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400">
-            Download your complete OSRS tracker data as a JSON file. This backup includes all characters, 
-            money-making methods, purchase goals, and bank data.
+            Download your complete OSRS tracker data as a JSON file. This backup is compatible with 
+            the OSRS Data Exporter plugin format and includes all characters, money-making methods, 
+            purchase goals, and bank data.
           </p>
           
           <div className="flex gap-4">
@@ -241,13 +383,13 @@ export function DataManager({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
             <Upload className="h-5 w-5" />
-            Import Data
+            Import Data (Data Exporter Compatible)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400">
-            Import data from a previously exported JSON file. This will merge with your existing data 
-            or replace it entirely.
+            Import data from a previously exported JSON file or from the OSRS Data Exporter plugin. 
+            This will merge with your existing data or replace it entirely.
           </p>
           
           <div>
@@ -340,8 +482,9 @@ export function DataManager({
             💾 Data Storage Information
           </h4>
           <p className="text-sm text-blue-600 dark:text-blue-300">
-            Your data is stored locally in your browser and automatically saved. 
-            Regular exports are recommended as backups. This app works completely offline once loaded.
+            Your data is stored locally in your browser and automatically saved. Use cloud storage 
+            to sync across devices. Regular exports are recommended as backups. This app works 
+            completely offline once loaded.
           </p>
         </CardContent>
       </Card>

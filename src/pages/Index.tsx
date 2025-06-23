@@ -11,6 +11,7 @@ import { PurchaseGoals } from "@/components/PurchaseGoals";
 import { BankTracker } from "@/components/BankTracker";
 import { DataManager } from "@/components/DataManager";
 import { SummaryDashboard } from "@/components/SummaryDashboard";
+import { useAuth } from "@/hooks/useAuth";
 
 // Type definitions with updated Character interface
 interface Character {
@@ -235,6 +236,8 @@ const Index = () => {
     )
   );
 
+  const { user } = useAuth();
+
   // Load data from localStorage on component mount
   useEffect(() => {
     const savedData = localStorage.getItem('osrs-dashboard-data');
@@ -263,6 +266,30 @@ const Index = () => {
     };
     localStorage.setItem('osrs-dashboard-data', JSON.stringify(dataToSave));
   }, [characters, moneyMethods, purchaseGoals, bankData, hoursPerDay]);
+
+  // Auto-save to cloud for authenticated users (debounced)
+  useEffect(() => {
+    if (!user) return;
+    
+    const timeoutId = setTimeout(async () => {
+      try {
+        console.log('Auto-saving to cloud...');
+        const { CloudDataService } = await import('@/services/cloudDataService');
+        await CloudDataService.saveUserData(
+          characters,
+          moneyMethods,
+          purchaseGoals,
+          bankData,
+          hoursPerDay
+        );
+        console.log('Auto-save to cloud completed');
+      } catch (error) {
+        console.error('Auto-save to cloud failed:', error);
+      }
+    },2000); // 2 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [user, characters, moneyMethods, purchaseGoals, bankData, hoursPerDay]);
 
   return (
     <AuthGuard>

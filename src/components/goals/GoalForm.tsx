@@ -60,27 +60,24 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     let itemId = option.id;
 
     if (!itemId || !Number.isInteger(itemId)) {
-      const mappedId = osrsApi.getItemIdByName(option.name);
-      if (mappedId) {
-        itemId = mappedId;
+      // Try to get item ID from the OSRS API mapping
+      const searchResults = await osrsApi.searchItems(option.name);
+      if (searchResults.length > 0) {
+        itemId = searchResults[0].id;
+        currentPrice = searchResults[0].current_price || 0;
+        itemIcon = searchResults[0].icon || '';
       }
-    }
-
-    if (itemId && Number.isInteger(itemId) && itemId > 0) {
+    } else {
+      // Fetch price for the item
       try {
-        const priceData = await osrsApi.fetchSingleItemPrice(itemId);
-        if (typeof priceData === 'number') {
-          currentPrice = priceData;
-        }
+        currentPrice = await osrsApi.fetchSingleItemPrice(itemId);
       } catch (error) {
         currentPrice = option.value || 0;
       }
-    } else {
-      currentPrice = option.value || 0;
     }
 
     if (!itemIcon || itemIcon === '') {
-      itemIcon = osrsApi.getItemIcon(itemId || 995);
+      itemIcon = `https://oldschool.runescape.wiki/images/thumb/${itemId || 995}.png`;
     }
 
     setNewGoal({
@@ -92,23 +89,37 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     });
   };
 
-  const addGoal = () => {
+  const addGoal = async () => {
     if (!newGoal.name?.trim()) return;
 
     let finalItemId = newGoal.itemId;
-    if (!finalItemId || !Number.isInteger(finalItemId)) {
-      finalItemId = osrsApi.getItemIdByName(newGoal.name);
+    let finalCurrentPrice = newGoal.currentPrice || 0;
+    let finalImageUrl = newGoal.imageUrl;
+
+    // If we don't have proper item data, try to fetch it
+    if (!finalItemId || finalCurrentPrice === 0) {
+      const searchResults = await osrsApi.searchItems(newGoal.name);
+      if (searchResults.length > 0) {
+        const item = searchResults[0];
+        finalItemId = item.id;
+        finalImageUrl = item.icon;
+        
+        try {
+          finalCurrentPrice = await osrsApi.fetchSingleItemPrice(item.id);
+        } catch (error) {
+          finalCurrentPrice = item.current_price || 0;
+        }
+      }
     }
 
-    let finalImageUrl = newGoal.imageUrl;
     if (!finalImageUrl || finalImageUrl === '') {
-      finalImageUrl = osrsApi.getItemIcon(finalItemId || 995);
+      finalImageUrl = `https://oldschool.runescape.wiki/images/thumb/${finalItemId || 995}.png`;
     }
 
     const goal: PurchaseGoal = {
       id: Date.now().toString(),
       name: newGoal.name,
-      currentPrice: newGoal.currentPrice || 0,
+      currentPrice: finalCurrentPrice,
       targetPrice: newGoal.targetPrice,
       quantity: newGoal.quantity || 1,
       priority: newGoal.priority || 'A',

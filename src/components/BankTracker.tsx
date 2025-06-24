@@ -135,9 +135,10 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
 
               <BankValueManager
                 selectedCharacter={selectedCharacter}
-                getCharacterBankValue={getCharacterBankValue}
-                getCharacterGoldValue={getCharacterGoldValue}
+                bankData={bankData}
+                setBankData={setBankData}
                 formatGP={formatGP}
+                getTotalBankValue={() => getCharacterBankValue(selectedCharacter)}
               />
 
               <BankItemForm 

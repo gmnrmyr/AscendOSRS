@@ -12,6 +12,8 @@ interface OSRSItemData {
   name: string;
 }
 
+export { OSRSItem, MoneyMakingGuide };
+
 export const osrsApi = {
   // Get item price and details
   async getItemDetails(itemName: string): Promise<OSRSItem | null> {
@@ -88,7 +90,9 @@ export const osrsApi = {
           icon: `https://oldschool.runescape.wiki/images/${encodeURIComponent(name.replace(/ /g, '_'))}.png`,
           value: 0,
           high: 0,
-          low: 0
+          low: 0,
+          current_price: 0,
+          today_trend: 'neutral'
         }));
 
       return matchingItems;
@@ -100,6 +104,10 @@ export const osrsApi = {
 
   // Get money making methods from OSRS Wiki
   async getMoneyMakingMethods(query?: string): Promise<MoneyMakingGuide[]> {
+    return this.getDefaultMoneyMakers(query);
+  },
+
+  async getDefaultMoneyMakers(query?: string): Promise<MoneyMakingGuide[]> {
     try {
       // Static list of popular OSRS money making methods
       const staticMethods: MoneyMakingGuide[] = [
@@ -204,5 +212,103 @@ export const osrsApi = {
       console.error('Error fetching money making methods:', error);
       return [];
     }
+  },
+
+  async searchMoneyMakers(query: string): Promise<MoneyMakingGuide[]> {
+    return this.getDefaultMoneyMakers(query);
+  },
+
+  async fetchPlayerStats(username: string) {
+    try {
+      // Mock implementation for now - would connect to OSRS hiscores API
+      return {
+        username,
+        total_level: 1500 + Math.floor(Math.random() * 1000),
+        combat_level: 80 + Math.floor(Math.random() * 46),
+        account_type: 'regular' as const
+      };
+    } catch (error) {
+      console.error('Error fetching player stats:', error);
+      return null;
+    }
+  },
+
+  async fetchPopularItems(): Promise<OSRSItem[]> {
+    const popularItemNames = [
+      'Twisted bow', 'Scythe of vitur', 'Bandos chestplate', 'Armadyl crossbow',
+      'Dragon claws', 'Abyssal whip', 'Barrows gloves', 'Fire cape'
+    ];
+    
+    const items: OSRSItem[] = [];
+    for (const itemName of popularItemNames) {
+      const item = await this.getItemDetails(itemName);
+      if (item) items.push(item);
+    }
+    return items;
+  },
+
+  async fetchSingleItemPrice(itemId: number): Promise<number> {
+    try {
+      const priceResponse = await fetch(`${OSRS_WIKI_API_BASE}/latest?id=${itemId}`);
+      if (!priceResponse.ok) throw new Error('Failed to fetch item price');
+      const priceData = await priceResponse.json();
+
+      const itemPrices = priceData.data[itemId];
+      if (!itemPrices) return 0;
+
+      return itemPrices.high || itemPrices.low || 0;
+    } catch (error) {
+      console.error('Error fetching item price:', error);
+      return 0;
+    }
+  },
+
+  getItemIdByName(itemName: string): number {
+    if (!itemMappingCache) return 995; // Default to coins
+    return itemMappingCache[itemName.toLowerCase()] || 995;
+  },
+
+  getItemIcon(itemId: number): string {
+    return `https://oldschool.runescape.wiki/images/thumb/${itemId}.png`;
+  },
+
+  async getEstimatedItemValue(itemName: string): Promise<number> {
+    const item = await this.getItemDetails(itemName);
+    return item?.current_price || 0;
+  },
+
+  async parseBankCSV(csvText: string): Promise<Array<{name: string; quantity: number; value: number}>> {
+    try {
+      // Try to parse as JSON first (Data Exporter format)
+      const jsonData = JSON.parse(csvText);
+      if (Array.isArray(jsonData)) {
+        return jsonData.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          value: item.value || 0
+        }));
+      }
+    } catch (e) {
+      // If JSON parsing fails, try CSV parsing
+      const lines = csvText.trim().split('\n');
+      const items: Array<{name: string; quantity: number; value: number}> = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',');
+        if (parts.length >= 3) {
+          const name = parts[0].replace(/"/g, '').trim();
+          const quantity = parseInt(parts[1]) || 0;
+          const value = parseInt(parts[2]) || 0;
+          
+          if (name && quantity > 0) {
+            items.push({ name, quantity, value });
+          }
+        }
+      }
+      
+      return items;
+    }
+    
+    return [];
   }
 };

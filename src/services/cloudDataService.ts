@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 interface Character {
@@ -97,10 +96,12 @@ export class CloudDataService {
       // Save money methods with proper category mapping
       if (moneyMethods.length > 0) {
         const methodsToSave = moneyMethods.map(method => {
-          // Map frontend categories to database categories
-          let dbCategory = method.category;
+          // Map frontend categories to database categories - keeping frontend types
+          let dbCategory: 'combat' | 'skilling' | 'pvm' | 'merching' = 'combat';
           if (method.category === 'bossing') dbCategory = 'pvm';
-          if (method.category === 'other') dbCategory = 'merching';
+          else if (method.category === 'other') dbCategory = 'merching';
+          else if (method.category === 'skilling') dbCategory = 'skilling';
+          else if (method.category === 'combat') dbCategory = 'combat';
           
           return {
             user_id: user.id,
@@ -129,10 +130,12 @@ export class CloudDataService {
       // Save purchase goals with proper category mapping
       if (purchaseGoals.length > 0) {
         const goalsToSave = purchaseGoals.map(goal => {
-          // Map frontend categories to database categories
-          let dbCategory = goal.category;
+          // Map frontend categories to database categories - keeping frontend types
+          let dbCategory: 'gear' | 'consumables' | 'misc' = 'gear';
           if (goal.category === 'materials') dbCategory = 'misc';
-          if (goal.category === 'other') dbCategory = 'misc';
+          else if (goal.category === 'other') dbCategory = 'misc';
+          else if (goal.category === 'consumables') dbCategory = 'consumables';
+          else if (goal.category === 'gear') dbCategory = 'gear';
           
           return {
             user_id: user.id,
@@ -163,10 +166,12 @@ export class CloudDataService {
       const allBankItems: any[] = [];
       Object.entries(bankData).forEach(([character, items]) => {
         items.forEach(item => {
-          // Map frontend categories to database categories
-          let dbCategory = item.category;
+          // Map frontend categories to database categories - keeping frontend types
+          let dbCategory: 'stackable' | 'gear' | 'consumables' = 'stackable';
           if (item.category === 'materials') dbCategory = 'consumables';
-          if (item.category === 'other') dbCategory = 'consumables';
+          else if (item.category === 'other') dbCategory = 'consumables';
+          else if (item.category === 'gear') dbCategory = 'gear';
+          else if (item.category === 'stackable') dbCategory = 'stackable';
           
           allBankItems.push({
             user_id: user.id,
@@ -236,9 +241,11 @@ export class CloudDataService {
       if (methodsResult.status === 'fulfilled' && methodsResult.value.data) {
         moneyMethods.push(...methodsResult.value.data.map(method => {
           // Map database categories back to frontend categories
-          let frontendCategory = method.category;
+          let frontendCategory: MoneyMethod['category'] = 'combat';
           if (method.category === 'pvm') frontendCategory = 'bossing';
-          if (method.category === 'merching') frontendCategory = 'other';
+          else if (method.category === 'merching') frontendCategory = 'other';
+          else if (method.category === 'skilling') frontendCategory = 'skilling';
+          else if (method.category === 'combat') frontendCategory = 'combat';
           
           return {
             id: method.id,
@@ -248,7 +255,7 @@ export class CloudDataService {
             clickIntensity: method.click_intensity as MoneyMethod['clickIntensity'],
             requirements: method.requirements || '',
             notes: method.notes || '',
-            category: frontendCategory as MoneyMethod['category']
+            category: frontendCategory
           };
         }));
       }
@@ -258,8 +265,10 @@ export class CloudDataService {
       if (goalsResult.status === 'fulfilled' && goalsResult.value.data) {
         purchaseGoals.push(...goalsResult.value.data.map(goal => {
           // Map database categories back to frontend categories
-          let frontendCategory = goal.category;
+          let frontendCategory: PurchaseGoal['category'] = 'gear';
           if (goal.category === 'misc') frontendCategory = 'materials';
+          else if (goal.category === 'consumables') frontendCategory = 'consumables';
+          else if (goal.category === 'gear') frontendCategory = 'gear';
           
           return {
             id: goal.id,
@@ -268,7 +277,7 @@ export class CloudDataService {
             targetPrice: goal.target_price || undefined,
             quantity: goal.quantity || 1,
             priority: goal.priority as PurchaseGoal['priority'],
-            category: frontendCategory as PurchaseGoal['category'],
+            category: frontendCategory,
             notes: goal.notes || '',
             imageUrl: goal.image_url || ''
           };
@@ -284,17 +293,17 @@ export class CloudDataService {
           }
           
           // Map database categories back to frontend categories
-          let frontendCategory = item.category;
-          if (item.category === 'consumables' && !['stackable', 'gear'].includes(item.category)) {
-            frontendCategory = 'materials';
-          }
+          let frontendCategory: BankItem['category'] = 'other';
+          if (item.category === 'consumables') frontendCategory = 'materials';
+          else if (item.category === 'gear') frontendCategory = 'gear';
+          else if (item.category === 'stackable') frontendCategory = 'stackable';
           
           bankData[item.character].push({
             id: item.id,
             name: item.name,
             quantity: item.quantity || 0,
             estimatedPrice: item.estimated_price || 0,
-            category: frontendCategory as BankItem['category'],
+            category: frontendCategory,
             character: item.character
           });
         });

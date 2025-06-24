@@ -1,116 +1,162 @@
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calculator, Edit3, Save, X } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Edit, Save, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface BankItem {
+  id: string;
+  name: string;
+  quantity: number;
+  estimatedPrice: number;
+  category: 'stackable' | 'gear' | 'materials' | 'other';
+  character: string;
+}
 
 interface BankValueManagerProps {
   selectedCharacter: string;
-  getCharacterBankValue: (character: string) => number;
-  getCharacterGoldValue: (character: string) => number;
+  bankData: Record<string, BankItem[]>;
+  setBankData: (bankData: Record<string, BankItem[]>) => void;
   formatGP: (amount: number) => string;
-  onManualBankValueUpdate?: (character: string, value: number) => void;
+  getTotalBankValue: (character: string) => number;
 }
 
 export function BankValueManager({
   selectedCharacter,
-  getCharacterBankValue,
-  getCharacterGoldValue,
+  bankData,
+  setBankData,
   formatGP,
-  onManualBankValueUpdate
+  getTotalBankValue
 }: BankValueManagerProps) {
-  const [isEditingManualValue, setIsEditingManualValue] = useState(false);
-  const [manualBankValue, setManualBankValue] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState<number>(0);
+  const { toast } = useToast();
 
-  const totalBankValue = getCharacterBankValue(selectedCharacter);
-  const goldValue = getCharacterGoldValue(selectedCharacter);
-  const itemsValue = totalBankValue - goldValue;
+  const items = bankData[selectedCharacter] || [];
+  const totalValue = getTotalBankValue(selectedCharacter);
 
-  const handleSaveManualValue = () => {
-    if (onManualBankValueUpdate) {
-      onManualBankValueUpdate(selectedCharacter, manualBankValue);
-    }
-    setIsEditingManualValue(false);
+  const startEditing = (item: BankItem) => {
+    setEditingItem(item.id);
+    setEditPrice(item.estimatedPrice);
   };
 
-  const handleCancelEdit = () => {
-    setIsEditingManualValue(false);
-    setManualBankValue(itemsValue);
+  const saveEdit = (itemId: string) => {
+    const updatedBankData = { ...bankData };
+    const characterItems = updatedBankData[selectedCharacter] || [];
+    
+    const itemIndex = characterItems.findIndex(item => item.id === itemId);
+    if (itemIndex !== -1) {
+      characterItems[itemIndex] = {
+        ...characterItems[itemIndex],
+        estimatedPrice: editPrice
+      };
+      updatedBankData[selectedCharacter] = characterItems;
+      setBankData(updatedBankData);
+      
+      toast({
+        title: "Item Updated",
+        description: `Price updated to ${formatGP(editPrice)} GP`
+      });
+    }
+    
+    setEditingItem(null);
+    setEditPrice(0);
+  };
+
+  const cancelEdit = () => {
+    setEditingItem(null);
+    setEditPrice(0);
   };
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-200 dark:border-blue-800">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Calculator className="h-6 w-6 text-blue-600" />
-          <h3 className="text-xl font-bold text-blue-800 dark:text-blue-200">
-            Bank Value Summary
-          </h3>
-        </div>
-
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-lg border">
-              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Items Value</Label>
-              <div className="flex items-center justify-between mt-2">
-                {isEditingManualValue ? (
-                  <div className="flex items-center gap-2 w-full">
-                    <Input
-                      type="number"
-                      value={manualBankValue}
-                      onChange={(e) => setManualBankValue(Number(e.target.value))}
-                      className="h-8 text-sm"
-                    />
-                    <Button size="sm" onClick={handleSaveManualValue} className="h-8 w-8 p-0">
-                      <Save className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={handleCancelEdit} className="h-8 w-8 p-0">
-                      <X className="h-3 w-3" />
-                    </Button>
+    <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/10 dark:to-cyan-900/10 border-blue-200 dark:border-blue-800">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between text-blue-800 dark:text-blue-200">
+          <span>Bank Value Manager</span>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Items
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Edit Bank Item Values - {selectedCharacter}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {items.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex-1">
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Quantity: {item.quantity.toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {editingItem === item.id ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            value={editPrice}
+                            onChange={(e) => setEditPrice(Number(e.target.value))}
+                            className="w-32"
+                            placeholder="Price per item"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => saveEdit(item.id)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Save className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEdit}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-medium">
+                            {formatGP(item.estimatedPrice)} GP
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => startEditing(item)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    <p className="text-lg font-bold text-blue-600">{formatGP(itemsValue)}</p>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => {
-                        setManualBankValue(itemsValue);
-                        setIsEditingManualValue(true);
-                      }}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Edit3 className="h-3 w-3" />
-                    </Button>
-                  </>
-                )}
+                ))}
               </div>
-              <p className="text-xs text-gray-500 mt-1">Excluding gold & plat</p>
+            </DialogContent>
+          </Dialog>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-800 dark:text-blue-200">
+              {formatGP(totalValue)} GP
             </div>
-
-            <div className="text-center p-4 bg-white dark:bg-slate-800 rounded-lg border">
-              <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">Gold Value</Label>
-              <p className="text-lg font-bold text-yellow-600 mt-2">{formatGP(goldValue)}</p>
-              <p className="text-xs text-gray-500 mt-1">Coins + Plat tokens</p>
-            </div>
-
-            <div className="text-center p-4 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200">
-              <Label className="text-sm font-medium text-green-700 dark:text-green-300">Total Bank Value</Label>
-              <p className="text-xl font-bold text-green-800 dark:text-green-200 mt-2">{formatGP(totalBankValue)}</p>
-              <p className="text-xs text-green-600 dark:text-green-400 mt-1">Items + Gold + Plat</p>
-            </div>
+            <p className="text-blue-600 dark:text-blue-400">
+              Total Bank Value (Items Only)
+            </p>
           </div>
-
-          <div className="flex items-center gap-2 justify-center">
-            <Badge variant="outline" className="text-blue-700 border-blue-300">
-              Auto-calculated from bank items
-            </Badge>
-            <Badge variant="outline" className="text-amber-700 border-amber-300">
-              Click edit to override item values
-            </Badge>
+          <div className="text-sm text-blue-600 dark:text-blue-400 text-center">
+            {items.length} items • Click "Edit Items" to manually adjust prices
           </div>
         </div>
       </CardContent>

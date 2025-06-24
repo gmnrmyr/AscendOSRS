@@ -53,6 +53,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          plat_tokens: number | null
           total_level: number | null
           type: string
           updated_at: string | null
@@ -65,6 +66,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          plat_tokens?: number | null
           total_level?: number | null
           type: string
           updated_at?: string | null
@@ -77,6 +79,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          plat_tokens?: number | null
           total_level?: number | null
           type?: string
           updated_at?: string | null

@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+
+import { supabase } from '@/integrations/supabase/client';
 
 interface Character {
   id: string;
@@ -43,6 +44,22 @@ interface BankItem {
   character: string;
 }
 
+// Type mapping functions
+const mapCategoryToDbCategory = (category: string): string => {
+  const mapping: Record<string, string> = {
+    'pvm': 'combat',
+    'merching': 'other',
+    'misc': 'other',
+    'consumables': 'other'
+  };
+  return mapping[category] || category;
+};
+
+const mapDbCategoryToAppCategory = (dbCategory: string): string => {
+  // This handles the reverse mapping when reading from database
+  return dbCategory;
+};
+
 export class CloudDataService {
   static async saveUserData(
     characters: Character[],
@@ -51,279 +68,193 @@ export class CloudDataService {
     bankData: Record<string, BankItem[]>,
     hoursPerDay: number
   ) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
     try {
-      console.log('Starting cloud save process...');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
 
-      // Clear existing data for this user first
-      const deletePromises = [
+      console.log('Starting cloud save for user:', user.id);
+
+      // Clear existing data first
+      await Promise.all([
         supabase.from('characters').delete().eq('user_id', user.id),
         supabase.from('money_methods').delete().eq('user_id', user.id),
         supabase.from('purchase_goals').delete().eq('user_id', user.id),
         supabase.from('bank_items').delete().eq('user_id', user.id)
-      ];
+      ]);
 
-      const deleteResults = await Promise.allSettled(deletePromises);
-      console.log('Delete results:', deleteResults);
-
-      // Save characters with all required fields
+      // Save characters
       if (characters.length > 0) {
-        const charactersToSave = characters.map(char => ({
-          user_id: user.id,
-          name: char.name,
-          type: char.type,
-          combat_level: char.combatLevel || 0,
-          total_level: char.totalLevel || 0,
-          bank: char.bank || 0,
-          notes: char.notes || '',
-          plat_tokens: 0 // Default value for now
-        }));
-
-        console.log('Saving characters:', charactersToSave);
-        const { error: charError } = await supabase
-          .from('characters')
-          .insert(charactersToSave);
-
-        if (charError) {
-          console.error('Characters save error:', charError);
-          throw charError;
+        const { error: charactersError } = await supabase.from('characters').insert(
+          characters.map(char => ({
+            id: char.id,
+            user_id: user.id,
+            name: char.name,
+            type: char.type,
+            combat_level: char.combatLevel,
+            total_level: char.totalLevel,
+            bank: char.bank,
+            notes: char.notes,
+            is_active: char.isActive
+          }))
+        );
+        if (charactersError) {
+          console.error('Error saving characters:', charactersError);
+          throw charactersError;
         }
-        console.log('Characters saved successfully');
       }
 
-      // Save money methods with proper category mapping
+      // Save money methods
       if (moneyMethods.length > 0) {
-        const methodsToSave = moneyMethods.map(method => {
-          // Map frontend categories to database categories - keeping frontend types
-          let dbCategory: 'combat' | 'skilling' | 'pvm' | 'merching' = 'combat';
-          if (method.category === 'bossing') dbCategory = 'pvm';
-          else if (method.category === 'other') dbCategory = 'merching';
-          else if (method.category === 'skilling') dbCategory = 'skilling';
-          else if (method.category === 'combat') dbCategory = 'combat';
-          
-          return {
+        const { error: methodsError } = await supabase.from('money_methods').insert(
+          moneyMethods.map(method => ({
+            id: method.id,
             user_id: user.id,
             name: method.name,
             character: method.character,
-            gp_hour: method.gpHour || 0,
+            gp_hour: method.gpHour,
             click_intensity: method.clickIntensity,
-            requirements: method.requirements || '',
-            notes: method.notes || '',
-            category: dbCategory
-          };
-        });
-
-        console.log('Saving money methods:', methodsToSave);
-        const { error: methodsError } = await supabase
-          .from('money_methods')
-          .insert(methodsToSave);
-
+            requirements: method.requirements,
+            notes: method.notes,
+            category: mapCategoryToDbCategory(method.category)
+          }))
+        );
         if (methodsError) {
-          console.error('Money methods save error:', methodsError);
+          console.error('Error saving money methods:', methodsError);
           throw methodsError;
         }
-        console.log('Money methods saved successfully');
       }
 
-      // Save purchase goals with proper category mapping
+      // Save purchase goals
       if (purchaseGoals.length > 0) {
-        const goalsToSave = purchaseGoals.map(goal => {
-          // Map frontend categories to database categories - keeping frontend types
-          let dbCategory: 'gear' | 'consumables' | 'misc' = 'gear';
-          if (goal.category === 'materials') dbCategory = 'misc';
-          else if (goal.category === 'other') dbCategory = 'misc';
-          else if (goal.category === 'consumables') dbCategory = 'consumables';
-          else if (goal.category === 'gear') dbCategory = 'gear';
-          
-          return {
+        const { error: goalsError } = await supabase.from('purchase_goals').insert(
+          purchaseGoals.map(goal => ({
+            id: goal.id,
             user_id: user.id,
             name: goal.name,
-            current_price: goal.currentPrice || 0,
-            target_price: goal.targetPrice || null,
-            quantity: goal.quantity || 1,
+            current_price: goal.currentPrice,
+            target_price: goal.targetPrice,
+            quantity: goal.quantity,
             priority: goal.priority,
-            category: dbCategory,
-            notes: goal.notes || '',
-            image_url: goal.imageUrl || ''
-          };
-        });
-
-        console.log('Saving purchase goals:', goalsToSave);
-        const { error: goalsError } = await supabase
-          .from('purchase_goals')
-          .insert(goalsToSave);
-
+            category: mapCategoryToDbCategory(goal.category),
+            notes: goal.notes,
+            image_url: goal.imageUrl
+          }))
+        );
         if (goalsError) {
-          console.error('Purchase goals save error:', goalsError);
+          console.error('Error saving purchase goals:', goalsError);
           throw goalsError;
         }
-        console.log('Purchase goals saved successfully');
       }
 
-      // Save bank items with proper category mapping
-      const allBankItems: any[] = [];
-      Object.entries(bankData).forEach(([character, items]) => {
-        items.forEach(item => {
-          // Map frontend categories to database categories - keeping frontend types
-          let dbCategory: 'stackable' | 'gear' | 'consumables' = 'stackable';
-          if (item.category === 'materials') dbCategory = 'consumables';
-          else if (item.category === 'other') dbCategory = 'consumables';
-          else if (item.category === 'gear') dbCategory = 'gear';
-          else if (item.category === 'stackable') dbCategory = 'stackable';
-          
-          allBankItems.push({
-            user_id: user.id,
-            character: character,
-            name: item.name,
-            quantity: item.quantity || 0,
-            estimated_price: item.estimatedPrice || 0,
-            category: dbCategory
-          });
-        });
-      });
-
+      // Save bank items
+      const allBankItems = Object.values(bankData).flat();
       if (allBankItems.length > 0) {
-        console.log('Saving bank items:', allBankItems);
-        const { error: bankError } = await supabase
-          .from('bank_items')
-          .insert(allBankItems);
-
+        const { error: bankError } = await supabase.from('bank_items').insert(
+          allBankItems.map(item => ({
+            id: item.id,
+            user_id: user.id,
+            name: item.name,
+            quantity: item.quantity,
+            estimated_price: item.estimatedPrice,
+            category: mapCategoryToDbCategory(item.category),
+            character: item.character
+          }))
+        );
         if (bankError) {
-          console.error('Bank items save error:', bankError);
+          console.error('Error saving bank items:', bankError);
           throw bankError;
         }
-        console.log('Bank items saved successfully');
       }
 
       console.log('Cloud save completed successfully');
-      return { success: true };
-
+      return true;
     } catch (error) {
-      console.error('Cloud save failed:', error);
+      console.error('Error saving to cloud:', error);
       throw error;
     }
   }
 
   static async loadUserData() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
     try {
-      console.log('Starting cloud load process...');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      console.log('Loading cloud data for user:', user.id);
 
       // Load all data in parallel
-      const [charactersResult, methodsResult, goalsResult, bankItemsResult] = await Promise.allSettled([
+      const [charactersResult, methodsResult, goalsResult, bankResult] = await Promise.all([
         supabase.from('characters').select('*').eq('user_id', user.id),
         supabase.from('money_methods').select('*').eq('user_id', user.id),
         supabase.from('purchase_goals').select('*').eq('user_id', user.id),
         supabase.from('bank_items').select('*').eq('user_id', user.id)
       ]);
 
-      // Handle characters
-      const characters: Character[] = [];
-      if (charactersResult.status === 'fulfilled' && charactersResult.value.data) {
-        characters.push(...charactersResult.value.data.map(char => ({
-          id: char.id,
-          name: char.name,
-          type: char.type as Character['type'],
-          combatLevel: char.combat_level || 0,
-          totalLevel: char.total_level || 0,
-          bank: Number(char.bank) || 0,
-          notes: char.notes || '',
-          isActive: true
-        })));
-      }
+      // Transform characters
+      const characters: Character[] = (charactersResult.data || []).map(char => ({
+        id: char.id,
+        name: char.name,
+        type: char.type,
+        combatLevel: char.combat_level,
+        totalLevel: char.total_level,
+        bank: char.bank,
+        notes: char.notes,
+        isActive: char.is_active
+      }));
 
-      // Handle money methods
-      const moneyMethods: MoneyMethod[] = [];
-      if (methodsResult.status === 'fulfilled' && methodsResult.value.data) {
-        moneyMethods.push(...methodsResult.value.data.map(method => {
-          // Map database categories back to frontend categories
-          let frontendCategory: MoneyMethod['category'] = 'combat';
-          if (method.category === 'pvm') frontendCategory = 'bossing';
-          else if (method.category === 'merching') frontendCategory = 'other';
-          else if (method.category === 'skilling') frontendCategory = 'skilling';
-          else if (method.category === 'combat') frontendCategory = 'combat';
-          
-          return {
-            id: method.id,
-            name: method.name,
-            character: method.character,
-            gpHour: method.gp_hour || 0,
-            clickIntensity: method.click_intensity as MoneyMethod['clickIntensity'],
-            requirements: method.requirements || '',
-            notes: method.notes || '',
-            category: frontendCategory
-          };
-        }));
-      }
+      // Transform money methods
+      const moneyMethods: MoneyMethod[] = (methodsResult.data || []).map(method => ({
+        id: method.id,
+        name: method.name,
+        character: method.character,
+        gpHour: method.gp_hour,
+        clickIntensity: method.click_intensity,
+        requirements: method.requirements,
+        notes: method.notes,
+        category: mapDbCategoryToAppCategory(method.category) as MoneyMethod['category']
+      }));
 
-      // Handle purchase goals
-      const purchaseGoals: PurchaseGoal[] = [];
-      if (goalsResult.status === 'fulfilled' && goalsResult.value.data) {
-        purchaseGoals.push(...goalsResult.value.data.map(goal => {
-          // Map database categories back to frontend categories
-          let frontendCategory: PurchaseGoal['category'] = 'gear';
-          if (goal.category === 'misc') frontendCategory = 'materials';
-          else if (goal.category === 'consumables') frontendCategory = 'consumables';
-          else if (goal.category === 'gear') frontendCategory = 'gear';
-          
-          return {
-            id: goal.id,
-            name: goal.name,
-            currentPrice: goal.current_price || 0,
-            targetPrice: goal.target_price || undefined,
-            quantity: goal.quantity || 1,
-            priority: goal.priority as PurchaseGoal['priority'],
-            category: frontendCategory,
-            notes: goal.notes || '',
-            imageUrl: goal.image_url || ''
-          };
-        }));
-      }
+      // Transform purchase goals
+      const purchaseGoals: PurchaseGoal[] = (goalsResult.data || []).map(goal => ({
+        id: goal.id,
+        name: goal.name,
+        currentPrice: goal.current_price,
+        targetPrice: goal.target_price,
+        quantity: goal.quantity,
+        priority: goal.priority,
+        category: mapDbCategoryToAppCategory(goal.category) as PurchaseGoal['category'],
+        notes: goal.notes,
+        imageUrl: goal.image_url
+      }));
 
-      // Handle bank items
+      // Transform bank items
+      const bankItems = (bankResult.data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        estimatedPrice: item.estimated_price,
+        category: mapDbCategoryToAppCategory(item.category) as BankItem['category'],
+        character: item.character
+      }));
+
+      // Group bank items by character
       const bankData: Record<string, BankItem[]> = {};
-      if (bankItemsResult.status === 'fulfilled' && bankItemsResult.value.data) {
-        bankItemsResult.value.data.forEach(item => {
-          if (!bankData[item.character]) {
-            bankData[item.character] = [];
-          }
-          
-          // Map database categories back to frontend categories
-          let frontendCategory: BankItem['category'] = 'other';
-          if (item.category === 'consumables') frontendCategory = 'materials';
-          else if (item.category === 'gear') frontendCategory = 'gear';
-          else if (item.category === 'stackable') frontendCategory = 'stackable';
-          
-          bankData[item.character].push({
-            id: item.id,
-            name: item.name,
-            quantity: item.quantity || 0,
-            estimatedPrice: item.estimated_price || 0,
-            category: frontendCategory,
-            character: item.character
-          });
-        });
-      }
+      bankItems.forEach(item => {
+        if (!bankData[item.character]) {
+          bankData[item.character] = [];
+        }
+        bankData[item.character].push(item);
+      });
 
-      const hoursPerDay = 10; // Default value
-
-      console.log('Cloud load completed successfully');
-      console.log('Loaded data:', { characters, moneyMethods, purchaseGoals, bankData });
-      
+      console.log('Cloud data loaded successfully');
       return {
         characters,
         moneyMethods,
         purchaseGoals,
         bankData,
-        hoursPerDay
+        hoursPerDay: 10 // Default value, could be stored in a user_settings table
       };
-
     } catch (error) {
-      console.error('Cloud load failed:', error);
+      console.error('Error loading from cloud:', error);
       throw error;
     }
   }

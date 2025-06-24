@@ -1,5 +1,5 @@
 
-import { OSRSItem, MoneyMakingGuide } from './api/types';
+import type { OSRSItem, MoneyMakingGuide } from './api/types';
 
 const OSRS_WIKI_API_BASE = 'https://prices.runescape.wiki/api/v1/osrs';
 const OSRS_MAPPING_API = 'https://prices.runescape.wiki/api/v1/osrs/mapping';
@@ -12,7 +12,7 @@ interface OSRSItemData {
   name: string;
 }
 
-export { OSRSItem, MoneyMakingGuide };
+export type { OSRSItem, MoneyMakingGuide };
 
 export const osrsApi = {
   // Get item price and details

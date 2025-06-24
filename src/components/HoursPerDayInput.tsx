@@ -1,29 +1,35 @@
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Clock } from "lucide-react";
+import { useAppState } from "@/components/AppStateProvider";
 
-interface HoursPerDayInputProps {
-  hoursPerDay: number;
-  setHoursPerDay: (hours: number) => void;
-}
+export function HoursPerDayInput() {
+  const { hoursPerDay, setHoursPerDay } = useAppState();
 
-export const HoursPerDayInput = ({ hoursPerDay, setHoursPerDay }: HoursPerDayInputProps) => {
   return (
-    <div className="flex justify-center">
-      <div className="pixel-card p-4">
-        <div className="flex items-center gap-3">
-          <label className="text-base font-semibold text-gray-900 font-mono">
-            ⏰ Hours per day:
-          </label>
+    <Card className="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+          <Clock className="h-5 w-5" />
+          Hours Per Day
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="max-w-xs">
+          <Label htmlFor="hours">How many hours per day do you play?</Label>
           <Input
+            id="hours"
             type="number"
-            value={hoursPerDay}
-            onChange={(e) => setHoursPerDay(Number(e.target.value))}
-            className="pixel-input w-20 text-center font-mono font-bold"
             min="1"
             max="24"
+            value={hoursPerDay}
+            onChange={(e) => setHoursPerDay(Number(e.target.value))}
+            className="bg-white dark:bg-slate-800"
           />
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
-};
+}

@@ -1,13 +1,15 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, X, Users, Search, RefreshCcw, Tag } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Users, TrendingUp, Search, Trash2 } from "lucide-react";
+import { AutocompleteInput } from "./AutocompleteInput";
 import { osrsApi } from "@/services/osrsApi";
 
 interface Character {
@@ -32,152 +34,69 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
     type: 'main',
     combatLevel: 3,
     totalLevel: 32,
-    bank: 0,
+    bank: 10000,
     notes: '',
     isActive: true
   });
-  const [fetchingStats, setFetchingStats] = useState(false);
-  const { toast } = useToast();
 
-  const fetchPlayerStats = async () => {
-    if (!newCharacter.name?.trim()) {
-      toast({
-        title: "Error",
-        description: "Enter a character name first",
-        variant: "destructive"
-      });
-      return;
-    }
+  const searchPlayerStats = async (query: string) => {
+    // Return mock results for autocomplete
+    return [
+      { id: query, name: query, subtitle: 'OSRS Player', icon: '👤', value: query, category: 'player' }
+    ];
+  };
 
-    setFetchingStats(true);
+  const handlePlayerSelect = async (option: any) => {
     try {
-      const stats = await osrsApi.fetchPlayerStats(newCharacter.name);
-      
+      const stats = await osrsApi.fetchPlayerStats(option.name);
       if (stats) {
         setNewCharacter({
           ...newCharacter,
+          name: stats.username,
           combatLevel: stats.combat_level,
-          totalLevel: stats.total_level,
-          type: stats.account_type === 'regular' ? 'main' : 
-                stats.account_type === 'ironman' ? 'ironman' :
-                stats.account_type === 'hardcore' ? 'hardcore' :
-                stats.account_type === 'ultimate' ? 'ultimate' : 'main'
-        });
-        
-        toast({
-          title: "Success",
-          description: `Fetched stats for ${stats.name}: Combat ${stats.combat_level}, Total ${stats.total_level}`
-        });
-      } else {
-        toast({
-          title: "Player Not Found",
-          description: "Could not find player stats. Please check the username or enter manually.",
-          variant: "destructive"
+          totalLevel: stats.total_level
         });
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch player stats",
-        variant: "destructive"
+      console.error('Error fetching player stats:', error);
+      // Fallback to just setting the name
+      setNewCharacter({
+        ...newCharacter,
+        name: option.name
       });
-    } finally {
-      setFetchingStats(false);
     }
   };
 
-  const toggleCharacterType = (id: string) => {
-    const typeOrder: Character['type'][] = ['main', 'alt', 'ironman', 'hardcore', 'ultimate'];
-    const character = characters.find(c => c.id === id);
-    if (!character) return;
+  const addCharacter = async () => {
+    if (!newCharacter.name?.trim()) return;
 
-    const currentIndex = typeOrder.indexOf(character.type);
-    const nextIndex = (currentIndex + 1) % typeOrder.length;
-    const newType = typeOrder[nextIndex];
+    let finalStats = { ...newCharacter };
 
-    updateCharacter(id, 'type', newType);
-    
-    toast({
-      title: "Character Type Updated",
-      description: `${character.name} is now a ${newType} account`
-    });
-  };
-
-  const toggleCharacterActive = (id: string) => {
-    const character = characters.find(c => c.id === id);
-    if (!character) return;
-
-    updateCharacter(id, 'isActive', !character.isActive);
-    
-    toast({
-      title: character.isActive ? "Character Deactivated" : "Character Activated",
-      description: `${character.name} ${character.isActive ? 'will not count towards bank totals' : 'will count towards bank totals'}`
-    });
-  };
-
-  const refreshCharacterStats = async (id: string) => {
-    const character = characters.find(c => c.id === id);
-    if (!character) return;
-
-    setFetchingStats(true);
-    try {
-      const stats = await osrsApi.fetchPlayerStats(character.name);
-      
-      if (stats) {
-        updateCharacter(id, 'combatLevel', stats.combat_level);
-        updateCharacter(id, 'totalLevel', stats.total_level);
-        
-        // Update type if it changed
-        const newType = stats.account_type === 'regular' ? 'main' : 
-                       stats.account_type === 'ironman' ? 'ironman' :
-                       stats.account_type === 'hardcore' ? 'hardcore' :
-                       stats.account_type === 'ultimate' ? 'ultimate' : 'main';
-        
-        if (newType !== character.type) {
-          updateCharacter(id, 'type', newType);
+    // Try to fetch real stats if we haven't already
+    if (!finalStats.combatLevel || finalStats.combatLevel === 3) {
+      try {
+        const stats = await osrsApi.fetchPlayerStats(newCharacter.name);
+        if (stats) {
+          finalStats = {
+            ...finalStats,
+            combatLevel: stats.combat_level,
+            totalLevel: stats.total_level
+          };
         }
-        
-        toast({
-          title: "Stats Refreshed",
-          description: `Updated ${character.name}: Combat ${stats.combat_level}, Total ${stats.total_level}`
-        });
-      } else {
-        toast({
-          title: "Player Not Found",
-          description: "Could not refresh player stats. Player may be banned or name changed.",
-          variant: "destructive"
-        });
+      } catch (error) {
+        console.error('Error fetching player stats:', error);
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to refresh player stats",
-        variant: "destructive"
-      });
-    } finally {
-      setFetchingStats(false);
-    }
-  };
-
-  const addCharacter = () => {
-    if (!newCharacter.name?.trim()) {
-      toast({
-        title: "Error",
-        description: "Character name is required",
-        variant: "destructive"
-      });
-      return;
     }
 
     const character: Character = {
       id: Date.now().toString(),
-      name: newCharacter.name,
-      type: newCharacter.type as Character['type'],
-      combatLevel: newCharacter.combatLevel || 3,
-      totalLevel: newCharacter.totalLevel || 32,
-      bank: newCharacter.bank || 0,
-      notes: newCharacter.notes || '',
-      isActive: true
+      name: finalStats.name!,
+      type: finalStats.type || 'main',
+      combatLevel: finalStats.combatLevel || 3,
+      totalLevel: finalStats.totalLevel || 32,
+      bank: finalStats.bank || 10000,
+      notes: finalStats.notes || '',
+      isActive: finalStats.isActive ?? true
     };
 
     setCharacters([...characters, character]);
@@ -186,31 +105,20 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
       type: 'main',
       combatLevel: 3,
       totalLevel: 32,
-      bank: 0,
+      bank: 10000,
       notes: '',
       isActive: true
     });
-    
-    toast({
-      title: "Success",
-      description: `Character ${character.name} added successfully`
-    });
+  };
+
+  const updateCharacter = (id: string, updates: Partial<Character>) => {
+    setCharacters(characters.map(char => 
+      char.id === id ? { ...char, ...updates } : char
+    ));
   };
 
   const removeCharacter = (id: string) => {
-    const characterToRemove = characters.find(c => c.id === id);
-    setCharacters(characters.filter(c => c.id !== id));
-    
-    toast({
-      title: "Character Removed",
-      description: `${characterToRemove?.name} has been removed`
-    });
-  };
-
-  const updateCharacter = (id: string, field: keyof Character, value: any) => {
-    setCharacters(characters.map(char => 
-      char.id === id ? { ...char, [field]: value } : char
-    ));
+    setCharacters(characters.filter(char => char.id !== id));
   };
 
   const getTypeColor = (type: Character['type']) => {
@@ -219,67 +127,78 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
       case 'alt': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'ironman': return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
       case 'hardcore': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'ultimate': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'ultimate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
 
-  const formatGold = (amount: number) => {
-    if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(1)}K`;
-    }
-    return amount.toLocaleString();
-  };
+  const activeCharacters = characters.filter(char => char.isActive);
+  const totalBank = activeCharacters.reduce((sum, char) => sum + char.bank, 0);
 
   return (
     <div className="space-y-6">
-      {/* Add New Character */}
-      <Card className="osrs-card">
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="flex items-center p-6">
+            <Users className="h-8 w-8 text-blue-500 mr-3" />
+            <div>
+              <p className="text-2xl font-bold">{activeCharacters.length}</p>
+              <p className="text-sm text-muted-foreground">Active Characters</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="flex items-center p-6">
+            <TrendingUp className="h-8 w-8 text-green-500 mr-3" />
+            <div>
+              <p className="text-2xl font-bold">{totalBank.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Total Bank (GP)</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="flex items-center p-6">
+            <Search className="h-8 w-8 text-purple-500 mr-3" />
+            <div>
+              <p className="text-2xl font-bold">{characters.length}</p>
+              <p className="text-sm text-muted-foreground">Total Characters</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Add Character Form */}
+      <Card className="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
         <CardHeader>
-          <CardTitle className="osrs-title flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
             <Plus className="h-5 w-5" />
-            Add New Character
+            Add Character
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label className="osrs-label">Character Name</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={newCharacter.name || ''}
-                  onChange={(e) => setNewCharacter({...newCharacter, name: e.target.value})}
-                  placeholder="Enter OSRS username"
-                  className="osrs-input"
-                />
-                <Button
-                  onClick={fetchPlayerStats}
-                  disabled={fetchingStats || !newCharacter.name?.trim()}
-                  variant="outline"
-                  size="sm"
-                  className="osrs-button-secondary"
-                >
-                  {fetchingStats ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600" />
-                  ) : (
-                    <Search className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-amber-700 mt-1 opacity-80">
-                Click search to auto-fetch stats from OSRS Hiscores
-              </p>
+              <Label>Character Name</Label>
+              <AutocompleteInput
+                value={newCharacter.name || ''}
+                onChange={(value) => setNewCharacter({...newCharacter, name: value})}
+                onSelect={handlePlayerSelect}
+                placeholder="e.g., Zezima, Lynx Titan"
+                searchFunction={searchPlayerStats}
+                className="bg-white dark:bg-slate-800"
+              />
             </div>
             
             <div>
-              <Label className="osrs-label">Account Type</Label>
+              <Label>Account Type</Label>
               <Select 
                 value={newCharacter.type} 
                 onValueChange={(value) => setNewCharacter({...newCharacter, type: value as Character['type']})}
               >
-                <SelectTrigger className="osrs-input">
+                <SelectTrigger className="bg-white dark:bg-slate-800">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -291,195 +210,127 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                 </SelectContent>
               </Select>
             </div>
-
-            <div>
-              <Label className="osrs-label">Combat Level</Label>
-              <Input
-                type="number"
-                value={newCharacter.combatLevel || ''}
-                readOnly
-                placeholder="Auto-fetched"
-                className="osrs-input bg-amber-50 cursor-not-allowed"
-                min="3"
-                max="126"
-              />
-              <p className="text-xs text-amber-700 mt-1 opacity-80">
-                Automatically fetched from Hiscores
-              </p>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label className="osrs-label">Total Level</Label>
+              <Label>Combat Level</Label>
               <Input
                 type="number"
-                value={newCharacter.totalLevel || ''}
-                readOnly
-                placeholder="Auto-fetched"
-                className="osrs-input bg-amber-50 cursor-not-allowed"
-                min="32"
-                max="2277"
+                value={newCharacter.combatLevel || ''}
+                onChange={(e) => setNewCharacter({...newCharacter, combatLevel: Number(e.target.value)})}
+                placeholder="126"
+                min="3"
+                max="126"
+                className="bg-white dark:bg-slate-800"
               />
-              <p className="text-xs text-amber-700 mt-1 opacity-80">
-                Automatically fetched from Hiscores
-              </p>
             </div>
 
             <div>
-              <Label className="osrs-label">Bank Value (GP)</Label>
+              <Label>Total Level</Label>
+              <Input
+                type="number"
+                value={newCharacter.totalLevel || ''}
+                onChange={(e) => setNewCharacter({...newCharacter, totalLevel: Number(e.target.value)})}
+                placeholder="2277"
+                min="32"
+                max="2277"
+                className="bg-white dark:bg-slate-800"
+              />
+            </div>
+
+            <div>
+              <Label>Bank Value (GP)</Label>
               <Input
                 type="number"
                 value={newCharacter.bank || ''}
                 onChange={(e) => setNewCharacter({...newCharacter, bank: Number(e.target.value)})}
-                placeholder="0"
-                className="osrs-input"
-              />
-              <p className="text-xs text-amber-700 mt-1 opacity-80">
-                Manual entry - can't be fetched automatically
-              </p>
-            </div>
-
-            <div>
-              <Label className="osrs-label">Notes</Label>
-              <Input
-                value={newCharacter.notes || ''}
-                onChange={(e) => setNewCharacter({...newCharacter, notes: e.target.value})}
-                placeholder="Optional notes"
-                className="osrs-input"
+                placeholder="1000000"
+                min="0"
+                className="bg-white dark:bg-slate-800"
               />
             </div>
           </div>
 
-          <Button onClick={addCharacter} className="osrs-button">
+          <div>
+            <Label>Notes</Label>
+            <Textarea
+              value={newCharacter.notes || ''}
+              onChange={(e) => setNewCharacter({...newCharacter, notes: e.target.value})}
+              placeholder="Any additional notes about this character..."
+              className="bg-white dark:bg-slate-800"
+            />
+          </div>
+
+          <Button onClick={addCharacter} className="bg-blue-600 hover:bg-blue-700 text-white">
             <Plus className="h-4 w-4 mr-2" />
             Add Character
           </Button>
         </CardContent>
       </Card>
 
-      {/* Character List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Characters List */}
+      <div className="grid grid-cols-1 gap-4">
         {characters.map((character) => (
-          <Card key={character.id} className={`osrs-card ${!character.isActive ? 'opacity-60' : ''}`}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="osrs-title text-lg">
-                  {character.name}
-                  {!character.isActive && (
-                    <Badge variant="outline" className="ml-2 text-xs bg-red-100 text-red-800">
-                      Inactive
+          <Card key={character.id} className={character.isActive ? '' : 'opacity-60'}>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-semibold">{character.name}</h3>
+                    <Badge className={getTypeColor(character.type)}>
+                      {character.type}
                     </Badge>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={character.isActive}
+                        onCheckedChange={(checked) => updateCharacter(character.id, { isActive: checked })}
+                      />
+                      <span className="text-sm text-muted-foreground">Active</span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Combat:</span>
+                      <span className="ml-1 font-medium">{character.combatLevel}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Total:</span>
+                      <span className="ml-1 font-medium">{character.totalLevel}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Bank:</span>
+                      <span className="ml-1 font-medium">{character.bank.toLocaleString()} GP</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeCharacter(character.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {character.notes && (
+                    <p className="text-sm text-muted-foreground mt-2">{character.notes}</p>
                   )}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => refreshCharacterStats(character.id)}
-                    disabled={fetchingStats}
-                    className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 p-1"
-                    title="Refresh stats from OSRS Hiscores"
-                  >
-                    <RefreshCcw className={`h-4 w-4 ${fetchingStats ? 'animate-spin' : ''}`} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeCharacter(character.id)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
-              
-              <div className="flex items-center justify-between">
-                <Badge 
-                  className={`${getTypeColor(character.type)} cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1`}
-                  onClick={() => toggleCharacterType(character.id)}
-                  title="Click to cycle through account types"
-                >
-                  <Tag className="h-3 w-3" />
-                  {character.type.charAt(0).toUpperCase() + character.type.slice(1)}
-                </Badge>
-                
-                <div className="flex items-center gap-2">
-                  <Label className="text-xs text-amber-700">Active:</Label>
-                  <Switch
-                    checked={character.isActive}
-                    onCheckedChange={() => toggleCharacterActive(character.id)}
-                  />
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <Label className="osrs-label text-xs">Combat Level</Label>
-                  <Input
-                    type="number"
-                    value={character.combatLevel}
-                    readOnly
-                    className="osrs-input h-8 text-sm bg-amber-50 cursor-not-allowed"
-                    min="3"
-                    max="126"
-                  />
-                </div>
-                
-                <div>
-                  <Label className="osrs-label text-xs">Total Level</Label>
-                  <Input
-                    type="number"
-                    value={character.totalLevel}
-                    readOnly
-                    className="osrs-input h-8 text-sm bg-amber-50 cursor-not-allowed"
-                    min="32"
-                    max="2277"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className="osrs-label text-xs">Bank Value</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={character.bank}
-                    onChange={(e) => updateCharacter(character.id, 'bank', Number(e.target.value))}
-                    className="osrs-input h-8 text-sm flex-1"
-                  />
-                  <Badge variant="outline" className="text-xs bg-amber-100 text-amber-800">
-                    {formatGold(character.bank)}gp
-                  </Badge>
-                </div>
-              </div>
-
-              {character.notes && (
-                <div>
-                  <Label className="osrs-label text-xs">Notes</Label>
-                  <Input
-                    value={character.notes}
-                    onChange={(e) => updateCharacter(character.id, 'notes', e.target.value)}
-                    className="osrs-input h-8 text-sm"
-                    placeholder="Notes"
-                  />
-                </div>
-              )}
             </CardContent>
           </Card>
         ))}
       </div>
 
       {characters.length === 0 && (
-        <Card className="osrs-card border-dashed border-amber-300">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Users className="h-12 w-12 text-amber-400 mb-4" />
-            <h3 className="osrs-title text-lg mb-2">No characters yet</h3>
-            <p className="text-amber-700 text-center opacity-80">
-              Add your first character to start tracking your OSRS progress
-            </p>
+        <Card>
+          <CardContent className="text-center py-8">
+            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No characters yet</h3>
+            <p className="text-muted-foreground">Add your first OSRS character to get started with tracking.</p>
           </CardContent>
         </Card>
       )}

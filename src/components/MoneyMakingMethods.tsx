@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X, Coins, TrendingUp, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { MoneyMakerImporter } from "./MoneyMakerImporter";
 import { AutocompleteInput } from "./AutocompleteInput";
 import { osrsApi } from "@/services/osrsApi";
 
@@ -49,8 +48,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     return methods.map(method => ({
       id: method.name,
       name: method.name,
-      subtitle: `${method.profit.toLocaleString()} GP/hr - ${method.membership.toUpperCase()}`,
-      value: method.profit,
+      subtitle: `${method.profit.toLocaleString()} GP/hr - ${method.membership.toUpperCase()} - Intensity ${method.difficulty}/5`,
       category: method.category
     }));
   };
@@ -190,10 +188,6 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     }
   };
 
-  const importMethods = (newMethods: MoneyMethod[]) => {
-    setMethods([...methods, ...newMethods]);
-  };
-
   const removeMethod = (id: string) => {
     const methodToRemove = methods.find(m => m.id === id);
     setMethods(methods.filter(m => m.id !== id));
@@ -253,12 +247,6 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
 
   return (
     <div className="space-y-6">
-      {/* Import from OSRS Wiki */}
-      <MoneyMakerImporter 
-        onImportMethods={importMethods}
-        characters={characters}
-      />
-
       {/* Add New Method */}
       <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
         <CardHeader>
@@ -280,7 +268,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                 ) : (
                   <RefreshCw className="h-4 w-4 mr-2" />
                 )}
-                {isUpdatingPrices ? 'Updating...' : 'Update MP/H'}
+                {isUpdatingPrices ? 'Updating...' : 'Update GP/H'}
               </Button>
             )}
           </div>
@@ -288,7 +276,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Method Name (Auto-fills from Wiki)</Label>
+              <Label>Method Name (Auto-fills from OSRS Wiki Money Makers)</Label>
               <AutocompleteInput
                 value={newMethod.name || ''}
                 onChange={(value) => setNewMethod({...newMethod, name: value})}
@@ -318,7 +306,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
             </div>
           </div>
 
-          {/* Read-only fields that get auto-filled */}
+          {/* Auto-filled display fields */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label>GP per Hour (From Wiki)</Label>
@@ -351,7 +339,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
             </div>
 
             <div>
-              <Label>Notes (Optional)</Label>
+              <Label>Personal Notes (Optional)</Label>
               <Input
                 value={newMethod.notes || ''}
                 onChange={(e) => setNewMethod({...newMethod, notes: e.target.value})}
@@ -430,7 +418,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
             <Coins className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-500 mb-2">No money-making methods yet</h3>
             <p className="text-gray-400 text-center mb-4">
-              Import methods from OSRS Wiki or search to add specific methods
+              Search for OSRS Wiki money-making methods to get started
             </p>
           </CardContent>
         </Card>

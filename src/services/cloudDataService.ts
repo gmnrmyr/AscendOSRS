@@ -47,16 +47,15 @@ interface BankItem {
 // Type mapping functions
 const mapCategoryToDbCategory = (category: string): string => {
   const mapping: Record<string, string> = {
-    'pvm': 'combat',
-    'merching': 'other',
-    'misc': 'other',
-    'consumables': 'other'
+    'combat': 'combat',
+    'skilling': 'skilling', 
+    'bossing': 'bossing',
+    'other': 'other'
   };
   return mapping[category] || category;
 };
 
 const mapDbCategoryToAppCategory = (dbCategory: string): string => {
-  // This handles the reverse mapping when reading from database
   return dbCategory;
 };
 
@@ -109,8 +108,7 @@ export class CloudDataService {
             combat_level: char.combatLevel,
             total_level: char.totalLevel,
             bank: char.bank,
-            notes: char.notes,
-            is_active: char.isActive
+            notes: char.notes
           }))
         );
         if (charactersError) {
@@ -214,7 +212,7 @@ export class CloudDataService {
         totalLevel: char.total_level,
         bank: char.bank,
         notes: char.notes,
-        isActive: Boolean(char.is_active)
+        isActive: true // Default to active since we don't store this in DB
       }));
 
       // Transform money methods with proper type casting

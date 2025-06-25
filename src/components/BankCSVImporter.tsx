@@ -2,168 +2,161 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Upload, FileText } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Upload, FileText, Clipboard } from "lucide-react";
 import { osrsApi } from "@/services/osrsApi";
 
-interface BankItem {
-  id: string;
-  name: string;
-  quantity: number;
-  estimatedPrice: number;
-  category: 'stackable' | 'gear' | 'materials' | 'other';
-  character: string;
-}
-
 interface BankCSVImporterProps {
-  onImportBank: (items: BankItem[], character: string, isUpdate?: boolean) => void;
-  characters: Array<{ id: string; name: string }>;
-  bankData: Record<string, BankItem[]>;
+  onImportBank: (bankItems: Array<{name: string; quantity: number; value: number}>) => void;
+  characters: any[];
 }
 
-export function BankCSVImporter({ onImportBank, characters, bankData }: BankCSVImporterProps) {
-  const [csvData, setCsvData] = useState('');
-  const [selectedCharacter, setSelectedCharacter] = useState('');
-  const [isUpdate, setIsUpdate] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [parsedItems, setParsedItems] = useState<{name: string; quantity: number; value: number}[]>([]);
+export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterProps) {
+  const [csvText, setCsvText] = useState("");
+  const [selectedCharacter, setSelectedCharacter] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result as string;
-        setCsvData(text);
-        handleParseCSV(text);
-      };
-      reader.readAsText(file);
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      setCsvText(text);
+      toast({
+        title: "File Loaded",
+        description: "CSV file content has been loaded. Click Import to process."
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to read file",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleParseCSV = async (data: string) => {
-    try {
-      const items = await osrsApi.parseBankCSV(data);
-      setParsedItems(items);
-    } catch (error) {
-      console.error('Error parsing CSV:', error);
-      setParsedItems([]);
+  const processCSVData = async () => {
+    if (!csvText.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide CSV data either by pasting text or uploading a file",
+        variant: "destructive"
+      });
+      return;
     }
-  };
 
-  const handleImport = async () => {
-    if (!selectedCharacter || parsedItems.length === 0) return;
+    if (!selectedCharacter) {
+      toast({
+        title: "Error", 
+        description: "Please select a character",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    setIsImporting(true);
+    setIsProcessing(true);
     try {
-      const bankItems: BankItem[] = await Promise.all(
-        parsedItems.map(async (item, index) => {
-          let estimatedPrice = item.value;
-          
-          // If no value provided, try to fetch from OSRS API
-          if (!estimatedPrice) {
-            estimatedPrice = await osrsApi.getEstimatedItemValue(item.name);
-          }
+      const parsedItems = await osrsApi.parseBankCSV(csvText);
+      
+      if (parsedItems.length === 0) {
+        toast({
+          title: "No Items Found",
+          description: "No valid items found in the CSV data",
+          variant: "destructive"
+        });
+        return;
+      }
 
-          return {
-            id: `${Date.now()}-${index}`,
-            name: item.name,
-            quantity: item.quantity,
-            estimatedPrice: estimatedPrice,
-            category: 'stackable' as const,
-            character: selectedCharacter
-          };
-        })
-      );
-
-      onImportBank(bankItems, selectedCharacter, isUpdate);
-      setCsvData('');
-      setParsedItems([]);
-      setSelectedCharacter('');
+      onImportBank(parsedItems);
+      setCsvText("");
+      toast({
+        title: "Success",
+        description: `Imported ${parsedItems.length} items for ${selectedCharacter}`
+      });
     } catch (error) {
-      console.error('Error importing bank data:', error);
+      console.error('Error processing CSV:', error);
+      toast({
+        title: "Import Error",
+        description: "Failed to process CSV data. Please check the format.",
+        variant: "destructive"
+      });
     } finally {
-      setIsImporting(false);
+      setIsProcessing(false);
     }
   };
-
-  const currentBankValue = selectedCharacter && bankData[selectedCharacter] 
-    ? bankData[selectedCharacter].reduce((total, item) => total + (item.quantity * item.estimatedPrice), 0)
-    : 0;
 
   return (
-    <Card className="bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
+    <Card className="bg-indigo-50 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-800">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-200">
+        <CardTitle className="flex items-center gap-2 text-indigo-800 dark:text-indigo-200">
           <Upload className="h-5 w-5" />
-          Import Bank Data
+          Import Bank Data (CSV)
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <Label>Select Character</Label>
-          <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
-            <SelectTrigger className="bg-white dark:bg-slate-800">
-              <SelectValue placeholder="Choose character to import bank for" />
-            </SelectTrigger>
-            <SelectContent>
-              {characters.map((char) => (
-                <SelectItem key={char.id} value={char.name}>{char.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <select 
+            value={selectedCharacter}
+            onChange={(e) => setSelectedCharacter(e.target.value)}
+            className="w-full p-2 border rounded bg-white dark:bg-slate-800"
+          >
+            <option value="">Choose character...</option>
+            {characters.map((char) => (
+              <option key={char.id} value={char.name}>{char.name}</option>
+            ))}
+          </select>
         </div>
 
-        {selectedCharacter && bankData[selectedCharacter] && (
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="update-mode" 
-              checked={isUpdate}
-              onCheckedChange={setIsUpdate}
-            />
-            <Label htmlFor="update-mode">
-              Replace existing bank data (Current: {currentBankValue.toLocaleString()} GP)
-            </Label>
-          </div>
-        )}
-
-        <div>
-          <Label>Upload CSV File</Label>
-          <Input
-            type="file"
-            accept=".csv,.json"
-            onChange={handleFileUpload}
-            className="bg-white dark:bg-slate-800"
-          />
-        </div>
-
-        {parsedItems.length > 0 && (
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded border">
-            <div className="flex items-center gap-2 mb-2">
+        <div className="space-y-3">
+          <div>
+            <Label className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              <span className="font-medium">Preview ({parsedItems.length} items)</span>
-            </div>
-            <div className="max-h-32 overflow-y-auto space-y-1 text-sm">
-              {parsedItems.slice(0, 5).map((item, index) => (
-                <div key={index} className="flex justify-between">
-                  <span>{item.name}</span>
-                  <span>{item.quantity.toLocaleString()}x</span>
-                </div>
-              ))}
-              {parsedItems.length > 5 && <div className="text-gray-500">...and {parsedItems.length - 5} more</div>}
-            </div>
+              Upload CSV File
+            </Label>
+            <Input
+              type="file"
+              accept=".csv,.txt"
+              onChange={handleFileUpload}
+              className="bg-white dark:bg-slate-800"
+            />
           </div>
-        )}
+
+          <div className="text-center text-sm text-gray-500">or</div>
+
+          <div>
+            <Label className="flex items-center gap-2">
+              <Clipboard className="h-4 w-4" />
+              Paste CSV Data
+            </Label>
+            <Textarea
+              placeholder="Paste your CSV data here..."
+              value={csvText}
+              onChange={(e) => setCsvText(e.target.value)}
+              rows={6}
+              className="bg-white dark:bg-slate-800"
+            />
+          </div>
+        </div>
+
+        <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+          <p><strong>Supported formats:</strong></p>
+          <p>• RuneLite Bank Export (CSV)</p>
+          <p>• OSRS Data Exporter (JSON)</p>
+          <p>• Custom CSV: Item Name, Quantity, Value</p>
+        </div>
 
         <Button 
-          onClick={handleImport}
-          disabled={!selectedCharacter || parsedItems.length === 0 || isImporting}
-          className="w-full bg-green-600 hover:bg-green-700 text-white"
+          onClick={processCSVData} 
+          disabled={isProcessing || !csvText.trim() || !selectedCharacter}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
         >
-          {isImporting ? 'Importing...' : `Import ${parsedItems.length} Items`}
+          {isProcessing ? "Processing..." : "Import Bank Data"}
         </Button>
       </CardContent>
     </Card>

@@ -44,41 +44,6 @@ interface BankItem {
   character: string;
 }
 
-// Type mapping functions
-const mapCategoryToDbCategory = (category: string): string => {
-  const mapping: Record<string, string> = {
-    'combat': 'combat',
-    'skilling': 'skilling', 
-    'bossing': 'bossing',
-    'other': 'other',
-    'gear': 'gear',
-    'consumables': 'consumables',
-    'materials': 'materials',
-    'stackable': 'stackable'
-  };
-  return mapping[category] || category;
-};
-
-const mapDbCategoryToAppCategory = (dbCategory: string): string => {
-  return dbCategory;
-};
-
-// Helper functions for type casting
-const castToCharacterType = (type: string): Character['type'] => {
-  const validTypes: Character['type'][] = ['main', 'alt', 'ironman', 'hardcore', 'ultimate'];
-  return validTypes.includes(type as Character['type']) ? type as Character['type'] : 'main';
-};
-
-const castToClickIntensity = (intensity: number): MoneyMethod['clickIntensity'] => {
-  const validIntensities: MoneyMethod['clickIntensity'][] = [1, 2, 3, 4, 5];
-  return validIntensities.includes(intensity as MoneyMethod['clickIntensity']) ? intensity as MoneyMethod['clickIntensity'] : 3;
-};
-
-const castToPriority = (priority: string): PurchaseGoal['priority'] => {
-  const validPriorities: PurchaseGoal['priority'][] = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'];
-  return validPriorities.includes(priority as PurchaseGoal['priority']) ? priority as PurchaseGoal['priority'] : 'A';
-};
-
 export class CloudDataService {
   static async saveUserData(
     characters: Character[],
@@ -101,7 +66,7 @@ export class CloudDataService {
         supabase.from('bank_items').delete().eq('user_id', user.id)
       ]);
 
-      // Save characters with proper UUID generation
+      // Save characters
       if (characters.length > 0) {
         const { error: charactersError } = await supabase.from('characters').insert(
           characters.map(char => ({
@@ -120,7 +85,7 @@ export class CloudDataService {
         }
       }
 
-      // Save money methods with proper UUID generation
+      // Save money methods
       if (moneyMethods.length > 0) {
         const { error: methodsError } = await supabase.from('money_methods').insert(
           moneyMethods.map(method => ({
@@ -131,7 +96,7 @@ export class CloudDataService {
             click_intensity: method.clickIntensity,
             requirements: method.requirements || '',
             notes: method.notes || '',
-            category: mapCategoryToDbCategory(method.category)
+            category: method.category
           }))
         );
         if (methodsError) {
@@ -140,7 +105,7 @@ export class CloudDataService {
         }
       }
 
-      // Save purchase goals with proper UUID generation
+      // Save purchase goals
       if (purchaseGoals.length > 0) {
         const { error: goalsError } = await supabase.from('purchase_goals').insert(
           purchaseGoals.map(goal => ({
@@ -150,7 +115,7 @@ export class CloudDataService {
             target_price: goal.targetPrice,
             quantity: goal.quantity,
             priority: goal.priority,
-            category: mapCategoryToDbCategory(goal.category),
+            category: goal.category,
             notes: goal.notes || '',
             image_url: goal.imageUrl || ''
           }))
@@ -161,7 +126,7 @@ export class CloudDataService {
         }
       }
 
-      // Save bank items with proper UUID generation
+      // Save bank items
       const allBankItems = Object.values(bankData).flat();
       if (allBankItems.length > 0) {
         const { error: bankError } = await supabase.from('bank_items').insert(
@@ -170,7 +135,7 @@ export class CloudDataService {
             name: item.name,
             quantity: item.quantity,
             estimated_price: item.estimatedPrice,
-            category: mapCategoryToDbCategory(item.category),
+            category: item.category,
             character: item.character
           }))
         );
@@ -203,39 +168,39 @@ export class CloudDataService {
         supabase.from('bank_items').select('*').eq('user_id', user.id)
       ]);
 
-      // Transform characters with proper type casting
+      // Transform characters
       const characters: Character[] = (charactersResult.data || []).map(char => ({
         id: char.id,
         name: char.name,
-        type: castToCharacterType(char.type),
+        type: char.type as Character['type'],
         combatLevel: char.combat_level,
         totalLevel: char.total_level,
         bank: char.bank,
         notes: char.notes || '',
-        isActive: true // Default to active since we don't store this in DB yet
+        isActive: true
       }));
 
-      // Transform money methods with proper type casting
+      // Transform money methods
       const moneyMethods: MoneyMethod[] = (methodsResult.data || []).map(method => ({
         id: method.id,
         name: method.name,
         character: method.character,
         gpHour: method.gp_hour,
-        clickIntensity: castToClickIntensity(method.click_intensity),
+        clickIntensity: method.click_intensity as MoneyMethod['clickIntensity'],
         requirements: method.requirements || '',
         notes: method.notes || '',
-        category: mapDbCategoryToAppCategory(method.category) as MoneyMethod['category']
+        category: method.category as MoneyMethod['category']
       }));
 
-      // Transform purchase goals with proper type casting
+      // Transform purchase goals
       const purchaseGoals: PurchaseGoal[] = (goalsResult.data || []).map(goal => ({
         id: goal.id,
         name: goal.name,
         currentPrice: goal.current_price,
         targetPrice: goal.target_price,
         quantity: goal.quantity,
-        priority: castToPriority(goal.priority),
-        category: mapDbCategoryToAppCategory(goal.category) as PurchaseGoal['category'],
+        priority: goal.priority as PurchaseGoal['priority'],
+        category: goal.category as PurchaseGoal['category'],
         notes: goal.notes || '',
         imageUrl: goal.image_url || ''
       }));
@@ -246,7 +211,7 @@ export class CloudDataService {
         name: item.name,
         quantity: item.quantity,
         estimatedPrice: item.estimated_price,
-        category: mapDbCategoryToAppCategory(item.category) as BankItem['category'],
+        category: item.category as BankItem['category'],
         character: item.character
       }));
 
@@ -265,7 +230,7 @@ export class CloudDataService {
         moneyMethods,
         purchaseGoals,
         bankData,
-        hoursPerDay: 10 // Default value, could be stored in a user_settings table
+        hoursPerDay: 10
       };
     } catch (error) {
       console.error('Error loading from cloud:', error);

@@ -1,4 +1,3 @@
-
 import type { OSRSItem, MoneyMakingGuide } from './api/types';
 
 const OSRS_WIKI_API_BASE = 'https://prices.runescape.wiki/api/v1/osrs';
@@ -109,17 +108,29 @@ export const osrsApi = {
 
   async getDefaultMoneyMakers(query?: string): Promise<MoneyMakingGuide[]> {
     try {
-      // Static list of popular OSRS money making methods
+      // Comprehensive list of OSRS money making methods from the wiki
       const staticMethods: MoneyMakingGuide[] = [
+        // High-tier PvM
         {
-          id: 'brutal-black-dragons',
-          name: 'Brutal Black Dragons',
-          profit: 1000000,
-          skill: 'Ranged',
-          requirements: ['High Ranged level', 'Twisted Bow recommended'],
-          description: 'Killing Brutal Black Dragons with ranged',
-          category: 'combat',
-          difficulty: 3,
+          id: 'tob-challenge-mode',
+          name: 'Theatre of Blood: Entry Mode',
+          profit: 4200000,
+          skill: 'Combat',
+          requirements: ['High combat stats', 'Good team coordination'],
+          description: 'Completing Theatre of Blood raids',
+          category: 'bossing',
+          difficulty: 5,
+          membership: 'p2p'
+        },
+        {
+          id: 'chambers-of-xeric',
+          name: 'Chambers of Xeric',
+          profit: 3800000,
+          skill: 'Combat',
+          requirements: ['High combat stats', 'Prayer', 'Herblore'],
+          description: 'Completing Chambers of Xeric raids',
+          category: 'bossing',
+          difficulty: 5,
           membership: 'p2p'
         },
         {
@@ -145,6 +156,63 @@ export const osrsApi = {
           membership: 'p2p'
         },
         {
+          id: 'nightmare',
+          name: 'The Nightmare',
+          profit: 2800000,
+          skill: 'Combat',
+          requirements: ['High combat stats', 'Good gear'],
+          description: 'Fighting The Nightmare boss',
+          category: 'bossing',
+          difficulty: 5,
+          membership: 'p2p'
+        },
+        {
+          id: 'cerberus',
+          name: 'Cerberus',
+          profit: 2100000,
+          skill: 'Slayer',
+          requirements: ['91 Slayer', 'High combat stats'],
+          description: 'Killing Cerberus on slayer task',
+          category: 'bossing',
+          difficulty: 4,
+          membership: 'p2p'
+        },
+        {
+          id: 'hydra',
+          name: 'Alchemical Hydra',
+          profit: 1800000,
+          skill: 'Slayer',
+          requirements: ['95+ Slayer', 'Karuulm Slayer Dungeon'],
+          description: 'Killing Alchemical Hydra',
+          category: 'bossing',
+          difficulty: 4,
+          membership: 'p2p'
+        },
+
+        // Mid-tier PvM
+        {
+          id: 'brutal-black-dragons',
+          name: 'Brutal Black Dragons',
+          profit: 1000000,
+          skill: 'Ranged',
+          requirements: ['High Ranged level', 'Anti-dragon shield'],
+          description: 'Killing Brutal Black Dragons with ranged',
+          category: 'combat',
+          difficulty: 3,
+          membership: 'p2p'
+        },
+        {
+          id: 'demonic-gorillas',
+          name: 'Demonic Gorillas',
+          profit: 1200000,
+          skill: 'Combat',
+          requirements: ['Monkey Madness II', 'High combat stats'],
+          description: 'Killing Demonic Gorillas',
+          category: 'combat',
+          difficulty: 4,
+          membership: 'p2p'
+        },
+        {
           id: 'gargoyles',
           name: 'Gargoyles',
           profit: 600000,
@@ -156,14 +224,38 @@ export const osrsApi = {
           membership: 'p2p'
         },
         {
-          id: 'cannonballs',
-          name: 'Making Cannonballs',
-          profit: 150000,
+          id: 'barrows',
+          name: 'Barrows',
+          profit: 800000,
+          skill: 'Combat',
+          requirements: ['Medium-high combat', 'Morytania Hard Diary'],
+          description: 'Completing Barrows runs for unique items',
+          category: 'bossing',
+          difficulty: 3,
+          membership: 'p2p'
+        },
+        {
+          id: 'dagannoth-kings',
+          name: 'Dagannoth Kings',
+          profit: 1400000,
+          skill: 'Combat',
+          requirements: ['High combat stats', 'Mixed combat styles'],
+          description: 'Killing the three Dagannoth Kings',
+          category: 'bossing',
+          difficulty: 4,
+          membership: 'p2p'
+        },
+
+        // Skilling methods
+        {
+          id: 'blast-furnace',
+          name: 'Blast Furnace',
+          profit: 1200000,
           skill: 'Smithing',
-          requirements: ['35 Smithing', 'Dwarf Cannon quest'],
-          description: 'AFK smithing cannonballs',
+          requirements: ['60+ Smithing', 'Good starting capital'],
+          description: 'Smelting bars at Blast Furnace',
           category: 'skilling',
-          difficulty: 1,
+          difficulty: 3,
           membership: 'p2p'
         },
         {
@@ -178,32 +270,104 @@ export const osrsApi = {
           membership: 'p2p'
         },
         {
-          id: 'blast-furnace',
-          name: 'Blast Furnace',
-          profit: 1200000,
+          id: 'runecrafting-bloods',
+          name: 'Blood Runes',
+          profit: 450000,
+          skill: 'Runecrafting',
+          requirements: ['77 Runecrafting', 'Sins of the Father'],
+          description: 'Crafting Blood runes in Zeah',
+          category: 'skilling',
+          difficulty: 1,
+          membership: 'p2p'
+        },
+        {
+          id: 'cannonballs',
+          name: 'Making Cannonballs',
+          profit: 150000,
           skill: 'Smithing',
-          requirements: ['60+ Smithing', 'Good starting capital'],
-          description: 'Smelting bars at Blast Furnace',
+          requirements: ['35 Smithing', 'Dwarf Cannon quest'],
+          description: 'AFK smithing cannonballs',
+          category: 'skilling',
+          difficulty: 1,
+          membership: 'p2p'
+        },
+        {
+          id: 'fishing-karambwans',
+          name: 'Karambwan Fishing',
+          profit: 400000,
+          skill: 'Fishing',
+          requirements: ['65+ Fishing', 'Tai Bwo Wannai Trio'],
+          description: 'Fishing and cooking karambwans',
+          category: 'skilling',
+          difficulty: 2,
+          membership: 'p2p'
+        },
+        {
+          id: 'hunting-chinchompas',
+          name: 'Hunting Red Chinchompas',
+          profit: 700000,
+          skill: 'Hunter',
+          requirements: ['63+ Hunter'],
+          description: 'Hunting red chinchompas in the wilderness',
           category: 'skilling',
           difficulty: 3,
           membership: 'p2p'
         },
+
+        // F2P methods
         {
-          id: 'barrows',
-          name: 'Barrows',
-          profit: 800000,
+          id: 'green-dragons',
+          name: 'Green Dragons',
+          profit: 400000,
           skill: 'Combat',
-          requirements: ['Medium-high combat', 'Morytania Hard Diary'],
-          description: 'Completing Barrows runs for unique items',
-          category: 'bossing',
-          difficulty: 3,
+          requirements: ['Medium combat stats', 'Wilderness access'],
+          description: 'Killing Green Dragons in Wilderness',
+          category: 'combat',
+          difficulty: 2,
+          membership: 'f2p'
+        },
+        {
+          id: 'hill-giants',
+          name: 'Hill Giants',
+          profit: 200000,
+          skill: 'Combat',
+          requirements: ['Low combat stats'],
+          description: 'Killing Hill Giants for big bones',
+          category: 'combat',
+          difficulty: 1,
+          membership: 'f2p'
+        },
+
+        // Other methods
+        {
+          id: 'farming-herbs',
+          name: 'Herb Farming',
+          profit: 600000,
+          skill: 'Farming',
+          requirements: ['32+ Farming', 'Magic secateurs'],
+          description: 'Growing and harvesting herbs',
+          category: 'skilling',
+          difficulty: 2,
+          membership: 'p2p'
+        },
+        {
+          id: 'flipping-items',
+          name: 'Grand Exchange Flipping',
+          profit: 500000,
+          skill: 'Trading',
+          requirements: ['Starting capital', 'Market knowledge'],
+          description: 'Buying low and selling high on GE',
+          category: 'other',
+          difficulty: 2,
           membership: 'p2p'
         }
       ];
 
       if (query) {
         return staticMethods.filter(method => 
-          method.name.toLowerCase().includes(query.toLowerCase())
+          method.name.toLowerCase().includes(query.toLowerCase()) ||
+          method.skill.toLowerCase().includes(query.toLowerCase()) ||
+          method.description.toLowerCase().includes(query.toLowerCase())
         );
       }
 

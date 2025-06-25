@@ -16,7 +16,6 @@ interface BankCSVImporterProps {
 
 export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterProps) {
   const [csvText, setCsvText] = useState("");
-  const [selectedCharacter, setSelectedCharacter] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
@@ -50,15 +49,6 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
       return;
     }
 
-    if (!selectedCharacter) {
-      toast({
-        title: "Error", 
-        description: "Please select a character",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsProcessing(true);
     try {
       const parsedItems = await osrsApi.parseBankCSV(csvText);
@@ -76,7 +66,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
       setCsvText("");
       toast({
         title: "Success",
-        description: `Imported ${parsedItems.length} items for ${selectedCharacter}`
+        description: `Imported ${parsedItems.length} items`
       });
     } catch (error) {
       console.error('Error processing CSV:', error);
@@ -99,20 +89,6 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
-          <Label>Select Character</Label>
-          <select 
-            value={selectedCharacter}
-            onChange={(e) => setSelectedCharacter(e.target.value)}
-            className="w-full p-2 border rounded bg-white dark:bg-slate-800"
-          >
-            <option value="">Choose character...</option>
-            {characters.map((char) => (
-              <option key={char.id} value={char.name}>{char.name}</option>
-            ))}
-          </select>
-        </div>
-
         <div className="space-y-3">
           <div>
             <Label className="flex items-center gap-2">
@@ -153,7 +129,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
 
         <Button 
           onClick={processCSVData} 
-          disabled={isProcessing || !csvText.trim() || !selectedCharacter}
+          disabled={isProcessing || !csvText.trim()}
           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white"
         >
           {isProcessing ? "Processing..." : "Import Bank Data"}

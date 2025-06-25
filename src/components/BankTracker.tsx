@@ -53,18 +53,22 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     getCategoryColor
   } = useBankCalculations(bankData);
 
-  const handleImportBank = (items: BankItem[], character: string, isUpdate?: boolean) => {
-    if (isUpdate) {
-      setBankData({
-        ...bankData,
-        [character]: items
-      });
-    } else {
-      setBankData({
-        ...bankData,
-        [character]: [...(bankData[character] || []), ...items]
-      });
-    }
+  const handleImportBank = (bankItems: Array<{name: string; quantity: number; value: number}>) => {
+    if (!selectedCharacter) return;
+    
+    const items: BankItem[] = bankItems.map(item => ({
+      id: Date.now().toString() + Math.random(),
+      name: item.name,
+      quantity: item.quantity,
+      estimatedPrice: item.value,
+      category: 'other' as const,
+      character: selectedCharacter
+    }));
+    
+    setBankData({
+      ...bankData,
+      [selectedCharacter]: [...(bankData[selectedCharacter] || []), ...items]
+    });
   };
 
   return (
@@ -72,7 +76,6 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
       <BankCSVImporter 
         onImportBank={handleImportBank}
         characters={characters}
-        bankData={bankData}
       />
 
       <BankSummary 

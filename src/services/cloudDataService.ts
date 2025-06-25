@@ -212,7 +212,7 @@ export class CloudDataService {
         totalLevel: char.total_level,
         bank: char.bank,
         notes: char.notes,
-        isActive: true // Default to active since we don't store this in DB
+        isActive: true // Default to active since we don't store this in DB yet
       }));
 
       // Transform money methods with proper type casting

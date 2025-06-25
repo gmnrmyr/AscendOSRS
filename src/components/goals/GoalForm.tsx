@@ -42,16 +42,31 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
   });
 
   const searchItems = async (query: string) => {
+    // First try to search items from OSRS Wiki
     const items = await osrsApi.searchItems(query);
     
-    return items.map(item => ({
+    // Also get money making methods that might be relevant
+    const moneyMethods = await osrsApi.getMoneyMakingMethods(query);
+    
+    const itemResults = items.map(item => ({
       id: item.id,
       name: item.name,
-      subtitle: 'OSRS Item',
+      subtitle: `${item.current_price ? item.current_price.toLocaleString() + ' GP' : 'OSRS Item'}`,
       icon: item.icon,
       value: item.current_price || 0,
       category: 'item'
     }));
+
+    const methodResults = moneyMethods.map(method => ({
+      id: method.id,
+      name: method.name,
+      subtitle: `${method.profit.toLocaleString()} GP/hr - ${method.category}`,
+      icon: '',
+      value: method.profit,
+      category: 'method'
+    }));
+
+    return [...itemResults, ...methodResults];
   };
 
   const handleItemSelect = async (option: any) => {
@@ -59,20 +74,25 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     let itemIcon = option.icon;
     let itemId = option.id;
 
-    if (!itemId || !Number.isInteger(itemId)) {
-      // Try to get item ID from the OSRS API mapping
-      const searchResults = await osrsApi.searchItems(option.name);
-      if (searchResults.length > 0) {
-        itemId = searchResults[0].id;
-        currentPrice = searchResults[0].current_price || 0;
-        itemIcon = searchResults[0].icon || '';
-      }
+    if (option.category === 'method') {
+      // For money making methods, use the profit as price
+      currentPrice = option.value;
+      itemIcon = '';
     } else {
-      // Fetch price for the item
-      try {
-        currentPrice = await osrsApi.fetchSingleItemPrice(itemId);
-      } catch (error) {
-        currentPrice = option.value || 0;
+      // For items, fetch current price
+      if (!itemId || !Number.isInteger(itemId)) {
+        const searchResults = await osrsApi.searchItems(option.name);
+        if (searchResults.length > 0) {
+          itemId = searchResults[0].id;
+          currentPrice = searchResults[0].current_price || 0;
+          itemIcon = searchResults[0].icon || '';
+        }
+      } else {
+        try {
+          currentPrice = await osrsApi.fetchSingleItemPrice(itemId);
+        } catch (error) {
+          currentPrice = option.value || 0;
+        }
       }
     }
 
@@ -173,7 +193,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <Label>Quantity</Label>
             <Input
@@ -225,16 +245,6 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div>
-            <Label>Notes</Label>
-            <Input
-              value={newGoal.notes || ''}
-              onChange={(e) => setNewGoal({...newGoal, notes: e.target.value})}
-              placeholder="Additional notes..."
-              className="bg-white dark:bg-slate-800"
-            />
           </div>
         </div>
 

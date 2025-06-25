@@ -60,6 +60,22 @@ const mapDbCategoryToAppCategory = (dbCategory: string): string => {
   return dbCategory;
 };
 
+// Helper functions for type casting
+const castToCharacterType = (type: string): Character['type'] => {
+  const validTypes: Character['type'][] = ['main', 'alt', 'ironman', 'hardcore', 'ultimate'];
+  return validTypes.includes(type as Character['type']) ? type as Character['type'] : 'main';
+};
+
+const castToClickIntensity = (intensity: number): MoneyMethod['clickIntensity'] => {
+  const validIntensities: MoneyMethod['clickIntensity'][] = [1, 2, 3, 4, 5];
+  return validIntensities.includes(intensity as MoneyMethod['clickIntensity']) ? intensity as MoneyMethod['clickIntensity'] : 3;
+};
+
+const castToPriority = (priority: string): PurchaseGoal['priority'] => {
+  const validPriorities: PurchaseGoal['priority'][] = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'];
+  return validPriorities.includes(priority as PurchaseGoal['priority']) ? priority as PurchaseGoal['priority'] : 'A';
+};
+
 export class CloudDataService {
   static async saveUserData(
     characters: Character[],
@@ -189,38 +205,38 @@ export class CloudDataService {
         supabase.from('bank_items').select('*').eq('user_id', user.id)
       ]);
 
-      // Transform characters
+      // Transform characters with proper type casting
       const characters: Character[] = (charactersResult.data || []).map(char => ({
         id: char.id,
         name: char.name,
-        type: char.type,
+        type: castToCharacterType(char.type),
         combatLevel: char.combat_level,
         totalLevel: char.total_level,
         bank: char.bank,
         notes: char.notes,
-        isActive: char.is_active
+        isActive: Boolean(char.is_active)
       }));
 
-      // Transform money methods
+      // Transform money methods with proper type casting
       const moneyMethods: MoneyMethod[] = (methodsResult.data || []).map(method => ({
         id: method.id,
         name: method.name,
         character: method.character,
         gpHour: method.gp_hour,
-        clickIntensity: method.click_intensity,
+        clickIntensity: castToClickIntensity(method.click_intensity),
         requirements: method.requirements,
         notes: method.notes,
         category: mapDbCategoryToAppCategory(method.category) as MoneyMethod['category']
       }));
 
-      // Transform purchase goals
+      // Transform purchase goals with proper type casting
       const purchaseGoals: PurchaseGoal[] = (goalsResult.data || []).map(goal => ({
         id: goal.id,
         name: goal.name,
         currentPrice: goal.current_price,
         targetPrice: goal.target_price,
         quantity: goal.quantity,
-        priority: goal.priority,
+        priority: castToPriority(goal.priority),
         category: mapDbCategoryToAppCategory(goal.category) as PurchaseGoal['category'],
         notes: goal.notes,
         imageUrl: goal.image_url

@@ -40,9 +40,9 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
   });
 
   const searchPlayerStats = async (query: string) => {
-    // Return mock results for autocomplete
+    // Return mock results for autocomplete - fix value type to be optional number
     return [
-      { id: query, name: query, subtitle: 'OSRS Player', icon: '👤', value: query, category: 'player' }
+      { id: query, name: query, subtitle: 'OSRS Player', icon: '👤', category: 'player' }
     ];
   };
 

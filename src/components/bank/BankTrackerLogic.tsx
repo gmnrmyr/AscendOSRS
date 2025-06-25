@@ -26,6 +26,7 @@ export function useBankTracker({ bankData, setBankData }: UseBankTrackerProps) {
     category: 'other'
   });
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAutoInputEnabled, setIsAutoInputEnabled] = useState(false);
   const { toast } = useToast();
 
   const addItem = () => {
@@ -211,61 +212,125 @@ export function useBankTracker({ bankData, setBankData }: UseBankTrackerProps) {
     }
   };
 
+  const refreshGoldValue = async (character: string) => {
+    setIsRefreshing(true);
+    try {
+      // This would typically fetch from an API or recalculate
+      // For now, we'll just recalculate from existing data
+      const items = bankData[character] || [];
+      const coinsItem = items.find(item => item.name.toLowerCase().includes('coin'));
+      const platItem = items.find(item => item.name.toLowerCase().includes('platinum'));
+      
+      let totalGoldValue = 0;
+      if (coinsItem) totalGoldValue += coinsItem.quantity || 0;
+      if (platItem) totalGoldValue += (platItem.quantity || 0) * 1000;
+      
+      toast({
+        title: "Gold Value Refreshed",
+        description: `Total gold value: ${totalGoldValue.toLocaleString()} GP`
+      });
+    } catch (error) {
+      console.error('Error refreshing gold value:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "Could not refresh gold value",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const autoInputGoldValue = (character: string, totalValue: number) => {
+    // Auto-distribute the total value between coins and platinum tokens
+    const platTokens = Math.floor(totalValue / 1000);
+    const remainingCoins = totalValue % 1000;
+    
+    updateGoldTokens(character, 'platinum', platTokens);
+    updateGoldTokens(character, 'coins', remainingCoins);
+    
+    toast({
+      title: "Auto Input Complete",
+      description: `Set ${platTokens.toLocaleString()} platinum tokens and ${remainingCoins.toLocaleString()} coins`
+    });
+  };
+
   return {
     selectedCharacter,
     setSelectedCharacter,
     newItem,
     setNewItem,
     isRefreshing,
+    isAutoInputEnabled,
+    setIsAutoInputEnabled,
     addItem,
     removeItem,
     updateItem,
     addQuickItems,
     refreshAllPrices,
-    updateGoldTokens
+    updateGoldTokens,
+    refreshGoldValue,
+    autoInputGoldValue
   };
 }
 
 export function useBankCalculations(bankData: Record<string, BankItem[]>) {
   const formatGP = (amount: number) => {
-    if (amount >= 1000000000) {
-      return `${(amount / 1000000000).toFixed(1)}B`;
-    } else if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(0)}K`;
+    // Handle NaN and undefined values
+    const safeAmount = Number(amount) || 0;
+    
+    if (safeAmount >= 1000000000) {
+      return `${(safeAmount / 1000000000).toFixed(1)}B`;
+    } else if (safeAmount >= 1000000) {
+      return `${(safeAmount / 1000000).toFixed(1)}M`;
+    } else if (safeAmount >= 1000) {
+      return `${(safeAmount / 1000).toFixed(0)}K`;
     }
-    return amount.toLocaleString();
+    return safeAmount.toLocaleString();
   };
 
   const getCharacterBankValue = (character: string) => {
     const items = bankData[character] || [];
-    return items.reduce((total, item) => total + (item.quantity * item.estimatedPrice), 0);
+    const total = items.reduce((sum, item) => {
+      const quantity = Number(item.quantity) || 0;
+      const price = Number(item.estimatedPrice) || 0;
+      return sum + (quantity * price);
+    }, 0);
+    return Number(total) || 0;
   };
 
   const getCharacterGoldValue = (character: string) => {
     const items = bankData[character] || [];
     const coins = items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
     const platTokens = items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
-    return coins + (platTokens * 1000);
+    const total = Number(coins) + (Number(platTokens) * 1000);
+    return Number(total) || 0;
   };
 
   const getTotalBankValue = () => {
-    return Object.keys(bankData).reduce((total, character) => total + getCharacterBankValue(character), 0);
+    const total = Object.keys(bankData).reduce((sum, character) => {
+      return sum + getCharacterBankValue(character);
+    }, 0);
+    return Number(total) || 0;
   };
 
   const getTotalGoldValue = () => {
-    return Object.keys(bankData).reduce((total, character) => total + getCharacterGoldValue(character), 0);
+    const total = Object.keys(bankData).reduce((sum, character) => {
+      return sum + getCharacterGoldValue(character);
+    }, 0);
+    return Number(total) || 0;
   };
 
   const getCharacterCoins = (character: string) => {
     const items = bankData[character] || [];
-    return items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
+    const coins = items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
+    return Number(coins) || 0;
   };
 
   const getCharacterPlatTokens = (character: string) => {
     const items = bankData[character] || [];
-    return items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
+    const platTokens = items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
+    return Number(platTokens) || 0;
   };
 
   const getCategoryColor = (category: string) => {

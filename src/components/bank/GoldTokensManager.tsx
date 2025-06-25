@@ -1,8 +1,11 @@
 
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Coins, DollarSign } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Coins, DollarSign, RefreshCw, Zap } from "lucide-react";
 
 interface GoldTokensManagerProps {
   selectedCharacter: string;
@@ -11,6 +14,11 @@ interface GoldTokensManagerProps {
   updateGoldTokens: (character: string, type: 'coins' | 'platinum', quantity: number) => void;
   getCharacterGoldValue: (character: string) => number;
   formatGP: (amount: number) => string;
+  refreshGoldValue?: (character: string) => Promise<void>;
+  autoInputGoldValue?: (character: string, totalValue: number) => void;
+  isRefreshing?: boolean;
+  isAutoInputEnabled?: boolean;
+  setIsAutoInputEnabled?: (enabled: boolean) => void;
 }
 
 export function GoldTokensManager({
@@ -19,21 +27,104 @@ export function GoldTokensManager({
   getCharacterPlatTokens,
   updateGoldTokens,
   getCharacterGoldValue,
-  formatGP
+  formatGP,
+  refreshGoldValue,
+  autoInputGoldValue,
+  isRefreshing = false,
+  isAutoInputEnabled = false,
+  setIsAutoInputEnabled
 }: GoldTokensManagerProps) {
+  const [autoInputValue, setAutoInputValue] = useState<string>('');
+  
   const coins = getCharacterCoins(selectedCharacter);
   const platTokens = getCharacterPlatTokens(selectedCharacter);
   const totalGoldValue = getCharacterGoldValue(selectedCharacter);
 
+  const handleRefresh = () => {
+    if (refreshGoldValue) {
+      refreshGoldValue(selectedCharacter);
+    }
+  };
+
+  const handleAutoInput = () => {
+    const value = parseInt(autoInputValue.replace(/,/g, ''));
+    if (!isNaN(value) && value > 0 && autoInputGoldValue) {
+      autoInputGoldValue(selectedCharacter, value);
+      setAutoInputValue('');
+    }
+  };
+
   return (
     <Card className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/10 dark:to-amber-900/10 border-yellow-200 dark:border-yellow-800">
       <CardContent className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Coins className="h-6 w-6 text-yellow-600" />
-          <h3 className="text-xl font-bold text-yellow-800 dark:text-yellow-200">
-            Gold & Platinum Tokens
-          </h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Coins className="h-6 w-6 text-yellow-600" />
+            <h3 className="text-xl font-bold text-yellow-800 dark:text-yellow-200">
+              Gold & Platinum Tokens
+            </h3>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              variant="outline"
+              size="sm"
+              className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
+            >
+              {isRefreshing ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              Refresh
+            </Button>
+            
+            {setIsAutoInputEnabled && (
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={isAutoInputEnabled}
+                  onCheckedChange={setIsAutoInputEnabled}
+                />
+                <span className="text-sm text-yellow-700">Auto Input</span>
+              </div>
+            )}
+          </div>
         </div>
+        
+        {isAutoInputEnabled && (
+          <div className="mb-6 p-4 bg-amber-100 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-700">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="h-4 w-4 text-amber-600" />
+              <Label className="text-base font-semibold text-amber-800 dark:text-amber-200">
+                Auto Input Total Gold Value
+              </Label>
+            </div>
+            
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={autoInputValue}
+                onChange={(e) => setAutoInputValue(e.target.value)}
+                placeholder="Enter total GP value (e.g., 1000000)"
+                className="bg-white dark:bg-slate-800"
+              />
+              <Button
+                onClick={handleAutoInput}
+                disabled={!autoInputValue.trim()}
+                className="bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Auto Set
+              </Button>
+            </div>
+            
+            <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">
+              This will automatically distribute the total value between platinum tokens and coins
+            </p>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2">

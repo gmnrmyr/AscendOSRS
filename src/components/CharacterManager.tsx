@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, TrendingUp, Search, Trash2 } from "lucide-react";
+import { Plus, Users, TrendingUp, Search, Trash2, Edit, Save, X } from "lucide-react";
 import { AutocompleteInput } from "./AutocompleteInput";
 import { osrsApi } from "@/services/osrsApi";
 
@@ -39,10 +38,13 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
     isActive: true
   });
 
+  const [editingCharacter, setEditingCharacter] = useState<string | null>(null);
+  const [editCharacterData, setEditCharacterData] = useState<Partial<Character>>({});
+
   const searchPlayerStats = async (query: string) => {
-    // Return mock results for autocomplete - fix value type to be optional number
+    // Return mock results for autocomplete
     return [
-      { id: query, name: query, subtitle: 'OSRS Player', icon: '👤', category: 'player' }
+      { id: query, name: query, subtitle: 'OSRS Player', icon: '👤', value: query, category: 'player' }
     ];
   };
 
@@ -50,20 +52,36 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
     try {
       const stats = await osrsApi.fetchPlayerStats(option.name);
       if (stats) {
-        setNewCharacter({
-          ...newCharacter,
-          name: stats.username,
-          combatLevel: stats.combat_level,
-          totalLevel: stats.total_level
-        });
+        if (editingCharacter) {
+          setEditCharacterData({
+            ...editCharacterData,
+            name: stats.username,
+            combatLevel: stats.combat_level,
+            totalLevel: stats.total_level
+          });
+        } else {
+          setNewCharacter({
+            ...newCharacter,
+            name: stats.username,
+            combatLevel: stats.combat_level,
+            totalLevel: stats.total_level
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching player stats:', error);
       // Fallback to just setting the name
-      setNewCharacter({
-        ...newCharacter,
-        name: option.name
-      });
+      if (editingCharacter) {
+        setEditCharacterData({
+          ...editCharacterData,
+          name: option.name
+        });
+      } else {
+        setNewCharacter({
+          ...newCharacter,
+          name: option.name
+        });
+      }
     }
   };
 
@@ -111,6 +129,46 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
     });
   };
 
+  const startEditingCharacter = (character: Character) => {
+    setEditingCharacter(character.id);
+    setEditCharacterData({ ...character });
+  };
+
+  const saveCharacterUpdate = async () => {
+    if (!editingCharacter || !editCharacterData.name?.trim()) return;
+
+    let finalStats = { ...editCharacterData };
+
+    // Try to fetch real stats if name changed
+    const originalChar = characters.find(c => c.id === editingCharacter);
+    if (originalChar && originalChar.name !== editCharacterData.name) {
+      try {
+        const stats = await osrsApi.fetchPlayerStats(editCharacterData.name);
+        if (stats) {
+          finalStats = {
+            ...finalStats,
+            combatLevel: stats.combat_level,
+            totalLevel: stats.total_level
+          };
+        }
+      } catch (error) {
+        console.error('Error fetching player stats:', error);
+      }
+    }
+
+    setCharacters(characters.map(char => 
+      char.id === editingCharacter ? { ...char, ...finalStats } : char
+    ));
+
+    setEditingCharacter(null);
+    setEditCharacterData({});
+  };
+
+  const cancelEdit = () => {
+    setEditingCharacter(null);
+    setEditCharacterData({});
+  };
+
   const updateCharacter = (id: string, updates: Partial<Character>) => {
     setCharacters(characters.map(char => 
       char.id === id ? { ...char, ...updates } : char
@@ -133,7 +191,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
   };
 
   const activeCharacters = characters.filter(char => char.isActive);
-  const totalBank = activeCharacters.reduce((sum, char) => sum + char.bank, 0);
+  const totalBank = activeCharacters.reduce((sum, char) => sum + (char.bank || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -274,52 +332,162 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
         {characters.map((character) => (
           <Card key={character.id} className={character.isActive ? '' : 'opacity-60'}>
             <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold">{character.name}</h3>
-                    <Badge className={getTypeColor(character.type)}>
-                      {character.type}
-                    </Badge>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={character.isActive}
-                        onCheckedChange={(checked) => updateCharacter(character.id, { isActive: checked })}
+              {editingCharacter === character.id ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Character Name</Label>
+                      <AutocompleteInput
+                        value={editCharacterData.name || ''}
+                        onChange={(value) => setEditCharacterData({...editCharacterData, name: value})}
+                        onSelect={handlePlayerSelect}
+                        placeholder="Character name"
+                        searchFunction={searchPlayerStats}
+                        className="bg-white dark:bg-slate-800"
                       />
-                      <span className="text-sm text-muted-foreground">Active</span>
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    
                     <div>
-                      <span className="text-muted-foreground">Combat:</span>
-                      <span className="ml-1 font-medium">{character.combatLevel}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Total:</span>
-                      <span className="ml-1 font-medium">{character.totalLevel}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Bank:</span>
-                      <span className="ml-1 font-medium">{character.bank.toLocaleString()} GP</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeCharacter(character.id)}
-                        className="text-red-600 hover:text-red-700"
+                      <Label>Account Type</Label>
+                      <Select 
+                        value={editCharacterData.type} 
+                        onValueChange={(value) => setEditCharacterData({...editCharacterData, type: value as Character['type']})}
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <SelectTrigger className="bg-white dark:bg-slate-800">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="main">Main</SelectItem>
+                          <SelectItem value="alt">Alt</SelectItem>
+                          <SelectItem value="ironman">Ironman</SelectItem>
+                          <SelectItem value="hardcore">Hardcore Ironman</SelectItem>
+                          <SelectItem value="ultimate">Ultimate Ironman</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                  
-                  {character.notes && (
-                    <p className="text-sm text-muted-foreground mt-2">{character.notes}</p>
-                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Combat Level</Label>
+                      <Input
+                        type="number"
+                        value={editCharacterData.combatLevel || ''}
+                        onChange={(e) => setEditCharacterData({...editCharacterData, combatLevel: Number(e.target.value)})}
+                        min="3"
+                        max="126"
+                        className="bg-white dark:bg-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Total Level</Label>
+                      <Input
+                        type="number"
+                        value={editCharacterData.totalLevel || ''}
+                        onChange={(e) => setEditCharacterData({...editCharacterData, totalLevel: Number(e.target.value)})}
+                        min="32"
+                        max="2277"
+                        className="bg-white dark:bg-slate-800"
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Bank Value (GP)</Label>
+                      <Input
+                        type="number"
+                        value={editCharacterData.bank || ''}
+                        onChange={(e) => setEditCharacterData({...editCharacterData, bank: Number(e.target.value)})}
+                        min="0"
+                        className="bg-white dark:bg-slate-800"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Notes</Label>
+                    <Textarea
+                      value={editCharacterData.notes || ''}
+                      onChange={(e) => setEditCharacterData({...editCharacterData, notes: e.target.value})}
+                      className="bg-white dark:bg-slate-800"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={editCharacterData.isActive ?? character.isActive}
+                      onCheckedChange={(checked) => setEditCharacterData({...editCharacterData, isActive: checked})}
+                    />
+                    <span className="text-sm text-muted-foreground">Active</span>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button onClick={saveCharacterUpdate} size="sm" className="bg-green-600 hover:bg-green-700 text-white">
+                      <Save className="h-4 w-4 mr-2" />
+                      Save
+                    </Button>
+                    <Button onClick={cancelEdit} size="sm" variant="outline">
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-semibold">{character.name}</h3>
+                      <Badge className={getTypeColor(character.type)}>
+                        {character.type}
+                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={character.isActive}
+                          onCheckedChange={(checked) => updateCharacter(character.id, { isActive: checked })}
+                        />
+                        <span className="text-sm text-muted-foreground">Active</span>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Combat:</span>
+                        <span className="ml-1 font-medium">{character.combatLevel}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Total:</span>
+                        <span className="ml-1 font-medium">{character.totalLevel}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Bank:</span>
+                        <span className="ml-1 font-medium">{(character.bank || 0).toLocaleString()} GP</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEditingCharacter(character)}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeCharacter(character.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {character.notes && (
+                      <p className="text-sm text-muted-foreground mt-2">{character.notes}</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

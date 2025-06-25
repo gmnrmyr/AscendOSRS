@@ -34,12 +34,16 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     newItem,
     setNewItem,
     isRefreshing,
+    isAutoInputEnabled,
+    setIsAutoInputEnabled,
     addItem,
     removeItem,
     updateItem,
     addQuickItems,
     refreshAllPrices,
-    updateGoldTokens
+    updateGoldTokens,
+    refreshGoldValue,
+    autoInputGoldValue
   } = useBankTracker({ bankData, setBankData });
 
   const {
@@ -53,22 +57,20 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     getCategoryColor
   } = useBankCalculations(bankData);
 
-  const handleImportBank = (bankItems: Array<{name: string; quantity: number; value: number}>) => {
-    if (!selectedCharacter) return;
+  const handleImportBank = (items: BankItem[], character: string, isUpdate: boolean = false) => {
+    if (!character) return;
     
-    const items: BankItem[] = bankItems.map(item => ({
-      id: Date.now().toString() + Math.random(),
-      name: item.name,
-      quantity: item.quantity,
-      estimatedPrice: item.value,
-      category: 'other' as const,
-      character: selectedCharacter
-    }));
-    
-    setBankData({
-      ...bankData,
-      [selectedCharacter]: [...(bankData[selectedCharacter] || []), ...items]
-    });
+    if (isUpdate) {
+      setBankData({
+        ...bankData,
+        [character]: items
+      });
+    } else {
+      setBankData({
+        ...bankData,
+        [character]: [...(bankData[character] || []), ...items]
+      });
+    }
   };
 
   return (
@@ -134,6 +136,11 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
                 updateGoldTokens={updateGoldTokens}
                 getCharacterGoldValue={getCharacterGoldValue}
                 formatGP={formatGP}
+                refreshGoldValue={refreshGoldValue}
+                autoInputGoldValue={autoInputGoldValue}
+                isRefreshing={isRefreshing}
+                isAutoInputEnabled={isAutoInputEnabled}
+                setIsAutoInputEnabled={setIsAutoInputEnabled}
               />
 
               <BankValueManager

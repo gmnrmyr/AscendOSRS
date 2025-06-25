@@ -42,9 +42,9 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
   const [editCharacterData, setEditCharacterData] = useState<Partial<Character>>({});
 
   const searchPlayerStats = async (query: string) => {
-    // Return mock results for autocomplete
+    // Return mock results for autocomplete with correct value type
     return [
-      { id: query, name: query, subtitle: 'OSRS Player', icon: '👤', value: query, category: 'player' }
+      { id: query, name: query, subtitle: 'OSRS Player', icon: '👤', value: 0, category: 'player' }
     ];
   };
 

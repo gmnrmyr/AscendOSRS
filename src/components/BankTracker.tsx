@@ -57,20 +57,23 @@ export function BankTracker({ bankData, setBankData, characters }: BankTrackerPr
     getCategoryColor
   } = useBankCalculations(bankData);
 
-  const handleImportBank = (items: BankItem[], character: string, isUpdate: boolean = false) => {
-    if (!character) return;
+  const handleImportBank = (bankItems: Array<{name: string; quantity: number; value: number}>) => {
+    if (!selectedCharacter) return;
     
-    if (isUpdate) {
-      setBankData({
-        ...bankData,
-        [character]: items
-      });
-    } else {
-      setBankData({
-        ...bankData,
-        [character]: [...(bankData[character] || []), ...items]
-      });
-    }
+    // Convert the imported format to BankItem format
+    const items: BankItem[] = bankItems.map(item => ({
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      name: item.name,
+      quantity: item.quantity,
+      estimatedPrice: item.value,
+      category: 'other' as const,
+      character: selectedCharacter
+    }));
+
+    setBankData({
+      ...bankData,
+      [selectedCharacter]: [...(bankData[selectedCharacter] || []), ...items]
+    });
   };
 
   return (

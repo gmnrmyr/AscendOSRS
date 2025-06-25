@@ -50,7 +50,11 @@ const mapCategoryToDbCategory = (category: string): string => {
     'combat': 'combat',
     'skilling': 'skilling', 
     'bossing': 'bossing',
-    'other': 'other'
+    'other': 'other',
+    'gear': 'gear',
+    'consumables': 'consumables',
+    'materials': 'materials',
+    'stackable': 'stackable'
   };
   return mapping[category] || category;
 };
@@ -97,18 +101,17 @@ export class CloudDataService {
         supabase.from('bank_items').delete().eq('user_id', user.id)
       ]);
 
-      // Save characters
+      // Save characters with proper UUID generation
       if (characters.length > 0) {
         const { error: charactersError } = await supabase.from('characters').insert(
           characters.map(char => ({
-            id: char.id,
             user_id: user.id,
             name: char.name,
             type: char.type,
             combat_level: char.combatLevel,
             total_level: char.totalLevel,
             bank: char.bank,
-            notes: char.notes
+            notes: char.notes || ''
           }))
         );
         if (charactersError) {
@@ -117,18 +120,17 @@ export class CloudDataService {
         }
       }
 
-      // Save money methods
+      // Save money methods with proper UUID generation
       if (moneyMethods.length > 0) {
         const { error: methodsError } = await supabase.from('money_methods').insert(
           moneyMethods.map(method => ({
-            id: method.id,
             user_id: user.id,
             name: method.name,
             character: method.character,
             gp_hour: method.gpHour,
             click_intensity: method.clickIntensity,
-            requirements: method.requirements,
-            notes: method.notes,
+            requirements: method.requirements || '',
+            notes: method.notes || '',
             category: mapCategoryToDbCategory(method.category)
           }))
         );
@@ -138,11 +140,10 @@ export class CloudDataService {
         }
       }
 
-      // Save purchase goals
+      // Save purchase goals with proper UUID generation
       if (purchaseGoals.length > 0) {
         const { error: goalsError } = await supabase.from('purchase_goals').insert(
           purchaseGoals.map(goal => ({
-            id: goal.id,
             user_id: user.id,
             name: goal.name,
             current_price: goal.currentPrice,
@@ -150,8 +151,8 @@ export class CloudDataService {
             quantity: goal.quantity,
             priority: goal.priority,
             category: mapCategoryToDbCategory(goal.category),
-            notes: goal.notes,
-            image_url: goal.imageUrl
+            notes: goal.notes || '',
+            image_url: goal.imageUrl || ''
           }))
         );
         if (goalsError) {
@@ -160,12 +161,11 @@ export class CloudDataService {
         }
       }
 
-      // Save bank items
+      // Save bank items with proper UUID generation
       const allBankItems = Object.values(bankData).flat();
       if (allBankItems.length > 0) {
         const { error: bankError } = await supabase.from('bank_items').insert(
           allBankItems.map(item => ({
-            id: item.id,
             user_id: user.id,
             name: item.name,
             quantity: item.quantity,
@@ -211,7 +211,7 @@ export class CloudDataService {
         combatLevel: char.combat_level,
         totalLevel: char.total_level,
         bank: char.bank,
-        notes: char.notes,
+        notes: char.notes || '',
         isActive: true // Default to active since we don't store this in DB yet
       }));
 
@@ -222,8 +222,8 @@ export class CloudDataService {
         character: method.character,
         gpHour: method.gp_hour,
         clickIntensity: castToClickIntensity(method.click_intensity),
-        requirements: method.requirements,
-        notes: method.notes,
+        requirements: method.requirements || '',
+        notes: method.notes || '',
         category: mapDbCategoryToAppCategory(method.category) as MoneyMethod['category']
       }));
 
@@ -236,8 +236,8 @@ export class CloudDataService {
         quantity: goal.quantity,
         priority: castToPriority(goal.priority),
         category: mapDbCategoryToAppCategory(goal.category) as PurchaseGoal['category'],
-        notes: goal.notes,
-        imageUrl: goal.image_url
+        notes: goal.notes || '',
+        imageUrl: goal.image_url || ''
       }));
 
       // Transform bank items

@@ -1,15 +1,53 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingUp, Wallet } from "lucide-react";
+import { Character, BankItem } from "@/hooks/useAppData";
 
 interface BankSummaryProps {
-  totalBankValue: number;
-  totalGoldValue: number;
-  charactersCount: number;
-  formatGP: (amount: number) => string;
+  characters: Character[];
+  bankData: Record<string, BankItem[]>;
 }
 
-export function BankSummary({ totalBankValue, totalGoldValue, charactersCount, formatGP }: BankSummaryProps) {
+export function BankSummary({ characters, bankData }: BankSummaryProps) {
+  const formatGP = (amount: number) => {
+    const safeAmount = Number(amount) || 0;
+    
+    if (safeAmount >= 1000000000) {
+      return `${(safeAmount / 1000000000).toFixed(1)}B`;
+    } else if (safeAmount >= 1000000) {
+      return `${(safeAmount / 1000000).toFixed(1)}M`;
+    } else if (safeAmount >= 1000) {
+      return `${(safeAmount / 1000).toFixed(0)}K`;
+    }
+    return safeAmount.toLocaleString();
+  };
+
+  const getTotalBankValue = () => {
+    const total = Object.keys(bankData).reduce((sum, character) => {
+      const items = bankData[character] || [];
+      return sum + items.reduce((itemSum, item) => {
+        const quantity = Number(item.quantity) || 0;
+        const price = Number(item.estimatedPrice) || 0;
+        return itemSum + (quantity * price);
+      }, 0);
+    }, 0);
+    return Number(total) || 0;
+  };
+
+  const getTotalGoldValue = () => {
+    const total = Object.keys(bankData).reduce((sum, character) => {
+      const items = bankData[character] || [];
+      const coins = items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
+      const platTokens = items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
+      return sum + Number(coins) + (Number(platTokens) * 1000);
+    }, 0);
+    return Number(total) || 0;
+  };
+
+  const totalBankValue = getTotalBankValue();
+  const totalGoldValue = getTotalGoldValue();
+  const charactersCount = characters.length;
+
   return (
     <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200 dark:border-amber-800">
       <CardContent className="p-6">

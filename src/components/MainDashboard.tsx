@@ -82,9 +82,10 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
       <TabsContent value="bank">
         <div className="pixel-card p-6">
           <BankTracker 
-            bankData={bankData}
-            setBankData={setBankData}
             characters={characters}
+            bankData={bankData}
+            setCharacters={setCharacters}
+            setBankData={setBankData}
           />
         </div>
       </TabsContent>

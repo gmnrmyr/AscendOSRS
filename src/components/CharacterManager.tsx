@@ -55,14 +55,14 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
         if (editingCharacter) {
           setEditCharacterData({
             ...editCharacterData,
-            name: stats.username,
+            name: stats.username || option.name,
             combatLevel: stats.combat_level,
             totalLevel: stats.total_level
           });
         } else {
           setNewCharacter({
             ...newCharacter,
-            name: stats.username,
+            name: stats.username || option.name,
             combatLevel: stats.combat_level,
             totalLevel: stats.total_level
           });
@@ -97,6 +97,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
         if (stats) {
           finalStats = {
             ...finalStats,
+            name: stats.username || newCharacter.name,
             combatLevel: stats.combat_level,
             totalLevel: stats.total_level
           };

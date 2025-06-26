@@ -1,11 +1,28 @@
-import { OSRSItem } from "@/types";
+
+import { OSRSItem, MoneyMakingGuide, PlayerStats } from "@/types";
 
 const API_BASE_URL = 'https://rsbuddy.com/exchange/summary.json';
 const WIKI_API_BASE_URL = 'https://oldschool.runescape.wiki/api.php';
+const TEMPLE_OSRS_API = 'https://templeosrs.com/api/player_stats.php';
 
 export const osrsApi = {
-  fetchPlayerStats: async (playerName: string) => {
+  fetchPlayerStats: async (playerName: string): Promise<PlayerStats | null> => {
     try {
+      // Try TempleOSRS first for more reliable data
+      const templeResponse = await fetch(`${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`);
+      if (templeResponse.ok) {
+        const data = await templeResponse.json();
+        if (data && data.data) {
+          return {
+            combat_level: data.data.combat_level || 3,
+            total_level: data.data.total_level || 32,
+            account_type: data.data.account_type || 'main',
+            username: playerName
+          };
+        }
+      }
+
+      // Fallback to official hiscores
       const response = await fetch(`https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=${playerName}`);
       if (!response.ok) {
         console.error('Failed to fetch player stats:', response.status, response.statusText);
@@ -30,7 +47,8 @@ export const osrsApi = {
       return {
         combat_level: combatLevel,
         total_level: totalLevel,
-        account_type: accountType
+        account_type: accountType,
+        username: playerName
       };
     } catch (error) {
       console.error('Error fetching player stats:', error);
@@ -49,9 +67,9 @@ export const osrsApi = {
 
       const item = Object.values(data).find((item: any) =>
         item && item.name && item.name.toLowerCase() === itemName.toLowerCase()
-      );
+      ) as any;
 
-      if (item) {
+      if (item && item.overall_average) {
         return item.overall_average;
       } else {
         console.warn(`Item "${itemName}" not found in OSRS Exchange.`);
@@ -130,7 +148,7 @@ export const osrsApi = {
     }
   },
 
-  getMoneyMakingMethods: async (query?: string) => {
+  getMoneyMakingMethods: async (query?: string): Promise<MoneyMakingGuide[]> => {
     const moneyMakers = osrsApi.getDefaultMoneyMakers();
     if (!query) {
       return moneyMakers;
@@ -142,7 +160,11 @@ export const osrsApi = {
     );
   },
 
-  getDefaultMoneyMakers: () => {
+  searchMoneyMakers: async (query: string): Promise<MoneyMakingGuide[]> => {
+    return osrsApi.getMoneyMakingMethods(query);
+  },
+
+  getDefaultMoneyMakers: (): MoneyMakingGuide[] => {
     return [
       {
         id: "vorkath",
@@ -151,7 +173,11 @@ export const osrsApi = {
         gpHour: 4000000,
         clickIntensity: 4 as const,
         requirements: "Dragon Slayer II, high combat stats, good gear",
-        notes: "Consistent high-level boss with good drops"
+        notes: "Consistent high-level boss with good drops",
+        profit: 4000000,
+        difficulty: "High",
+        description: "Consistent high-level boss with good drops",
+        membership: true
       },
       {
         id: "zulrah",
@@ -160,7 +186,11 @@ export const osrsApi = {
         gpHour: 3500000,
         clickIntensity: 5 as const,
         requirements: "Regicide quest, high magic/ranged, good gear",
-        notes: "Requires memorizing rotations but very profitable"
+        notes: "Requires memorizing rotations but very profitable",
+        profit: 3500000,
+        difficulty: "Very High",
+        description: "Requires memorizing rotations but very profitable",
+        membership: true
       },
       {
         id: "brutal-black-dragons",
@@ -169,7 +199,11 @@ export const osrsApi = {
         gpHour: 1000000,
         clickIntensity: 3 as const,
         requirements: "High ranged level, good ranged gear",
-        notes: "Very consistent money maker"
+        notes: "Very consistent money maker",
+        profit: 1000000,
+        difficulty: "Medium",
+        description: "Very consistent money maker",
+        membership: true
       },
       {
         id: "rune-dragons",
@@ -178,7 +212,11 @@ export const osrsApi = {
         gpHour: 1200000,
         clickIntensity: 4 as const,
         requirements: "Dragon Slayer II, high stats, good gear",
-        notes: "Higher intensity but better gp/hr than brutal blacks"
+        notes: "Higher intensity but better gp/hr than brutal blacks",
+        profit: 1200000,
+        difficulty: "High",
+        description: "Higher intensity but better gp/hr than brutal blacks",
+        membership: true
       },
       {
         id: "gargoyles",
@@ -187,7 +225,11 @@ export const osrsApi = {
         gpHour: 567000,
         clickIntensity: 3 as const,
         requirements: "75 Slayer, rock hammer or gargoyle smash",
-        notes: "Good slayer task money, very afk"
+        notes: "Good slayer task money, very afk",
+        profit: 567000,
+        difficulty: "Medium",
+        description: "Good slayer task money, very afk",
+        membership: true
       },
       {
         id: "kurasks",
@@ -196,7 +238,11 @@ export const osrsApi = {
         gpHour: 400000,
         clickIntensity: 2 as const,
         requirements: "70 Slayer, leaf-bladed weapons",
-        notes: "Very afk slayer task"
+        notes: "Very afk slayer task",
+        profit: 400000,
+        difficulty: "Low",
+        description: "Very afk slayer task",
+        membership: true
       },
       {
         id: "cannonballs",
@@ -205,7 +251,11 @@ export const osrsApi = {
         gpHour: 150000,
         clickIntensity: 1 as const,
         requirements: "Dwarf Cannon quest, 35 Smithing",
-        notes: "Very AFK money making method"
+        notes: "Very AFK money making method",
+        profit: 150000,
+        difficulty: "Very Low",
+        description: "Very AFK money making method",
+        membership: true
       },
       {
         id: "blast-furnace-gold",
@@ -214,7 +264,11 @@ export const osrsApi = {
         gpHour: 800000,
         clickIntensity: 3 as const,
         requirements: "40 Smithing, goldsmith gauntlets recommended",
-        notes: "Good smithing xp and profit"
+        notes: "Good smithing xp and profit",
+        profit: 800000,
+        difficulty: "Medium",
+        description: "Good smithing xp and profit",
+        membership: true
       },
       {
         id: "runecrafting-natures",
@@ -223,7 +277,11 @@ export const osrsApi = {
         gpHour: 1500000,
         clickIntensity: 4 as const,
         requirements: "44 Runecrafting, Enter the Abyss miniquest",
-        notes: "High profit but requires attention"
+        notes: "High profit but requires attention",
+        profit: 1500000,
+        difficulty: "High",
+        description: "High profit but requires attention",
+        membership: true
       },
       {
         id: "herb-runs",
@@ -232,9 +290,56 @@ export const osrsApi = {
         gpHour: 2000000,
         clickIntensity: 3 as const,
         requirements: "32 Farming, access to herb patches",
-        notes: "Hourly runs, very profitable over time"
+        notes: "Hourly runs, very profitable over time",
+        profit: 2000000,
+        difficulty: "Medium",
+        description: "Hourly runs, very profitable over time",
+        membership: true
       }
     ];
+  },
+
+  fetchPopularItems: async (): Promise<OSRSItem[]> => {
+    // Return some popular OSRS items
+    const popularItems = [
+      'Twisted bow', 'Scythe of vitur', 'Dragon claws', 'Abyssal whip',
+      'Bandos chestplate', 'Armadyl crossbow', 'Primordial boots', 'Dragon hunter lance'
+    ];
+
+    const items: OSRSItem[] = [];
+    for (const itemName of popularItems) {
+      try {
+        const item = await osrsApi.getItemDetails(itemName);
+        items.push(item);
+      } catch (error) {
+        console.error(`Failed to fetch ${itemName}:`, error);
+      }
+    }
+    return items;
+  },
+
+  fetchSingleItemPrice: async (itemName: string): Promise<number | null> => {
+    return osrsApi.getEstimatedItemValue(itemName);
+  },
+
+  getItemIcon: async (itemName: string): Promise<string | null> => {
+    try {
+      const item = await osrsApi.getItemDetails(itemName);
+      return item.imageUrl;
+    } catch (error) {
+      console.error('Error getting item icon:', error);
+      return null;
+    }
+  },
+
+  getItemIdByName: async (itemName: string): Promise<number | null> => {
+    try {
+      const item = await osrsApi.getItemDetails(itemName);
+      return item.pageId;
+    } catch (error) {
+      console.error('Error getting item ID:', error);
+      return null;
+    }
   },
 
   parseBankCSV: async (csvText: string): Promise<Array<{ name: string; quantity: number; value: number }>> => {
@@ -267,3 +372,5 @@ export const osrsApi = {
     return items;
   }
 };
+
+export type { OSRSItem, MoneyMakingGuide, PlayerStats };

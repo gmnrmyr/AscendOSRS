@@ -61,7 +61,7 @@ export class CloudDataService {
       // Clear existing data first
       await Promise.all([
         supabase.from('characters').delete().eq('user_id', user.id),
-        supabase.from('money_methods').delete().eq('user_id', user.id),
+        supabase.from('money_methods').delete().eq('user_id', user.id),  
         supabase.from('purchase_goals').delete().eq('user_id', user.id),
         supabase.from('bank_items').delete().eq('user_id', user.id)
       ]);
@@ -83,6 +83,7 @@ export class CloudDataService {
           console.error('Error saving characters:', charactersError);
           throw charactersError;
         }
+        console.log('Characters saved successfully');
       }
 
       // Save money methods
@@ -103,6 +104,7 @@ export class CloudDataService {
           console.error('Error saving money methods:', methodsError);
           throw methodsError;
         }
+        console.log('Money methods saved successfully');
       }
 
       // Save purchase goals
@@ -124,6 +126,7 @@ export class CloudDataService {
           console.error('Error saving purchase goals:', goalsError);
           throw goalsError;
         }
+        console.log('Purchase goals saved successfully');
       }
 
       // Save bank items
@@ -143,6 +146,7 @@ export class CloudDataService {
           console.error('Error saving bank items:', bankError);
           throw bankError;
         }
+        console.log('Bank items saved successfully');
       }
 
       console.log('Cloud save completed successfully');
@@ -168,14 +172,19 @@ export class CloudDataService {
         supabase.from('bank_items').select('*').eq('user_id', user.id)
       ]);
 
+      if (charactersResult.error) throw charactersResult.error;
+      if (methodsResult.error) throw methodsResult.error;
+      if (goalsResult.error) throw goalsResult.error;
+      if (bankResult.error) throw bankResult.error;
+
       // Transform characters
       const characters: Character[] = (charactersResult.data || []).map(char => ({
         id: char.id,
         name: char.name,
         type: char.type as Character['type'],
-        combatLevel: char.combat_level,
-        totalLevel: char.total_level,
-        bank: char.bank,
+        combatLevel: char.combat_level || 0,
+        totalLevel: char.total_level || 0,
+        bank: Number(char.bank) || 0,
         notes: char.notes || '',
         isActive: true
       }));
@@ -185,7 +194,7 @@ export class CloudDataService {
         id: method.id,
         name: method.name,
         character: method.character,
-        gpHour: method.gp_hour,
+        gpHour: method.gp_hour || 0,
         clickIntensity: method.click_intensity as MoneyMethod['clickIntensity'],
         requirements: method.requirements || '',
         notes: method.notes || '',
@@ -196,9 +205,9 @@ export class CloudDataService {
       const purchaseGoals: PurchaseGoal[] = (goalsResult.data || []).map(goal => ({
         id: goal.id,
         name: goal.name,
-        currentPrice: goal.current_price,
+        currentPrice: goal.current_price || 0,
         targetPrice: goal.target_price,
-        quantity: goal.quantity,
+        quantity: goal.quantity || 1,
         priority: goal.priority as PurchaseGoal['priority'],
         category: goal.category as PurchaseGoal['category'],
         notes: goal.notes || '',
@@ -209,8 +218,8 @@ export class CloudDataService {
       const bankItems = (bankResult.data || []).map(item => ({
         id: item.id,
         name: item.name,
-        quantity: item.quantity,
-        estimatedPrice: item.estimated_price,
+        quantity: item.quantity || 0,
+        estimatedPrice: item.estimated_price || 0,
         category: item.category as BankItem['category'],
         character: item.character
       }));

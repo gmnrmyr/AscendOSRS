@@ -1,179 +1,34 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, RefreshCw } from "lucide-react";
-import { BankCSVImporter } from "./BankCSVImporter";
-import { BankSummary } from "./bank/BankSummary";
-import { GoldTokensManager } from "./bank/GoldTokensManager";
-import { BankValueManager } from "./bank/BankValueManager";
-import { BankItemForm } from "./bank/BankItemForm";
-import { CharacterBankDisplay } from "./bank/CharacterBankDisplay";
-import { useBankTracker, useBankCalculations } from "./bank/BankTrackerLogic";
-
-interface BankItem {
-  id: string;
-  name: string;
-  quantity: number;
-  estimatedPrice: number;
-  category: 'stackable' | 'gear' | 'materials' | 'other';
-  character: string;
-}
+import React from 'react';
+import { Character, BankItem } from '@/hooks/useAppData';
+import { IntegratedBankManager } from '@/components/bank/IntegratedBankManager';
+import { BankSummary } from '@/components/bank/BankSummary';
 
 interface BankTrackerProps {
+  characters: Character[];
   bankData: Record<string, BankItem[]>;
+  setCharacters: (characters: Character[]) => void;
   setBankData: (bankData: Record<string, BankItem[]>) => void;
-  characters: Array<{ id: string; name: string }>;
 }
 
-export function BankTracker({ bankData, setBankData, characters }: BankTrackerProps) {
-  const {
-    selectedCharacter,
-    setSelectedCharacter,
-    newItem,
-    setNewItem,
-    isRefreshing,
-    isAutoInputEnabled,
-    setIsAutoInputEnabled,
-    addItem,
-    removeItem,
-    updateItem,
-    addQuickItems,
-    refreshAllPrices,
-    updateGoldTokens,
-    refreshGoldValue,
-    autoInputGoldValue
-  } = useBankTracker({ bankData, setBankData });
-
-  const {
-    formatGP,
-    getCharacterBankValue,
-    getCharacterGoldValue,
-    getTotalBankValue,
-    getTotalGoldValue,
-    getCharacterCoins,
-    getCharacterPlatTokens,
-    getCategoryColor
-  } = useBankCalculations(bankData);
-
-  const handleImportBank = (bankItems: Array<{name: string; quantity: number; value: number}>) => {
-    if (!selectedCharacter) return;
-    
-    // Convert the imported format to BankItem format
-    const items: BankItem[] = bankItems.map(item => ({
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      name: item.name,
-      quantity: item.quantity,
-      estimatedPrice: item.value,
-      category: 'other' as const,
-      character: selectedCharacter
-    }));
-
-    setBankData({
-      ...bankData,
-      [selectedCharacter]: [...(bankData[selectedCharacter] || []), ...items]
-    });
-  };
-
+export function BankTracker({
+  characters,
+  bankData,
+  setCharacters,
+  setBankData
+}: BankTrackerProps) {
   return (
     <div className="space-y-6">
-      <BankCSVImporter 
-        onImportBank={handleImportBank}
-        characters={characters}
-      />
-
       <BankSummary 
-        totalBankValue={getTotalBankValue()}
-        totalGoldValue={getTotalGoldValue()}
-        charactersCount={characters.length}
-        formatGP={formatGP}
-      />
-
-      <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-              <Plus className="h-5 w-5" />
-              Bank Management
-            </CardTitle>
-            {Object.keys(bankData).length > 0 && (
-              <Button
-                onClick={refreshAllPrices}
-                disabled={isRefreshing}
-                variant="outline"
-                size="sm"
-                className="text-amber-700 border-amber-300 hover:bg-amber-50"
-              >
-                {isRefreshing ? (
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                )}
-                {isRefreshing ? 'Refreshing...' : 'Refresh All Prices'}
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>Select Character</Label>
-            <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
-              <SelectTrigger className="bg-white dark:bg-slate-800">
-                <SelectValue placeholder="Choose a character to manage bank" />
-              </SelectTrigger>
-              <SelectContent>
-                {characters.map((char) => (
-                  <SelectItem key={char.id} value={char.name}>{char.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {selectedCharacter && (
-            <div className="space-y-6">
-              <GoldTokensManager 
-                selectedCharacter={selectedCharacter}
-                getCharacterCoins={getCharacterCoins}
-                getCharacterPlatTokens={getCharacterPlatTokens}
-                updateGoldTokens={updateGoldTokens}
-                getCharacterGoldValue={getCharacterGoldValue}
-                formatGP={formatGP}
-                refreshGoldValue={refreshGoldValue}
-                autoInputGoldValue={autoInputGoldValue}
-                isRefreshing={isRefreshing}
-                isAutoInputEnabled={isAutoInputEnabled}
-                setIsAutoInputEnabled={setIsAutoInputEnabled}
-              />
-
-              <BankValueManager
-                selectedCharacter={selectedCharacter}
-                bankData={bankData}
-                setBankData={setBankData}
-                formatGP={formatGP}
-                getTotalBankValue={() => getCharacterBankValue(selectedCharacter)}
-              />
-
-              <BankItemForm 
-                newItem={newItem}
-                setNewItem={setNewItem}
-                onAddItem={addItem}
-                onAddQuickItems={addQuickItems}
-              />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <CharacterBankDisplay 
         characters={characters}
         bankData={bankData}
-        getCharacterBankValue={getCharacterBankValue}
-        getCharacterGoldValue={getCharacterGoldValue}
-        formatGP={formatGP}
-        getCategoryColor={getCategoryColor}
-        removeItem={removeItem}
-        updateItem={updateItem}
+      />
+      
+      <IntegratedBankManager
+        characters={characters}
+        bankData={bankData}
+        setCharacters={setCharacters}
+        setBankData={setBankData}
       />
     </div>
   );

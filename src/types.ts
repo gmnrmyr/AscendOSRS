@@ -4,6 +4,11 @@ export interface OSRSItem {
   title: string;
   imageUrl: string | null;
   extract: string | null;
+  id?: number;
+  name?: string;
+  current_price?: number;
+  today_trend?: string;
+  icon?: string;
 }
 
 export interface MoneyMakingGuide {
@@ -12,12 +17,12 @@ export interface MoneyMakingGuide {
   category: 'combat' | 'skilling' | 'bossing' | 'other';
   gpHour: number;
   clickIntensity: 1 | 2 | 3 | 4 | 5;
-  requirements: string;
+  requirements: string | string[];
   notes: string;
   profit?: number;
-  difficulty?: string;
+  difficulty?: string | number;
   description?: string;
-  membership?: boolean;
+  membership?: boolean | 'f2p' | 'p2p';
 }
 
 export interface PlayerStats {

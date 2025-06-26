@@ -112,6 +112,10 @@ export const osrsApi = {
         title: page.title,
         imageUrl: page?.original?.source || null,
         extract: page.extract,
+        id: page.pageid,
+        name: page.title,
+        current_price: 0,
+        icon: page?.original?.source || null
       };
     } catch (error) {
       console.error('Error fetching item details from OSRS Wiki:', error);
@@ -141,6 +145,10 @@ export const osrsApi = {
         title: item.title,
         imageUrl: null,
         extract: null,
+        id: item.pageid,
+        name: item.title,
+        current_price: 0,
+        icon: null
       }));
     } catch (error) {
       console.error('Error searching items on OSRS Wiki:', error);
@@ -177,7 +185,7 @@ export const osrsApi = {
         profit: 4000000,
         difficulty: "High",
         description: "Consistent high-level boss with good drops",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "zulrah",
@@ -190,7 +198,7 @@ export const osrsApi = {
         profit: 3500000,
         difficulty: "Very High",
         description: "Requires memorizing rotations but very profitable",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "brutal-black-dragons",
@@ -203,7 +211,7 @@ export const osrsApi = {
         profit: 1000000,
         difficulty: "Medium",
         description: "Very consistent money maker",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "rune-dragons",
@@ -216,7 +224,7 @@ export const osrsApi = {
         profit: 1200000,
         difficulty: "High",
         description: "Higher intensity but better gp/hr than brutal blacks",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "gargoyles",
@@ -229,7 +237,7 @@ export const osrsApi = {
         profit: 567000,
         difficulty: "Medium",
         description: "Good slayer task money, very afk",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "kurasks",
@@ -242,7 +250,7 @@ export const osrsApi = {
         profit: 400000,
         difficulty: "Low",
         description: "Very afk slayer task",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "cannonballs",
@@ -255,7 +263,7 @@ export const osrsApi = {
         profit: 150000,
         difficulty: "Very Low",
         description: "Very AFK money making method",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "blast-furnace-gold",
@@ -268,7 +276,7 @@ export const osrsApi = {
         profit: 800000,
         difficulty: "Medium",
         description: "Good smithing xp and profit",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "runecrafting-natures",
@@ -281,7 +289,7 @@ export const osrsApi = {
         profit: 1500000,
         difficulty: "High",
         description: "High profit but requires attention",
-        membership: true
+        membership: "p2p"
       },
       {
         id: "herb-runs",
@@ -294,7 +302,7 @@ export const osrsApi = {
         profit: 2000000,
         difficulty: "Medium",
         description: "Hourly runs, very profitable over time",
-        membership: true
+        membership: "p2p"
       }
     ];
   },
@@ -318,12 +326,14 @@ export const osrsApi = {
     return items;
   },
 
-  fetchSingleItemPrice: async (itemName: string): Promise<number | null> => {
+  fetchSingleItemPrice: async (itemId: string | number): Promise<number | null> => {
+    const itemName = typeof itemId === 'number' ? itemId.toString() : itemId;
     return osrsApi.getEstimatedItemValue(itemName);
   },
 
-  getItemIcon: async (itemName: string): Promise<string | null> => {
+  getItemIcon: async (itemId: string | number): Promise<string | null> => {
     try {
+      const itemName = typeof itemId === 'number' ? itemId.toString() : itemId;
       const item = await osrsApi.getItemDetails(itemName);
       return item.imageUrl;
     } catch (error) {

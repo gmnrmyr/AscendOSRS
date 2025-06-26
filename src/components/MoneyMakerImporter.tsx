@@ -42,12 +42,12 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
       id: Date.now().toString() + Math.random(),
       name: guide.name,
       character: '',
-      gpHour: guide.profit,
-      clickIntensity: guide.difficulty,
-      requirements: guide.requirements.join(', '),
-      notes: guide.description,
+      gpHour: guide.profit || guide.gpHour,
+      clickIntensity: guide.clickIntensity,
+      requirements: Array.isArray(guide.requirements) ? guide.requirements.join(', ') : guide.requirements,
+      notes: guide.description || guide.notes,
       category: guide.category,
-      membership: guide.membership
+      membership: typeof guide.membership === 'boolean' ? (guide.membership ? 'p2p' : 'f2p') : guide.membership
     }));
 
     onImportMethods(methods);
@@ -61,8 +61,9 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
     importSelectedMethods(guides);
   };
 
-  const getDifficultyColor = (difficulty: number) => {
-    switch (difficulty) {
+  const getDifficultyColor = (difficulty: number | string) => {
+    const diffNum = typeof difficulty === 'string' ? 3 : difficulty;
+    switch (diffNum) {
       case 1: return 'bg-green-100 text-green-800';
       case 2: return 'bg-blue-100 text-blue-800';
       case 3: return 'bg-yellow-100 text-yellow-800';
@@ -81,8 +82,9 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
     }
   };
 
-  const getMembershipColor = (membership: string) => {
-    switch (membership) {
+  const getMembershipColor = (membership: string | boolean) => {
+    const membershipStr = typeof membership === 'boolean' ? (membership ? 'p2p' : 'f2p') : membership;
+    switch (membershipStr) {
       case 'f2p': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'p2p': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       default: return 'bg-gray-100 text-gray-800';
@@ -145,21 +147,21 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
                     <Badge className={getCategoryColor(guide.category)}>
                       {guide.category}
                     </Badge>
-                    <Badge className={getDifficultyColor(guide.difficulty)}>
-                      Difficulty {guide.difficulty}
+                    <Badge className={getDifficultyColor(guide.clickIntensity)}>
+                      Difficulty {guide.clickIntensity}
                     </Badge>
-                    <Badge className={getMembershipColor(guide.membership)}>
-                      {guide.membership.toUpperCase()}
+                    <Badge className={getMembershipColor(guide.membership || 'p2p')}>
+                      {typeof guide.membership === 'boolean' ? (guide.membership ? 'P2P' : 'F2P') : (guide.membership || 'p2p').toString().toUpperCase()}
                     </Badge>
                     <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">
-                      {formatGP(guide.profit)}/hr
+                      {formatGP(guide.profit || guide.gpHour)}/hr
                     </Badge>
                   </div>
                   
-                  <p className="text-sm text-gray-600 mb-2">{guide.description}</p>
+                  <p className="text-sm text-gray-600 mb-2">{guide.description || guide.notes}</p>
                   
                   <div className="text-xs text-gray-500">
-                    <strong>Requirements:</strong> {guide.requirements.join(', ')}
+                    <strong>Requirements:</strong> {Array.isArray(guide.requirements) ? guide.requirements.join(', ') : guide.requirements}
                   </div>
                 </CardContent>
               </Card>

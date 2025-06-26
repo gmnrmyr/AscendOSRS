@@ -74,8 +74,9 @@ serve(async (req) => {
         }
       }
 
-      // Save money methods
+      // Save money methods with proper category validation
       if (moneyMethods && moneyMethods.length > 0) {
+        const validCategories = ['combat', 'skilling', 'bossing', 'other'];
         const { error: methodsError } = await supabaseClient.from('money_methods').insert(
           moneyMethods.map((method: any) => ({
             user_id: user.id,
@@ -85,7 +86,7 @@ serve(async (req) => {
             click_intensity: method.clickIntensity || 1,
             requirements: method.requirements || '',
             notes: method.notes || '',
-            category: method.category
+            category: validCategories.includes(method.category) ? method.category : 'other'
           }))
         )
         if (methodsError) {
@@ -94,8 +95,10 @@ serve(async (req) => {
         }
       }
 
-      // Save purchase goals
+      // Save purchase goals with proper category validation
       if (purchaseGoals && purchaseGoals.length > 0) {
+        const validGoalCategories = ['gear', 'consumables', 'materials', 'other'];
+        const validPriorities = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'];
         const { error: goalsError } = await supabaseClient.from('purchase_goals').insert(
           purchaseGoals.map((goal: any) => ({
             user_id: user.id,
@@ -103,8 +106,8 @@ serve(async (req) => {
             current_price: goal.currentPrice || 0,
             target_price: goal.targetPrice,
             quantity: goal.quantity || 1,
-            priority: goal.priority,
-            category: goal.category,
+            priority: validPriorities.includes(goal.priority) ? goal.priority : 'A',
+            category: validGoalCategories.includes(goal.category) ? goal.category : 'other',
             notes: goal.notes || '',
             image_url: goal.imageUrl || ''
           }))
@@ -115,17 +118,18 @@ serve(async (req) => {
         }
       }
 
-      // Save bank items
+      // Save bank items with proper category validation
       if (bankData) {
         const allBankItems = Object.values(bankData).flat()
         if (allBankItems.length > 0) {
+          const validBankCategories = ['stackable', 'gear', 'materials', 'other'];
           const { error: bankError } = await supabaseClient.from('bank_items').insert(
             allBankItems.map((item: any) => ({
               user_id: user.id,
               name: item.name,
               quantity: item.quantity || 0,
               estimated_price: item.estimatedPrice || 0,
-              category: item.category,
+              category: validBankCategories.includes(item.category) ? item.category : 'other',
               character: item.character
             }))
           )

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,31 +41,77 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
   });
 
   const searchItems = async (query: string) => {
-    // Search OSRS items from Wiki API
-    const items = await osrsApi.searchItems(query);
-    
-    // Also get money making methods that might be relevant
-    const moneyMethods = await osrsApi.getMoneyMakingMethods(query);
-    
-    const itemResults = items.map(item => ({
-      id: item.id,
-      name: item.name,
-      subtitle: `${item.current_price ? item.current_price.toLocaleString() + ' GP' : 'OSRS Item'}`,
-      icon: item.icon,
-      value: item.current_price || 0,
-      category: 'item'
-    }));
+    try {
+      // Search for OSRS items using Wiki API with item-specific terms
+      const itemSearchQuery = `${query} item OR ${query} equipment OR ${query} weapon OR ${query} armour OR ${query} food OR ${query} potion`;
+      
+      // Use the Wiki API to search for items specifically
+      const params = new URLSearchParams({
+        action: 'query',
+        format: 'json',
+        list: 'search',
+        srsearch: itemSearchQuery,
+        srlimit: '15',
+        srnamespace: '0', // Main namespace only
+        srprop: 'size|wordcount|timestamp|snippet'
+      });
 
-    const methodResults = moneyMethods.map(method => ({
-      id: method.id,
-      name: method.name,
-      subtitle: `${(method.profit || method.gpHour).toLocaleString()} GP/hr - ${method.category}`,
-      icon: '',
-      value: method.profit || method.gpHour,
-      category: 'method'
-    }));
+      const response = await fetch(`https://oldschool.runescape.wiki/api.php?${params.toString()}`);
+      const data = await response.json();
+      
+      const itemResults = [];
+      
+      if (data.query && data.query.search) {
+        for (const item of data.query.search) {
+          // Filter out obvious non-items (quests, guides, etc.)
+          if (item.title && !item.title.includes('Quest') && !item.title.includes('Guide') && 
+              !item.title.includes('Update') && !item.title.includes('Category') &&
+              !item.title.includes('Template') && !item.title.includes('User:')) {
+            
+            try {
+              // Get current price for the item
+              const currentPrice = await osrsApi.fetchSingleItemPrice(item.pageid) || 0;
+              const itemIcon = await osrsApi.getItemIcon(item.pageid);
+              
+              itemResults.push({
+                id: item.pageid,
+                name: item.title,
+                subtitle: currentPrice > 0 ? `${currentPrice.toLocaleString()} GP` : 'OSRS Item',
+                icon: itemIcon,
+                value: currentPrice,
+                category: 'item'
+              });
+            } catch (error) {
+              // If we can't get price/icon, still include the item
+              itemResults.push({
+                id: item.pageid,
+                name: item.title,
+                subtitle: 'OSRS Item',
+                icon: '',
+                value: 0,
+                category: 'item'
+              });
+            }
+          }
+        }
+      }
 
-    return [...itemResults, ...methodResults];
+      // Also search money making methods
+      const moneyMethods = await osrsApi.getMoneyMakingMethods(query);
+      const methodResults = moneyMethods.slice(0, 5).map(method => ({
+        id: method.id,
+        name: method.name,
+        subtitle: `${(method.profit || method.gpHour).toLocaleString()} GP/hr - ${method.category}`,
+        icon: '',
+        value: method.profit || method.gpHour,
+        category: 'method'
+      }));
+
+      return [...itemResults, ...methodResults];
+    } catch (error) {
+      console.error('Error searching items:', error);
+      return [];
+    }
   };
 
   const handleItemSelect = async (option: any) => {
@@ -81,13 +126,20 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     } else {
       // For items, get the current price and proper icon
       try {
-        currentPrice = await osrsApi.fetchSingleItemPrice(itemId) || option.value || 0;
+        if (option.value > 0) {
+          currentPrice = option.value;
+        } else {
+          currentPrice = await osrsApi.fetchSingleItemPrice(itemId) || 0;
+        }
+        
         if (!itemIcon) {
           itemIcon = await osrsApi.getItemIcon(itemId);
         }
       } catch (error) {
         currentPrice = option.value || 0;
-        itemIcon = await osrsApi.getItemIcon(itemId);
+        if (!itemIcon) {
+          itemIcon = await osrsApi.getItemIcon(itemId);
+        }
       }
     }
 

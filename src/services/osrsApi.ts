@@ -185,18 +185,18 @@ export const osrsApi = {
         throw new Error(`Item "${itemName}" not found on the OSRS Wiki.`);
       }
 
-      // Try to get current price
-      const currentPrice = await this.fetchSingleItemPrice(page.pageid || 0) || 0;
+      // Try to get current price with proper null checks
+      const currentPrice = page ? await this.fetchSingleItemPrice(page.pageid || 0) || 0 : 0;
 
       return {
-        pageId: page.pageid || 0,
-        title: page.title || itemName,
-        imageUrl: page.original?.source || null,
-        extract: page.extract || null,
-        id: page.pageid || 0,
-        name: page.title || itemName,
+        pageId: page?.pageid || 0,
+        title: page?.title || itemName,
+        imageUrl: page?.original?.source || null,
+        extract: page?.extract || null,
+        id: page?.pageid || 0,
+        name: page?.title || itemName,
         current_price: currentPrice,
-        icon: page.original?.source || await this.getItemIcon(page.pageid || 0)
+        icon: page?.original?.source || (page ? await this.getItemIcon(page.pageid || 0) : null)
       };
     } catch (error) {
       console.error('Error fetching item details from OSRS Wiki:', error);
@@ -224,6 +224,10 @@ export const osrsApi = {
       
       const items = await Promise.all(
         (data.query?.search || []).map(async (item: any) => {
+          if (!item) {
+            return null;
+          }
+          
           const currentPrice = await this.fetchSingleItemPrice(item.pageid || 0) || 0;
           const icon = await this.getItemIcon(item.pageid || 0);
           
@@ -240,7 +244,8 @@ export const osrsApi = {
         })
       );
       
-      return items;
+      // Filter out any null items
+      return items.filter(item => item !== null);
     } catch (error) {
       console.error('Error searching items on OSRS Wiki:', error);
       return [];

@@ -186,7 +186,8 @@ export const osrsApi = {
       }
 
       // Try to get current price with proper null checks
-      const currentPrice = page ? await this.fetchSingleItemPrice(page.pageid || 0) || 0 : 0;
+      const pageIdValue = page?.pageid || 0;
+      const currentPrice = pageIdValue ? await this.fetchSingleItemPrice(pageIdValue) || 0 : 0;
 
       return {
         pageId: page?.pageid || 0,
@@ -196,7 +197,7 @@ export const osrsApi = {
         id: page?.pageid || 0,
         name: page?.title || itemName,
         current_price: currentPrice,
-        icon: page?.original?.source || (page ? await this.getItemIcon(page.pageid || 0) : null)
+        icon: page?.original?.source || (pageIdValue ? await this.getItemIcon(pageIdValue) : null)
       };
     } catch (error) {
       console.error('Error fetching item details from OSRS Wiki:', error);
@@ -228,16 +229,18 @@ export const osrsApi = {
             return null;
           }
           
-          const currentPrice = await this.fetchSingleItemPrice(item.pageid || 0) || 0;
-          const icon = await this.getItemIcon(item.pageid || 0);
+          const itemPageId = item?.pageid || 0;
+          const itemTitle = item?.title || '';
+          const currentPrice = itemPageId ? await this.fetchSingleItemPrice(itemPageId) || 0 : 0;
+          const icon = itemPageId ? await this.getItemIcon(itemPageId) : null;
           
           return {
-            pageId: item.pageid || 0,
-            title: item.title || '',
+            pageId: itemPageId,
+            title: itemTitle,
             imageUrl: icon,
             extract: null,
-            id: item.pageid || 0,
-            name: item.title || '',
+            id: itemPageId,
+            name: itemTitle,
             current_price: currentPrice,
             icon: icon
           };

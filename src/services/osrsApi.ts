@@ -1,3 +1,4 @@
+
 import { OSRSItem, MoneyMakingGuide, PlayerStats } from "@/types";
 
 const API_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs/latest';
@@ -187,8 +188,13 @@ export const osrsApi = {
 
       // Try to get current price with proper null checks
       const pageIdValue = (page && typeof page.pageid === 'number') ? page.pageid : 0;
-      const currentPrice = pageIdValue > 0 ? (await this.fetchSingleItemPrice(pageIdValue) || 0) : 0;
-      const iconUrl = pageIdValue > 0 ? (await this.getItemIcon(pageIdValue) || null) : null;
+      let currentPrice = 0;
+      let iconUrl = null;
+      
+      if (pageIdValue > 0) {
+        currentPrice = (await this.fetchSingleItemPrice(pageIdValue)) || 0;
+        iconUrl = (await this.getItemIcon(pageIdValue)) || null;
+      }
 
       return {
         pageId: (page && typeof page.pageid === 'number') ? page.pageid : 0,
@@ -232,8 +238,14 @@ export const osrsApi = {
           
           const itemPageId = (item && typeof item.pageid === 'number') ? item.pageid : 0;
           const itemTitle = (item && typeof item.title === 'string') ? item.title : '';
-          const currentPrice = itemPageId > 0 ? (await this.fetchSingleItemPrice(itemPageId) || 0) : 0;
-          const icon = itemPageId > 0 ? (await this.getItemIcon(itemPageId) || null) : null;
+          
+          let currentPrice = 0;
+          let icon = null;
+          
+          if (itemPageId > 0) {
+            currentPrice = (await this.fetchSingleItemPrice(itemPageId)) || 0;
+            icon = (await this.getItemIcon(itemPageId)) || null;
+          }
           
           return {
             pageId: itemPageId,

@@ -41,6 +41,24 @@ export function GoalCard({
   getPriorityColor,
   getCategoryColor
 }: GoalCardProps) {
+  const handleImageError = async (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
+    if (goal.itemId) {
+      try {
+        const fallbackUrl = await osrsApi.getItemIcon(goal.itemId);
+        if (fallbackUrl && target.src !== fallbackUrl) {
+          target.src = fallbackUrl;
+        } else {
+          target.style.display = 'none';
+        }
+      } catch (error) {
+        target.style.display = 'none';
+      }
+    } else {
+      target.style.display = 'none';
+    }
+  };
+
   return (
     <Card className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
       <CardHeader className="pb-3">
@@ -52,15 +70,7 @@ export function GoalCard({
                   src={goal.imageUrl} 
                   alt={goal.name}
                   className="w-full h-full object-contain"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    const fallbackUrl = osrsApi.getItemIcon(goal.itemId || 995);
-                    if (target.src !== fallbackUrl) {
-                      target.src = fallbackUrl;
-                    } else {
-                      target.style.display = 'none';
-                    }
-                  }}
+                  onError={handleImageError}
                 />
               </div>
             )}

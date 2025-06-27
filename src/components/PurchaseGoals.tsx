@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +90,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           priority: goal.priority as PurchaseGoal['priority'],
           category: goal.category as PurchaseGoal['category'],
           notes: '',
-          imageUrl: osrsApi.getItemIcon(goal.itemId)
+          imageUrl: await osrsApi.getItemIcon(goal.itemId)
         });
       } catch (error) {
         newGoals.push({
@@ -102,7 +101,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           priority: goal.priority as PurchaseGoal['priority'],
           category: goal.category as PurchaseGoal['category'],
           notes: '',
-          imageUrl: osrsApi.getItemIcon(goal.itemId)
+          imageUrl: await osrsApi.getItemIcon(goal.itemId)
         });
       }
     }
@@ -195,7 +194,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       let updatedGoal = { ...goal };
       
       if (!goal.itemId || !Number.isInteger(goal.itemId) || goal.itemId <= 0) {
-        const mappedId = osrsApi.getItemIdByName(goal.name);
+        const mappedId = await osrsApi.getItemIdByName(goal.name);
         if (mappedId) {
           updatedGoal.itemId = mappedId;
         }

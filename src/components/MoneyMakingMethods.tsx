@@ -48,7 +48,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
     return methods.map(method => ({
       id: method.name,
       name: method.name,
-      subtitle: `${method.profit.toLocaleString()} GP/hr - ${method.membership.toUpperCase()} - Intensity ${method.difficulty}/5`,
+      subtitle: `${method.profit?.toLocaleString() || method.gpHour?.toLocaleString()} GP/hr - ${typeof method.membership === 'string' ? method.membership.toUpperCase() : (method.membership ? 'P2P' : 'F2P')} - Intensity ${method.clickIntensity}/5`,
       category: method.category
     }));
   };
@@ -60,12 +60,12 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       setNewMethod({
         ...newMethod,
         name: option.name,
-        gpHour: defaultMethod.profit,
-        clickIntensity: defaultMethod.difficulty,
-        requirements: defaultMethod.requirements.join(', '),
-        notes: defaultMethod.description,
+        gpHour: defaultMethod.profit || defaultMethod.gpHour,
+        clickIntensity: defaultMethod.difficulty as (1 | 2 | 3 | 4 | 5),
+        requirements: Array.isArray(defaultMethod.requirements) ? defaultMethod.requirements.join(', ') : defaultMethod.requirements,
+        notes: defaultMethod.description || defaultMethod.notes,
         category: defaultMethod.category,
-        membership: defaultMethod.membership
+        membership: typeof defaultMethod.membership === 'boolean' ? (defaultMethod.membership ? 'p2p' : 'f2p') : (defaultMethod.membership as 'f2p' | 'p2p')
       });
     }
   };
@@ -160,9 +160,9 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
               m.name.toLowerCase() === method.name.toLowerCase()
             );
             
-            if (matchingMethod && matchingMethod.profit !== method.gpHour) {
+            if (matchingMethod && (matchingMethod.profit || matchingMethod.gpHour) !== method.gpHour) {
               updatedCount++;
-              return { ...method, gpHour: matchingMethod.profit };
+              return { ...method, gpHour: matchingMethod.profit || matchingMethod.gpHour };
             }
             return method;
           } catch (error) {

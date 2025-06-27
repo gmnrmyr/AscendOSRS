@@ -55,17 +55,19 @@ serve(async (req) => {
         supabaseClient.from('bank_items').delete().eq('user_id', user.id)
       ])
 
-      // Save characters
+      // Save characters with proper type mapping
       if (characters && characters.length > 0) {
+        const validCharacterTypes = ['main', 'alt', 'ironman', 'hardcore', 'ultimate'];
         const { error: charactersError } = await supabaseClient.from('characters').insert(
           characters.map((char: any) => ({
             user_id: user.id,
             name: char.name,
-            type: char.type,
+            type: validCharacterTypes.includes(char.type) ? char.type : 'main',
             combat_level: char.combatLevel || 0,
             total_level: char.totalLevel || 0,
             bank: char.bank || 0,
-            notes: char.notes || ''
+            notes: char.notes || '',
+            plat_tokens: char.platTokens || 0
           }))
         )
         if (charactersError) {
@@ -74,7 +76,7 @@ serve(async (req) => {
         }
       }
 
-      // Save money methods with proper category validation
+      // Save money methods with proper category and intensity validation
       if (moneyMethods && moneyMethods.length > 0) {
         const validCategories = ['combat', 'skilling', 'bossing', 'other'];
         const { error: methodsError } = await supabaseClient.from('money_methods').insert(
@@ -83,7 +85,7 @@ serve(async (req) => {
             name: method.name,
             character: method.character,
             gp_hour: method.gpHour || 0,
-            click_intensity: method.clickIntensity || 1,
+            click_intensity: Math.min(Math.max(parseInt(method.clickIntensity) || 1, 1), 5),
             requirements: method.requirements || '',
             notes: method.notes || '',
             category: validCategories.includes(method.category) ? method.category : 'other'
@@ -95,7 +97,7 @@ serve(async (req) => {
         }
       }
 
-      // Save purchase goals with proper category validation
+      // Save purchase goals with proper validation
       if (purchaseGoals && purchaseGoals.length > 0) {
         const validGoalCategories = ['gear', 'consumables', 'materials', 'other'];
         const validPriorities = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'];
@@ -118,9 +120,12 @@ serve(async (req) => {
         }
       }
 
-      // Save bank items with proper category validation
+      // Save bank items with proper category validation and character mapping
       if (bankData) {
-        const allBankItems = Object.values(bankData).flat()
+        const allBankItems = Object.entries(bankData).flatMap(([character, items]) => 
+          items.map((item: any) => ({ ...item, character }))
+        );
+        
         if (allBankItems.length > 0) {
           const validBankCategories = ['stackable', 'gear', 'materials', 'other'];
           const { error: bankError } = await supabaseClient.from('bank_items').insert(
@@ -164,7 +169,7 @@ serve(async (req) => {
       if (goalsResult.error) throw goalsResult.error
       if (bankResult.error) throw bankResult.error
 
-      // Transform data
+      // Transform data back to frontend format
       const characters = (charactersResult.data || []).map(char => ({
         id: char.id,
         name: char.name,
@@ -173,7 +178,8 @@ serve(async (req) => {
         totalLevel: char.total_level || 0,
         bank: Number(char.bank) || 0,
         notes: char.notes || '',
-        isActive: true
+        isActive: true,
+        platTokens: char.plat_tokens || 0
       }))
 
       const moneyMethods = (methodsResult.data || []).map(method => ({

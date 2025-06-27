@@ -1,4 +1,3 @@
-
 import { OSRSItem, MoneyMakingGuide, PlayerStats } from "@/types";
 
 const API_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs/latest';
@@ -188,7 +187,8 @@ export const osrsApi = {
 
       // Try to get current price with proper null checks
       const pageIdValue = (page && typeof page.pageid === 'number') ? page.pageid : 0;
-      const currentPrice = pageIdValue ? await this.fetchSingleItemPrice(pageIdValue) || 0 : 0;
+      const currentPrice = pageIdValue > 0 ? (await this.fetchSingleItemPrice(pageIdValue) || 0) : 0;
+      const iconUrl = pageIdValue > 0 ? (await this.getItemIcon(pageIdValue) || null) : null;
 
       return {
         pageId: (page && typeof page.pageid === 'number') ? page.pageid : 0,
@@ -198,7 +198,7 @@ export const osrsApi = {
         id: (page && typeof page.pageid === 'number') ? page.pageid : 0,
         name: (page && typeof page.title === 'string') ? page.title : itemName,
         current_price: currentPrice,
-        icon: (page && page.original && typeof page.original.source === 'string') ? page.original.source : (pageIdValue ? await this.getItemIcon(pageIdValue) : null)
+        icon: (page && page.original && typeof page.original.source === 'string') ? page.original.source : iconUrl
       };
     } catch (error) {
       console.error('Error fetching item details from OSRS Wiki:', error);
@@ -232,8 +232,8 @@ export const osrsApi = {
           
           const itemPageId = (item && typeof item.pageid === 'number') ? item.pageid : 0;
           const itemTitle = (item && typeof item.title === 'string') ? item.title : '';
-          const currentPrice = itemPageId ? await this.fetchSingleItemPrice(itemPageId) || 0 : 0;
-          const icon = itemPageId ? await this.getItemIcon(itemPageId) : null;
+          const currentPrice = itemPageId > 0 ? (await this.fetchSingleItemPrice(itemPageId) || 0) : 0;
+          const icon = itemPageId > 0 ? (await this.getItemIcon(itemPageId) || null) : null;
           
           return {
             pageId: itemPageId,

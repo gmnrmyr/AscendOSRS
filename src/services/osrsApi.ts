@@ -1,4 +1,5 @@
 
+
 import { OSRSItem, MoneyMakingGuide, PlayerStats } from "@/types";
 
 const API_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs/latest';
@@ -192,8 +193,8 @@ export const osrsApi = {
       let iconUrl = null;
       
       if (pageIdValue > 0) {
-        currentPrice = (await this.fetchSingleItemPrice(pageIdValue)) || 0;
-        iconUrl = (await this.getItemIcon(pageIdValue)) || null;
+        currentPrice = (await osrsApi.fetchSingleItemPrice(pageIdValue)) || 0;
+        iconUrl = (await osrsApi.getItemIcon(pageIdValue)) || null;
       }
 
       return {
@@ -243,8 +244,8 @@ export const osrsApi = {
           let icon = null;
           
           if (itemPageId > 0) {
-            currentPrice = (await this.fetchSingleItemPrice(itemPageId)) || 0;
-            icon = (await this.getItemIcon(itemPageId)) || null;
+            currentPrice = (await osrsApi.fetchSingleItemPrice(itemPageId)) || 0;
+            icon = (await osrsApi.getItemIcon(itemPageId)) || null;
           }
           
           return {

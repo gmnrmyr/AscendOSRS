@@ -89,7 +89,7 @@ export const osrsApi = {
       if (!response.ok) return null;
       
       const data = await response.json();
-      const itemData = data.data[numericId.toString()];
+      const itemData = data.data?.[numericId.toString()];
       
       if (itemData && itemData.high) {
         return itemData.high;
@@ -178,10 +178,10 @@ export const osrsApi = {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      const pageId = Object.keys(data.query.pages)[0];
-      const page = data.query.pages[pageId];
+      const pageId = Object.keys(data.query?.pages || {})[0];
+      const page = data.query?.pages?.[pageId];
 
-      if (page.missing !== undefined) {
+      if (!page || page.missing !== undefined) {
         throw new Error(`Item "${itemName}" not found on the OSRS Wiki.`);
       }
 
@@ -191,12 +191,12 @@ export const osrsApi = {
       return {
         pageId: page.pageid,
         title: page.title,
-        imageUrl: page?.original?.source || null,
+        imageUrl: page.original?.source || null,
         extract: page.extract,
         id: page.pageid,
         name: page.title,
         current_price: currentPrice,
-        icon: page?.original?.source || await this.getItemIcon(page.pageid)
+        icon: page.original?.source || await this.getItemIcon(page.pageid)
       };
     } catch (error) {
       console.error('Error fetching item details from OSRS Wiki:', error);
@@ -223,7 +223,7 @@ export const osrsApi = {
       const data = await response.json();
       
       const items = await Promise.all(
-        data.query.search.map(async (item: any) => {
+        (data.query?.search || []).map(async (item: any) => {
           const currentPrice = await this.fetchSingleItemPrice(item.pageid) || 0;
           const icon = await this.getItemIcon(item.pageid);
           

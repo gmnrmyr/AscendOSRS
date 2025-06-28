@@ -47,6 +47,22 @@ serve(async (req) => {
 
       console.log('Starting cloud save for user:', user.id)
 
+      // Validation helper functions
+      const validateCharacterType = (type: string) => 
+        ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(type) ? type : 'main'
+      
+      const validateBankCategory = (category: string) => 
+        ['stackable', 'gear', 'materials', 'other'].includes(category) ? category : 'other'
+      
+      const validateMethodCategory = (category: string) => 
+        ['combat', 'skilling', 'bossing', 'other'].includes(category) ? category : 'other'
+      
+      const validateGoalCategory = (category: string) => 
+        ['gear', 'consumables', 'materials', 'other'].includes(category) ? category : 'other'
+      
+      const validatePriority = (priority: string) => 
+        ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(priority) ? priority : 'A'
+
       // Clear existing data first
       const deleteResults = await Promise.allSettled([
         supabaseClient.from('characters').delete().eq('user_id', user.id),
@@ -67,7 +83,7 @@ serve(async (req) => {
         const charactersToInsert = characters.map((char: any) => ({
           user_id: user.id,
           name: String(char.name || 'Unnamed Character').substring(0, 100),
-          type: ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(char.type) ? char.type : 'main',
+          type: validateCharacterType(char.type),
           combat_level: Math.max(3, Math.min(126, parseInt(char.combatLevel) || 3)),
           total_level: Math.max(32, Math.min(2277, parseInt(char.totalLevel) || 32)),
           bank: Math.max(0, parseInt(char.bank) || 0),
@@ -95,7 +111,7 @@ serve(async (req) => {
           click_intensity: Math.min(Math.max(parseInt(method.clickIntensity) || 1, 1), 5),
           requirements: String(method.requirements || '').substring(0, 500),
           notes: String(method.notes || '').substring(0, 1000),
-          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
+          category: validateMethodCategory(method.category)
         }))
 
         const { error: methodsError } = await supabaseClient
@@ -116,8 +132,8 @@ serve(async (req) => {
           current_price: Math.max(0, parseInt(goal.currentPrice) || 0),
           target_price: goal.targetPrice ? Math.max(0, parseInt(goal.targetPrice)) : null,
           quantity: Math.max(1, parseInt(goal.quantity) || 1),
-          priority: ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(goal.priority) ? goal.priority : 'A',
-          category: ['gear', 'consumables', 'materials', 'other'].includes(goal.category) ? goal.category : 'other',
+          priority: validatePriority(goal.priority),
+          category: validateGoalCategory(goal.category),
           notes: String(goal.notes || '').substring(0, 1000),
           image_url: String(goal.imageUrl || '').substring(0, 500)
         }))
@@ -132,7 +148,7 @@ serve(async (req) => {
         }
       }
 
-      // Save bank items with proper validation
+      // Save bank items with enhanced validation
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -144,9 +160,12 @@ serve(async (req) => {
             name: String(item.name || 'Unknown Item').substring(0, 100),
             quantity: Math.max(0, parseInt(item.quantity) || 0),
             estimated_price: Math.max(0, parseInt(item.estimatedPrice) || 0),
-            category: ['stackable', 'gear', 'materials', 'other'].includes(item.category) ? item.category : 'other',
+            category: validateBankCategory(item.category), // Enhanced validation here
             character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
           }))
+
+          console.log('Bank items to insert:', bankItemsToInsert.length)
+          console.log('Sample bank item categories:', bankItemsToInsert.slice(0, 3).map(item => item.category))
 
           const { error: bankError } = await supabaseClient
             .from('bank_items')

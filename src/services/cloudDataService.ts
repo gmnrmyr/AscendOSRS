@@ -46,6 +46,20 @@ interface BankItem {
   character: string;
 }
 
+// Utility function to normalize bank item categories
+const normalizeBankCategory = (category: string): 'stackable' | 'gear' | 'materials' | 'other' => {
+  if (!category || typeof category !== 'string') return 'other';
+  
+  const normalized = category.toLowerCase().trim();
+  
+  // Map various category names to valid database categories
+  if (normalized === 'stackable' || normalized === 'consumables' || normalized === 'consumable') return 'stackable';
+  if (normalized === 'gear' || normalized === 'equipment' || normalized === 'weapon' || normalized === 'armor' || normalized === 'armour') return 'gear';
+  if (normalized === 'materials' || normalized === 'material' || normalized === 'resource' || normalized === 'resources') return 'materials';
+  
+  return 'other';
+};
+
 export class CloudDataService {
   static async saveUserData(
     characters: Character[],
@@ -57,6 +71,18 @@ export class CloudDataService {
     try {
       console.log('Starting cloud save via edge function...');
       
+      // Normalize and validate bank data categories
+      const normalizedBankData: Record<string, BankItem[]> = {};
+      
+      Object.entries(bankData).forEach(([character, items]) => {
+        normalizedBankData[character] = items.map(item => ({
+          ...item,
+          category: normalizeBankCategory(item.category),
+          quantity: Math.max(0, Number(item.quantity) || 0),
+          estimatedPrice: Math.max(0, Number(item.estimatedPrice) || 0)
+        }));
+      });
+
       // Validate and clean data before sending
       const cleanedData = {
         characters: characters.map(char => ({
@@ -81,17 +107,7 @@ export class CloudDataService {
           priority: ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(goal.priority) ? goal.priority : 'A',
           category: ['gear', 'consumables', 'materials', 'other'].includes(goal.category) ? goal.category : 'other'
         })),
-        bankData: Object.fromEntries(
-          Object.entries(bankData).map(([character, items]) => [
-            character,
-            items.map(item => ({
-              ...item,
-              quantity: Math.max(0, Number(item.quantity) || 0),
-              estimatedPrice: Math.max(0, Number(item.estimatedPrice) || 0),
-              category: ['stackable', 'gear', 'materials', 'other'].includes(item.category) ? item.category : 'other'
-            }))
-          ])
-        ),
+        bankData: normalizedBankData,
         hoursPerDay: Math.max(1, Math.min(24, Number(hoursPerDay) || 10))
       };
 

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -51,33 +50,15 @@ serve(async (req) => {
       const validateCharacterType = (type: string) => 
         ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(type) ? type : 'main'
       
-      const validateBankCategory = (category: string) => {
+      const validateBankCategory = (category: string): 'stackable' | 'gear' | 'materials' | 'other' => {
         if (!category || typeof category !== 'string') return 'other'
-        const lowerCategory = category.toLowerCase().trim()
+        const normalized = category.toLowerCase().trim()
         
-        const categoryMap: Record<string, string> = {
-          'stackable': 'stackable',
-          'gear': 'gear', 
-          'equipment': 'gear',
-          'weapon': 'gear',
-          'armour': 'gear',
-          'armor': 'gear',
-          'tool': 'gear',
-          'materials': 'materials',
-          'material': 'materials',
-          'consumables': 'materials',
-          'consumable': 'materials',
-          'food': 'materials',
-          'potion': 'materials',
-          'rune': 'stackable',
-          'arrow': 'stackable',
-          'bolt': 'stackable',
-          'misc': 'other',
-          'miscellaneous': 'other',
-          'other': 'other'
-        }
-        
-        return categoryMap[lowerCategory] || 'other'
+        // Strict mapping to only valid database categories
+        if (normalized === 'stackable') return 'stackable'
+        if (normalized === 'gear') return 'gear'
+        if (normalized === 'materials') return 'materials'
+        return 'other'
       }
       
       const validateMethodCategory = (category: string) => 
@@ -179,7 +160,7 @@ serve(async (req) => {
         console.log('Purchase goals saved successfully')
       }
 
-      // Save bank items
+      // Save bank items with strict category validation
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -189,18 +170,25 @@ serve(async (req) => {
           console.log(`Processing ${allBankItems.length} bank items...`)
           
           const bankItemsToInsert = allBankItems
-            .filter((item: any) => item && typeof item === 'object')
-            .map((item: any) => ({
-              user_id: user.id,
-              name: String(item.name || 'Unknown Item').substring(0, 100),
-              quantity: Math.max(0, parseInt(String(item.quantity)) || 0),
-              estimated_price: Math.max(0, parseInt(String(item.estimatedPrice)) || 0),
-              category: validateBankCategory(item.category),
-              character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
-            }))
+            .filter((item: any) => item && typeof item === 'object' && item.name)
+            .map((item: any) => {
+              const validatedCategory = validateBankCategory(item.category);
+              console.log(`Item: ${item.name}, Original category: ${item.category}, Validated category: ${validatedCategory}`);
+              
+              return {
+                user_id: user.id,
+                name: String(item.name || 'Unknown Item').substring(0, 100),
+                quantity: Math.max(0, parseInt(String(item.quantity)) || 0),
+                estimated_price: Math.max(0, parseInt(String(item.estimatedPrice)) || 0),
+                category: validatedCategory,
+                character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
+              };
+            })
             .filter((item: any) => item.name && item.name !== 'Unknown Item')
 
           if (bankItemsToInsert.length > 0) {
+            console.log(`Inserting ${bankItemsToInsert.length} validated bank items...`)
+            
             const batchSize = 50
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize)

@@ -19,10 +19,10 @@ export function MethodForm({ characters }: MethodFormProps) {
     name: '',
     character: '',
     gpHour: 0,
-    clickIntensity: 1,
+    clickIntensity: 1 as 1 | 2 | 3 | 4 | 5,
     requirements: '',
     notes: '',
-    category: 'skilling'
+    category: 'skilling' as 'combat' | 'skilling' | 'bossing' | 'other'
   });
 
   const addMethod = () => {
@@ -36,10 +36,10 @@ export function MethodForm({ characters }: MethodFormProps) {
         name: '',
         character: '',
         gpHour: 0,
-        clickIntensity: 1,
+        clickIntensity: 1 as 1 | 2 | 3 | 4 | 5,
         requirements: '',
         notes: '',
-        category: 'skilling'
+        category: 'skilling' as 'combat' | 'skilling' | 'bossing' | 'other'
       });
     }
   };
@@ -109,7 +109,7 @@ export function MethodForm({ characters }: MethodFormProps) {
 
           <div>
             <Label htmlFor="method-category">Category</Label>
-            <Select value={newMethod.category} onValueChange={(value) => setNewMethod({ ...newMethod, category: value })}>
+            <Select value={newMethod.category} onValueChange={(value: 'combat' | 'skilling' | 'bossing' | 'other') => setNewMethod({ ...newMethod, category: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

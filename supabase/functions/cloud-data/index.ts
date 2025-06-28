@@ -52,18 +52,30 @@ serve(async (req) => {
         ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(type) ? type : 'main'
       
       const validateBankCategory = (category: string) => {
-        // Map frontend categories to valid database categories
+        if (!category || typeof category !== 'string') return 'other'
+        const lowerCategory = category.toLowerCase().trim()
+        
+        // Direct mappings for valid categories
+        const validCategories = ['stackable', 'gear', 'materials', 'other']
+        if (validCategories.includes(lowerCategory)) return lowerCategory
+        
+        // Fallback mappings
         const categoryMap: Record<string, string> = {
-          'stackable': 'stackable',
-          'gear': 'gear', 
-          'materials': 'materials',
-          'other': 'other',
-          // Add fallback mappings for any other categories
           'consumables': 'materials',
           'equipment': 'gear',
-          'misc': 'other'
+          'misc': 'other',
+          'tool': 'gear',
+          'weapon': 'gear',
+          'armour': 'gear',
+          'armor': 'gear',
+          'food': 'materials',
+          'potion': 'materials',
+          'rune': 'stackable',
+          'arrow': 'stackable',
+          'bolt': 'stackable'
         }
-        return categoryMap[category?.toLowerCase()] || 'other'
+        
+        return categoryMap[lowerCategory] || 'other'
       }
       
       const validateMethodCategory = (category: string) => 
@@ -75,99 +87,112 @@ serve(async (req) => {
       const validatePriority = (priority: string) => 
         ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(priority) ? priority : 'A'
 
-      // Clear existing data first
+      // Clear existing data first with better error handling
       console.log('Clearing existing user data...')
-      const deleteResults = await Promise.allSettled([
-        supabaseClient.from('characters').delete().eq('user_id', user.id),
-        supabaseClient.from('money_methods').delete().eq('user_id', user.id),  
-        supabaseClient.from('purchase_goals').delete().eq('user_id', user.id),
-        supabaseClient.from('bank_items').delete().eq('user_id', user.id)
-      ])
+      try {
+        await Promise.all([
+          supabaseClient.from('characters').delete().eq('user_id', user.id),
+          supabaseClient.from('money_methods').delete().eq('user_id', user.id),  
+          supabaseClient.from('purchase_goals').delete().eq('user_id', user.id),
+          supabaseClient.from('bank_items').delete().eq('user_id', user.id)
+        ])
+        console.log('Existing data cleared successfully')
+      } catch (deleteError) {
+        console.warn('Some delete operations failed, continuing anyway:', deleteError)
+      }
 
-      // Log any delete errors but continue
-      deleteResults.forEach((result, index) => {
-        if (result.status === 'rejected') {
-          console.warn(`Delete operation ${index} failed:`, result.reason)
-        }
-      })
-
-      // Save characters with proper validation
-      if (characters && characters.length > 0) {
+      // Save characters with enhanced validation
+      if (Array.isArray(characters) && characters.length > 0) {
         console.log(`Saving ${characters.length} characters...`)
-        const charactersToInsert = characters.map((char: any) => ({
-          user_id: user.id,
-          name: String(char.name || 'Unnamed Character').substring(0, 100),
-          type: validateCharacterType(char.type),
-          combat_level: Math.max(3, Math.min(126, parseInt(char.combatLevel) || 3)),
-          total_level: Math.max(32, Math.min(2277, parseInt(char.totalLevel) || 32)),
-          bank: Math.max(0, parseInt(char.bank) || 0),
-          notes: String(char.notes || '').substring(0, 1000),
-          plat_tokens: Math.max(0, parseInt(char.platTokens) || 0)
-        }))
+        try {
+          const charactersToInsert = characters.map((char: any) => ({
+            user_id: user.id,
+            name: String(char.name || 'Unnamed Character').substring(0, 100),
+            type: validateCharacterType(char.type),
+            combat_level: Math.max(3, Math.min(126, parseInt(String(char.combatLevel)) || 3)),
+            total_level: Math.max(32, Math.min(2277, parseInt(String(char.totalLevel)) || 32)),
+            bank: Math.max(0, parseInt(String(char.bank)) || 0),
+            notes: String(char.notes || '').substring(0, 1000),
+            plat_tokens: Math.max(0, parseInt(String(char.platTokens)) || 0)
+          }))
 
-        const { error: charactersError } = await supabaseClient
-          .from('characters')
-          .insert(charactersToInsert)
-        
-        if (charactersError) {
-          console.error('Error saving characters:', charactersError)
-          throw new Error(`Failed to save characters: ${charactersError.message}`)
+          const { error: charactersError } = await supabaseClient
+            .from('characters')
+            .insert(charactersToInsert)
+          
+          if (charactersError) {
+            console.error('Error saving characters:', charactersError)
+            throw new Error(`Failed to save characters: ${charactersError.message}`)
+          }
+          console.log('Characters saved successfully')
+        } catch (error) {
+          console.error('Character save failed:', error)
+          throw error
         }
-        console.log('Characters saved successfully')
       }
 
-      // Save money methods with proper validation
-      if (moneyMethods && moneyMethods.length > 0) {
+      // Save money methods with enhanced validation
+      if (Array.isArray(moneyMethods) && moneyMethods.length > 0) {
         console.log(`Saving ${moneyMethods.length} money methods...`)
-        const methodsToInsert = moneyMethods.map((method: any) => ({
-          user_id: user.id,
-          name: String(method.name || 'Unnamed Method').substring(0, 100),
-          character: String(method.character || 'Unknown').substring(0, 100),
-          gp_hour: Math.max(0, parseInt(method.gpHour) || 0),
-          click_intensity: Math.min(Math.max(parseInt(method.clickIntensity) || 1, 1), 5),
-          requirements: String(method.requirements || '').substring(0, 500),
-          notes: String(method.notes || '').substring(0, 1000),
-          category: validateMethodCategory(method.category)
-        }))
+        try {
+          const methodsToInsert = moneyMethods.map((method: any) => ({
+            user_id: user.id,
+            name: String(method.name || 'Unnamed Method').substring(0, 100),
+            character: String(method.character || 'Unknown').substring(0, 100),
+            gp_hour: Math.max(0, parseInt(String(method.gpHour)) || 0),
+            click_intensity: Math.min(Math.max(parseInt(String(method.clickIntensity)) || 1, 1), 5),
+            requirements: String(method.requirements || '').substring(0, 500),
+            notes: String(method.notes || '').substring(0, 1000),
+            category: validateMethodCategory(method.category)
+          }))
 
-        const { error: methodsError } = await supabaseClient
-          .from('money_methods')
-          .insert(methodsToInsert)
-        
-        if (methodsError) {
-          console.error('Error saving money methods:', methodsError)
-          throw new Error(`Failed to save money methods: ${methodsError.message}`)
+          const { error: methodsError } = await supabaseClient
+            .from('money_methods')
+            .insert(methodsToInsert)
+          
+          if (methodsError) {
+            console.error('Error saving money methods:', methodsError)
+            throw new Error(`Failed to save money methods: ${methodsError.message}`)
+          }
+          console.log('Money methods saved successfully')
+        } catch (error) {
+          console.error('Money methods save failed:', error)
+          throw error
         }
-        console.log('Money methods saved successfully')
       }
 
-      // Save purchase goals with proper validation
-      if (purchaseGoals && purchaseGoals.length > 0) {
+      // Save purchase goals with enhanced validation
+      if (Array.isArray(purchaseGoals) && purchaseGoals.length > 0) {
         console.log(`Saving ${purchaseGoals.length} purchase goals...`)
-        const goalsToInsert = purchaseGoals.map((goal: any) => ({
-          user_id: user.id,
-          name: String(goal.name || 'Unnamed Goal').substring(0, 100),
-          current_price: Math.max(0, parseInt(goal.currentPrice) || 0),
-          target_price: goal.targetPrice ? Math.max(0, parseInt(goal.targetPrice)) : null,
-          quantity: Math.max(1, parseInt(goal.quantity) || 1),
-          priority: validatePriority(goal.priority),
-          category: validateGoalCategory(goal.category),
-          notes: String(goal.notes || '').substring(0, 1000),
-          image_url: String(goal.imageUrl || '').substring(0, 500)
-        }))
+        try {
+          const goalsToInsert = purchaseGoals.map((goal: any) => ({
+            user_id: user.id,
+            name: String(goal.name || 'Unnamed Goal').substring(0, 100),
+            current_price: Math.max(0, parseInt(String(goal.currentPrice)) || 0),
+            target_price: goal.targetPrice ? Math.max(0, parseInt(String(goal.targetPrice))) : null,
+            quantity: Math.max(1, parseInt(String(goal.quantity)) || 1),
+            priority: validatePriority(goal.priority),
+            category: validateGoalCategory(goal.category),
+            notes: String(goal.notes || '').substring(0, 1000),
+            image_url: String(goal.imageUrl || '').substring(0, 500)
+          }))
 
-        const { error: goalsError } = await supabaseClient
-          .from('purchase_goals')
-          .insert(goalsToInsert)
-        
-        if (goalsError) {
-          console.error('Error saving purchase goals:', goalsError)
-          throw new Error(`Failed to save purchase goals: ${goalsError.message}`)
+          const { error: goalsError } = await supabaseClient
+            .from('purchase_goals')
+            .insert(goalsToInsert)
+          
+          if (goalsError) {
+            console.error('Error saving purchase goals:', goalsError)
+            throw new Error(`Failed to save purchase goals: ${goalsError.message}`)
+          }
+          console.log('Purchase goals saved successfully')
+        } catch (error) {
+          console.error('Purchase goals save failed:', error)
+          throw error
         }
-        console.log('Purchase goals saved successfully')
       }
 
-      // Save bank items with enhanced validation and error handling
+      // Save bank items with enhanced validation and better error handling
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -176,39 +201,48 @@ serve(async (req) => {
         if (allBankItems.length > 0) {
           console.log(`Processing ${allBankItems.length} bank items...`)
           
-          const bankItemsToInsert = allBankItems.map((item: any) => {
-            const validatedCategory = validateBankCategory(item.category)
-            console.log(`Item: ${item.name}, Original category: ${item.category}, Validated: ${validatedCategory}`)
-            
-            return {
-              user_id: user.id,
-              name: String(item.name || 'Unknown Item').substring(0, 100),
-              quantity: Math.max(0, parseInt(item.quantity) || 0),
-              estimated_price: Math.max(0, parseInt(item.estimatedPrice) || 0),
-              category: validatedCategory,
-              character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
-            }
-          })
+          try {
+            const bankItemsToInsert = allBankItems
+              .filter((item: any) => item && typeof item === 'object')
+              .map((item: any) => {
+                const validatedCategory = validateBankCategory(item.category)
+                
+                return {
+                  user_id: user.id,
+                  name: String(item.name || 'Unknown Item').substring(0, 100),
+                  quantity: Math.max(0, parseInt(String(item.quantity)) || 0),
+                  estimated_price: Math.max(0, parseInt(String(item.estimatedPrice)) || 0),
+                  category: validatedCategory,
+                  character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
+                }
+              })
+              .filter((item: any) => item.name && item.name !== 'Unknown Item')
 
-          console.log(`Inserting ${bankItemsToInsert.length} validated bank items...`)
+            console.log(`Inserting ${bankItemsToInsert.length} validated bank items...`)
 
-          // Insert in smaller batches to avoid potential issues
-          const batchSize = 100
-          for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
-            const batch = bankItemsToInsert.slice(i, i + batchSize)
-            console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)}`)
-            
-            const { error: bankError } = await supabaseClient
-              .from('bank_items')
-              .insert(batch)
-            
-            if (bankError) {
-              console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
-              throw new Error(`Failed to save bank items: ${bankError.message}`)
+            if (bankItemsToInsert.length > 0) {
+              // Insert in smaller batches to avoid potential issues
+              const batchSize = 50
+              for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
+                const batch = bankItemsToInsert.slice(i, i + batchSize)
+                console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)}`)
+                
+                const { error: bankError } = await supabaseClient
+                  .from('bank_items')
+                  .insert(batch)
+                
+                if (bankError) {
+                  console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
+                  throw new Error(`Failed to save bank items: ${bankError.message}`)
+                }
+              }
             }
+            
+            console.log('All bank items saved successfully')
+          } catch (error) {
+            console.error('Bank items save failed:', error)
+            throw error
           }
-          
-          console.log('All bank items saved successfully')
         }
       }
 
@@ -223,85 +257,90 @@ serve(async (req) => {
       // Load user data
       console.log('Loading cloud data for user:', user.id)
 
-      // Load all data in parallel
-      const [charactersResult, methodsResult, goalsResult, bankResult] = await Promise.all([
-        supabaseClient.from('characters').select('*').eq('user_id', user.id),
-        supabaseClient.from('money_methods').select('*').eq('user_id', user.id),
-        supabaseClient.from('purchase_goals').select('*').eq('user_id', user.id),
-        supabaseClient.from('bank_items').select('*').eq('user_id', user.id)
-      ])
+      try {
+        // Load all data in parallel
+        const [charactersResult, methodsResult, goalsResult, bankResult] = await Promise.all([
+          supabaseClient.from('characters').select('*').eq('user_id', user.id),
+          supabaseClient.from('money_methods').select('*').eq('user_id', user.id),
+          supabaseClient.from('purchase_goals').select('*').eq('user_id', user.id),
+          supabaseClient.from('bank_items').select('*').eq('user_id', user.id)
+        ])
 
-      if (charactersResult.error) throw new Error(`Failed to load characters: ${charactersResult.error.message}`)
-      if (methodsResult.error) throw new Error(`Failed to load money methods: ${methodsResult.error.message}`)
-      if (goalsResult.error) throw new Error(`Failed to load goals: ${goalsResult.error.message}`)
-      if (bankResult.error) throw new Error(`Failed to load bank items: ${bankResult.error.message}`)
+        if (charactersResult.error) throw new Error(`Failed to load characters: ${charactersResult.error.message}`)
+        if (methodsResult.error) throw new Error(`Failed to load money methods: ${methodsResult.error.message}`)
+        if (goalsResult.error) throw new Error(`Failed to load goals: ${goalsResult.error.message}`)
+        if (bankResult.error) throw new Error(`Failed to load bank items: ${bankResult.error.message}`)
 
-      // Transform data back to frontend format
-      const characters = (charactersResult.data || []).map(char => ({
-        id: char.id,
-        name: char.name,
-        type: char.type,
-        combatLevel: char.combat_level || 0,
-        totalLevel: char.total_level || 0,
-        bank: Number(char.bank) || 0,
-        notes: char.notes || '',
-        isActive: true,
-        platTokens: char.plat_tokens || 0
-      }))
+        // Transform data back to frontend format
+        const characters = (charactersResult.data || []).map(char => ({
+          id: char.id,
+          name: char.name,
+          type: char.type,
+          combatLevel: char.combat_level || 0,
+          totalLevel: char.total_level || 0,
+          bank: Number(char.bank) || 0,
+          notes: char.notes || '',
+          isActive: true,
+          platTokens: char.plat_tokens || 0
+        }))
 
-      const moneyMethods = (methodsResult.data || []).map(method => ({
-        id: method.id,
-        name: method.name,
-        character: method.character,
-        gpHour: method.gp_hour || 0,
-        clickIntensity: method.click_intensity,
-        requirements: method.requirements || '',
-        notes: method.notes || '',
-        category: method.category
-      }))
+        const moneyMethods = (methodsResult.data || []).map(method => ({
+          id: method.id,
+          name: method.name,
+          character: method.character,
+          gpHour: method.gp_hour || 0,
+          clickIntensity: method.click_intensity,
+          requirements: method.requirements || '',
+          notes: method.notes || '',
+          category: method.category
+        }))
 
-      const purchaseGoals = (goalsResult.data || []).map(goal => ({
-        id: goal.id,
-        name: goal.name,
-        currentPrice: goal.current_price || 0,
-        targetPrice: goal.target_price,
-        quantity: goal.quantity || 1,
-        priority: goal.priority,
-        category: goal.category,
-        notes: goal.notes || '',
-        imageUrl: goal.image_url || ''
-      }))
+        const purchaseGoals = (goalsResult.data || []).map(goal => ({
+          id: goal.id,
+          name: goal.name,
+          currentPrice: goal.current_price || 0,
+          targetPrice: goal.target_price,
+          quantity: goal.quantity || 1,
+          priority: goal.priority,
+          category: goal.category,
+          notes: goal.notes || '',
+          imageUrl: goal.image_url || ''
+        }))
 
-      // Group bank items by character
-      const bankData: Record<string, any[]> = {}
-      const bankItems = (bankResult.data || []).map(item => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity || 0,
-        estimatedPrice: item.estimated_price || 0,
-        category: item.category,
-        character: item.character
-      }))
+        // Group bank items by character
+        const bankData: Record<string, any[]> = {}
+        const bankItems = (bankResult.data || []).map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity || 0,
+          estimatedPrice: item.estimated_price || 0,
+          category: item.category,
+          character: item.character
+        }))
 
-      bankItems.forEach(item => {
-        if (!bankData[item.character]) {
-          bankData[item.character] = []
-        }
-        bankData[item.character].push(item)
-      })
+        bankItems.forEach(item => {
+          if (!bankData[item.character]) {
+            bankData[item.character] = []
+          }
+          bankData[item.character].push(item)
+        })
 
-      console.log('Cloud data loaded successfully')
-      
-      return new Response(
-        JSON.stringify({
-          characters,
-          moneyMethods,
-          purchaseGoals,
-          bankData,
-          hoursPerDay: 10
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        console.log('Cloud data loaded successfully')
+        
+        return new Response(
+          JSON.stringify({
+            characters,
+            moneyMethods,
+            purchaseGoals,
+            bankData,
+            hoursPerDay: 10
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } catch (error) {
+        console.error('Error loading cloud data:', error)
+        throw error
+      }
     }
 
     return new Response(

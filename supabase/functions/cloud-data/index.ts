@@ -47,12 +47,24 @@ serve(async (req) => {
 
       console.log('Starting cloud save for user:', user.id)
 
-      // Validation helper functions
+      // Enhanced validation helper functions
       const validateCharacterType = (type: string) => 
         ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(type) ? type : 'main'
       
-      const validateBankCategory = (category: string) => 
-        ['stackable', 'gear', 'materials', 'other'].includes(category) ? category : 'other'
+      const validateBankCategory = (category: string) => {
+        // Map frontend categories to valid database categories
+        const categoryMap: Record<string, string> = {
+          'stackable': 'stackable',
+          'gear': 'gear', 
+          'materials': 'materials',
+          'other': 'other',
+          // Add fallback mappings for any other categories
+          'consumables': 'materials',
+          'equipment': 'gear',
+          'misc': 'other'
+        }
+        return categoryMap[category?.toLowerCase()] || 'other'
+      }
       
       const validateMethodCategory = (category: string) => 
         ['combat', 'skilling', 'bossing', 'other'].includes(category) ? category : 'other'
@@ -64,6 +76,7 @@ serve(async (req) => {
         ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(priority) ? priority : 'A'
 
       // Clear existing data first
+      console.log('Clearing existing user data...')
       const deleteResults = await Promise.allSettled([
         supabaseClient.from('characters').delete().eq('user_id', user.id),
         supabaseClient.from('money_methods').delete().eq('user_id', user.id),  
@@ -80,6 +93,7 @@ serve(async (req) => {
 
       // Save characters with proper validation
       if (characters && characters.length > 0) {
+        console.log(`Saving ${characters.length} characters...`)
         const charactersToInsert = characters.map((char: any) => ({
           user_id: user.id,
           name: String(char.name || 'Unnamed Character').substring(0, 100),
@@ -99,10 +113,12 @@ serve(async (req) => {
           console.error('Error saving characters:', charactersError)
           throw new Error(`Failed to save characters: ${charactersError.message}`)
         }
+        console.log('Characters saved successfully')
       }
 
       // Save money methods with proper validation
       if (moneyMethods && moneyMethods.length > 0) {
+        console.log(`Saving ${moneyMethods.length} money methods...`)
         const methodsToInsert = moneyMethods.map((method: any) => ({
           user_id: user.id,
           name: String(method.name || 'Unnamed Method').substring(0, 100),
@@ -122,10 +138,12 @@ serve(async (req) => {
           console.error('Error saving money methods:', methodsError)
           throw new Error(`Failed to save money methods: ${methodsError.message}`)
         }
+        console.log('Money methods saved successfully')
       }
 
       // Save purchase goals with proper validation
       if (purchaseGoals && purchaseGoals.length > 0) {
+        console.log(`Saving ${purchaseGoals.length} purchase goals...`)
         const goalsToInsert = purchaseGoals.map((goal: any) => ({
           user_id: user.id,
           name: String(goal.name || 'Unnamed Goal').substring(0, 100),
@@ -146,35 +164,51 @@ serve(async (req) => {
           console.error('Error saving purchase goals:', goalsError)
           throw new Error(`Failed to save purchase goals: ${goalsError.message}`)
         }
+        console.log('Purchase goals saved successfully')
       }
 
-      // Save bank items with enhanced validation
+      // Save bank items with enhanced validation and error handling
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
         );
         
         if (allBankItems.length > 0) {
-          const bankItemsToInsert = allBankItems.map((item: any) => ({
-            user_id: user.id,
-            name: String(item.name || 'Unknown Item').substring(0, 100),
-            quantity: Math.max(0, parseInt(item.quantity) || 0),
-            estimated_price: Math.max(0, parseInt(item.estimatedPrice) || 0),
-            category: validateBankCategory(item.category), // Enhanced validation here
-            character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
-          }))
-
-          console.log('Bank items to insert:', bankItemsToInsert.length)
-          console.log('Sample bank item categories:', bankItemsToInsert.slice(0, 3).map(item => item.category))
-
-          const { error: bankError } = await supabaseClient
-            .from('bank_items')
-            .insert(bankItemsToInsert)
+          console.log(`Processing ${allBankItems.length} bank items...`)
           
-          if (bankError) {
-            console.error('Error saving bank items:', bankError)
-            throw new Error(`Failed to save bank items: ${bankError.message}`)
+          const bankItemsToInsert = allBankItems.map((item: any) => {
+            const validatedCategory = validateBankCategory(item.category)
+            console.log(`Item: ${item.name}, Original category: ${item.category}, Validated: ${validatedCategory}`)
+            
+            return {
+              user_id: user.id,
+              name: String(item.name || 'Unknown Item').substring(0, 100),
+              quantity: Math.max(0, parseInt(item.quantity) || 0),
+              estimated_price: Math.max(0, parseInt(item.estimatedPrice) || 0),
+              category: validatedCategory,
+              character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
+            }
+          })
+
+          console.log(`Inserting ${bankItemsToInsert.length} validated bank items...`)
+
+          // Insert in smaller batches to avoid potential issues
+          const batchSize = 100
+          for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
+            const batch = bankItemsToInsert.slice(i, i + batchSize)
+            console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)}`)
+            
+            const { error: bankError } = await supabaseClient
+              .from('bank_items')
+              .insert(batch)
+            
+            if (bankError) {
+              console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
+              throw new Error(`Failed to save bank items: ${bankError.message}`)
+            }
           }
+          
+          console.log('All bank items saved successfully')
         }
       }
 

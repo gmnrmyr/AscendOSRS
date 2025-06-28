@@ -42,21 +42,28 @@ interface BankItem {
   name: string;
   quantity: number;
   estimatedPrice: number;
-  category: 'stackable' | 'gear' | 'materials' | 'other';
+  category: string;
   character: string;
 }
 
-// Utility function to normalize bank item categories
-const normalizeBankCategory = (category: string): 'stackable' | 'gear' | 'materials' | 'other' => {
+// Strict category mapping to database enum values
+const mapBankItemCategory = (category: string): 'stackable' | 'gear' | 'materials' | 'other' => {
   if (!category || typeof category !== 'string') return 'other';
   
   const normalized = category.toLowerCase().trim();
   
-  // Map various category names to valid database categories
-  if (normalized === 'stackable' || normalized === 'consumables' || normalized === 'consumable') return 'stackable';
-  if (normalized === 'gear' || normalized === 'equipment' || normalized === 'weapon' || normalized === 'armor' || normalized === 'armour') return 'gear';
-  if (normalized === 'materials' || normalized === 'material' || normalized === 'resource' || normalized === 'resources') return 'materials';
+  // Direct matches first
+  if (normalized === 'stackable') return 'stackable';
+  if (normalized === 'gear') return 'gear';
+  if (normalized === 'materials') return 'materials';
+  if (normalized === 'other') return 'other';
   
+  // Common variations mapping
+  if (normalized.includes('consumable') || normalized.includes('food') || normalized.includes('potion')) return 'stackable';
+  if (normalized.includes('weapon') || normalized.includes('armor') || normalized.includes('armour') || normalized.includes('equipment')) return 'gear';
+  if (normalized.includes('resource') || normalized.includes('material') || normalized.includes('log') || normalized.includes('ore')) return 'materials';
+  
+  // Default to other for unknown categories
   return 'other';
 };
 
@@ -71,19 +78,32 @@ export class CloudDataService {
     try {
       console.log('Starting cloud save via edge function...');
       
-      // Normalize and validate bank data categories
+      // Validate and normalize bank data with strict category mapping
       const normalizedBankData: Record<string, BankItem[]> = {};
       
       Object.entries(bankData).forEach(([character, items]) => {
-        normalizedBankData[character] = items.map(item => ({
-          ...item,
-          category: normalizeBankCategory(item.category),
-          quantity: Math.max(0, Number(item.quantity) || 0),
-          estimatedPrice: Math.max(0, Number(item.estimatedPrice) || 0)
-        }));
+        if (!Array.isArray(items)) {
+          console.warn(`Invalid items for character ${character}, skipping`);
+          normalizedBankData[character] = [];
+          return;
+        }
+        
+        normalizedBankData[character] = items
+          .filter(item => item && typeof item === 'object' && item.name)
+          .map(item => {
+            const mappedCategory = mapBankItemCategory(item.category);
+            console.log(`Bank item: ${item.name}, Original: ${item.category}, Mapped: ${mappedCategory}`);
+            
+            return {
+              ...item,
+              category: mappedCategory,
+              quantity: Math.max(0, Number(item.quantity) || 0),
+              estimatedPrice: Math.max(0, Number(item.estimatedPrice) || 0)
+            };
+          });
       });
 
-      // Validate and clean data before sending
+      // Validate and clean other data
       const cleanedData = {
         characters: characters.map(char => ({
           ...char,
@@ -96,7 +116,7 @@ export class CloudDataService {
         moneyMethods: moneyMethods.map(method => ({
           ...method,
           gpHour: Math.max(0, Number(method.gpHour) || 0),
-          clickIntensity: Math.max(1, Math.min(5, Number(method.clickIntensity) || 1)),
+          clickIntensity: Math.max(1, Math.min(5, Number(method.clickIntensity) || 1)) as 1 | 2 | 3 | 4 | 5,
           category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
         })),
         purchaseGoals: purchaseGoals.map(goal => ({
@@ -111,6 +131,13 @@ export class CloudDataService {
         hoursPerDay: Math.max(1, Math.min(24, Number(hoursPerDay) || 10))
       };
 
+      console.log('Sending cleaned data to edge function:', {
+        charactersCount: cleanedData.characters.length,
+        methodsCount: cleanedData.moneyMethods.length,
+        goalsCount: cleanedData.purchaseGoals.length,
+        bankItemsCount: Object.values(cleanedData.bankData).flat().length
+      });
+
       const { data, error } = await supabase.functions.invoke('cloud-data', {
         body: {
           action: 'save',
@@ -123,7 +150,7 @@ export class CloudDataService {
         throw new Error(`Cloud save failed: ${error.message || 'Unknown error'}`);
       }
 
-      console.log('Cloud save completed successfully');
+      console.log('Cloud save completed successfully:', data);
       return data;
     } catch (error) {
       console.error('Error saving to cloud:', error);
@@ -144,7 +171,7 @@ export class CloudDataService {
         throw new Error(`Cloud load failed: ${error.message || 'Unknown error'}`);
       }
 
-      console.log('Cloud data loaded successfully');
+      console.log('Cloud data loaded successfully:', data);
       return data || {
         characters: [],
         moneyMethods: [],

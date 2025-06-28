@@ -1,9 +1,27 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// Strict category validation function
+const validateBankCategory = (category: string): 'stackable' | 'gear' | 'materials' | 'other' => {
+  if (!category || typeof category !== 'string') return 'other'
+  
+  const normalized = category.toLowerCase().trim()
+  
+  // Only allow exact matches to database enum values
+  if (normalized === 'stackable') return 'stackable'
+  if (normalized === 'gear') return 'gear'  
+  if (normalized === 'materials') return 'materials'
+  if (normalized === 'other') return 'other'
+  
+  // For any other value, default to 'other'
+  console.log(`Unknown bank category "${category}", defaulting to "other"`)
+  return 'other'
 }
 
 serve(async (req) => {
@@ -41,25 +59,13 @@ serve(async (req) => {
     const { action } = body
 
     if (action === 'save') {
-      // Save user data
       const { characters, moneyMethods, purchaseGoals, bankData, hoursPerDay } = body
 
       console.log('Starting cloud save for user:', user.id)
 
-      // Enhanced validation helper functions
+      // Validation helper functions
       const validateCharacterType = (type: string) => 
         ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(type) ? type : 'main'
-      
-      const validateBankCategory = (category: string): 'stackable' | 'gear' | 'materials' | 'other' => {
-        if (!category || typeof category !== 'string') return 'other'
-        const normalized = category.toLowerCase().trim()
-        
-        // Strict mapping to only valid database categories
-        if (normalized === 'stackable') return 'stackable'
-        if (normalized === 'gear') return 'gear'
-        if (normalized === 'materials') return 'materials'
-        return 'other'
-      }
       
       const validateMethodCategory = (category: string) => 
         ['combat', 'skilling', 'bossing', 'other'].includes(category) ? category : 'other'
@@ -160,7 +166,7 @@ serve(async (req) => {
         console.log('Purchase goals saved successfully')
       }
 
-      // Save bank items with strict category validation
+      // Save bank items with strict validation
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -170,29 +176,35 @@ serve(async (req) => {
           console.log(`Processing ${allBankItems.length} bank items...`)
           
           const bankItemsToInsert = allBankItems
-            .filter((item: any) => item && typeof item === 'object' && item.name)
+            .filter((item: any) => item && typeof item === 'object' && item.name && String(item.name).trim())
             .map((item: any) => {
               const validatedCategory = validateBankCategory(item.category);
-              console.log(`Item: ${item.name}, Original category: ${item.category}, Validated category: ${validatedCategory}`);
+              console.log(`Processing bank item: ${item.name}, category: ${item.category} -> ${validatedCategory}`);
               
               return {
                 user_id: user.id,
-                name: String(item.name || 'Unknown Item').substring(0, 100),
+                name: String(item.name || 'Unknown Item').trim().substring(0, 100),
                 quantity: Math.max(0, parseInt(String(item.quantity)) || 0),
                 estimated_price: Math.max(0, parseInt(String(item.estimatedPrice)) || 0),
-                category: validatedCategory,
+                category: validatedCategory, // This will now always be a valid enum value
                 character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
               };
             })
-            .filter((item: any) => item.name && item.name !== 'Unknown Item')
 
+          console.log(`Inserting ${bankItemsToInsert.length} validated bank items...`)
+          
           if (bankItemsToInsert.length > 0) {
-            console.log(`Inserting ${bankItemsToInsert.length} validated bank items...`)
-            
             const batchSize = 50
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize)
-              console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)}`)
+              console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)} with ${batch.length} items`)
+              
+              // Log a sample of items being inserted for debugging
+              console.log('Sample batch items:', batch.slice(0, 3).map(item => ({
+                name: item.name,
+                category: item.category,
+                character: item.character
+              })))
               
               const { error: bankError } = await supabaseClient
                 .from('bank_items')
@@ -200,6 +212,7 @@ serve(async (req) => {
               
               if (bankError) {
                 console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
+                console.error('Failed batch sample:', batch.slice(0, 3))
                 throw new Error(`Failed to save bank items: ${bankError.message}`)
               }
             }
@@ -209,7 +222,7 @@ serve(async (req) => {
         }
       }
 
-      console.log('Cloud save completed successfully')
+      console.log('Cloud save completed successfully for user:', user.id)
       
       return new Response(
         JSON.stringify({ success: true, message: 'Data saved successfully' }),
@@ -286,7 +299,7 @@ serve(async (req) => {
         bankData[item.character].push(item)
       })
 
-      console.log('Cloud data loaded successfully')
+      console.log('Cloud data loaded successfully for user:', user.id)
       
       return new Response(
         JSON.stringify({

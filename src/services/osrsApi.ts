@@ -1,5 +1,3 @@
-
-
 import { OSRSItem, MoneyMakingGuide, PlayerStats } from "@/types";
 
 const API_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs/latest';
@@ -14,10 +12,10 @@ export const osrsApi = {
       const templeResponse = await fetch(`${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`);
       if (templeResponse.ok) {
         const data = await templeResponse.json();
-        if (data && data.data) {
+        if (data && data.data && !data.error) {
           return {
-            combat_level: data.data.combat_level || 3,
-            total_level: data.data.total_level || 32,
+            combat_level: data.data.Combat_level || data.data.combat_level || 3,
+            total_level: data.data.Overall || data.data.total_level || 32,
             account_type: data.data.account_type || 'main',
             username: playerName
           };
@@ -25,7 +23,7 @@ export const osrsApi = {
       }
 
       // Fallback to official hiscores
-      const response = await fetch(`https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=${playerName}`);
+      const response = await fetch(`https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=${encodeURIComponent(playerName)}`);
       if (!response.ok) {
         console.error('Failed to fetch player stats:', response.status, response.statusText);
         return null;
@@ -38,14 +36,34 @@ export const osrsApi = {
         return null;
       }
 
-      const combatLevelLine = lines[0];
-      const totalLevelLine = lines[1];
+      // Parse overall stats (first line is overall)
+      const overallStats = lines[0].split(',');
+      const totalLevel = parseInt(overallStats[1]) || 32;
+      
+      // Calculate combat level from individual combat stats
+      const attackStats = lines[1].split(',');
+      const defenceStats = lines[2].split(',');
+      const strengthStats = lines[3].split(',');
+      const hpStats = lines[4].split(',');
+      const rangedStats = lines[5].split(',');
+      const prayerStats = lines[6].split(',');
+      const magicStats = lines[7].split(',');
 
-      const combatLevel = parseInt(combatLevelLine.split(',')[1]) || 3;
-      const totalLevel = parseInt(totalLevelLine.split(',')[1]) || 32;
+      const attack = parseInt(attackStats[1]) || 1;
+      const defence = parseInt(defenceStats[1]) || 1;
+      const strength = parseInt(strengthStats[1]) || 1;
+      const hitpoints = parseInt(hpStats[1]) || 10;
+      const ranged = parseInt(rangedStats[1]) || 1;
+      const prayer = parseInt(prayerStats[1]) || 1;
+      const magic = parseInt(magicStats[1]) || 1;
+
+      // Calculate combat level
+      const combatLevel = Math.floor(((attack + strength) * 0.325 + defence * 0.325 + hitpoints * 0.25 + 
+                                   Math.floor(prayer * 0.125) + Math.floor(ranged * 0.325) + 
+                                   Math.floor(magic * 0.325)) * 0.25) + 1;
 
       return {
-        combat_level: combatLevel,
+        combat_level: Math.min(126, combatLevel),
         total_level: totalLevel,
         account_type: 'main',
         username: playerName
@@ -54,6 +72,88 @@ export const osrsApi = {
       console.error('Error fetching player stats:', error);
       return null;
     }
+  },
+
+  searchOSRSItems: async (query: string): Promise<any[]> => {
+    try {
+      if (!query || query.length < 2) return [];
+
+      // Search Wiki for items with specific filtering
+      const params = new URLSearchParams({
+        action: 'query',
+        format: 'json',
+        list: 'search',
+        srsearch: `${query} incategory:"Items" OR incategory:"Weapons" OR incategory:"Armour" OR incategory:"Equipment"`,
+        srlimit: '20',
+        srnamespace: '0'
+      });
+
+      const response = await fetch(`${WIKI_API_BASE_URL}?${params.toString()}`);
+      const data = await response.json();
+      
+      if (!data.query?.search) return [];
+
+      const items = [];
+      for (const item of data.query.search) {
+        // Filter out non-item pages
+        if (item.title && 
+            !item.title.includes('Quest') && 
+            !item.title.includes('Guide') && 
+            !item.title.includes('Update') && 
+            !item.title.includes('Category') &&
+            !item.title.includes('Template') && 
+            !item.title.includes('User:') &&
+            !item.title.includes('Talk:') &&
+            !item.title.includes('File:')) {
+          
+          try {
+            // Get price and icon
+            const currentPrice = await osrsApi.fetchSingleItemPrice(item.pageid) || 0;
+            const itemIcon = await osrsApi.getItemIcon(item.pageid);
+            
+            items.push({
+              id: item.pageid,
+              name: item.title,
+              subtitle: currentPrice > 0 ? `${currentPrice.toLocaleString()} GP` : 'OSRS Item',
+              icon: itemIcon,
+              value: currentPrice,
+              category: 'item'
+            });
+          } catch (error) {
+            console.error(`Error fetching data for ${item.title}:`, error);
+            // Still include the item even if price/icon fails
+            items.push({
+              id: item.pageid,
+              name: item.title,
+              subtitle: 'OSRS Item',
+              icon: '',
+              value: 0,
+              category: 'item'
+            });
+          }
+        }
+      }
+
+      return items;
+    } catch (error) {
+      console.error('Error searching OSRS items:', error);
+      return [];
+    }
+  },
+
+  fetchMoneyMakingMethods: async (query?: string): Promise<MoneyMakingGuide[]> => {
+    // Get methods from wiki and local data
+    const localMethods = osrsApi.getDefaultMoneyMakers();
+    
+    if (!query) {
+      return localMethods;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    return localMethods.filter(method =>
+      method.name.toLowerCase().includes(lowerQuery) ||
+      method.category.toLowerCase().includes(lowerQuery)
+    );
   },
 
   getEstimatedItemValue: async (itemName: string): Promise<number | null> => {
@@ -270,15 +370,7 @@ export const osrsApi = {
   },
 
   getMoneyMakingMethods: async (query?: string): Promise<MoneyMakingGuide[]> => {
-    const moneyMakers = osrsApi.getDefaultMoneyMakers();
-    if (!query) {
-      return moneyMakers;
-    }
-    const lowerQuery = query.toLowerCase();
-    return moneyMakers.filter(method =>
-      method.name.toLowerCase().includes(lowerQuery) ||
-      method.category.toLowerCase().includes(lowerQuery)
-    );
+    return osrsApi.fetchMoneyMakingMethods(query);
   },
 
   searchMoneyMakers: async (query: string): Promise<MoneyMakingGuide[]> => {
@@ -311,6 +403,32 @@ export const osrsApi = {
         profit: 3500000,
         difficulty: "Very High",
         description: "Requires memorizing rotations but very profitable",
+        membership: "p2p"
+      },
+      {
+        id: "tob",
+        name: "Theatre of Blood",
+        category: "bossing" as const,
+        gpHour: 6000000,
+        clickIntensity: 5 as const,
+        requirements: "Very high combat stats, team coordination, expensive gear",
+        notes: "Highest tier PvM content, requires experienced team",
+        profit: 6000000,
+        difficulty: "Very High",
+        description: "Highest tier PvM content with best rewards",
+        membership: "p2p"
+      },
+      {
+        id: "cox",
+        name: "Chambers of Xeric (Raids)",
+        category: "bossing" as const,
+        gpHour: 4500000,
+        clickIntensity: 5 as const,
+        requirements: "High combat stats, raid experience, good gear",
+        notes: "Raid content with valuable unique drops",
+        profit: 4500000,
+        difficulty: "Very High",
+        description: "First raid in OSRS with unique rewards",
         membership: "p2p"
       },
       {

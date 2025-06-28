@@ -1,21 +1,31 @@
 
-import { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { osrsApi } from "@/services/osrsApi";
-import { Character } from "@/hooks/useAppData";
+
+interface Character {
+  id: string;
+  name: string;
+  type: 'main' | 'alt' | 'ironman' | 'hardcore' | 'ultimate';
+  combatLevel: number;
+  totalLevel: number;
+  bank: number;
+  notes: string;
+  isActive: boolean;
+}
 
 interface CharacterRefreshButtonProps {
   character: Character;
-  onRefresh: (updatedCharacter: Character) => void;
+  onUpdate: (updatedCharacter: Character) => void;
 }
 
-export function CharacterRefreshButton({ character, onRefresh }: CharacterRefreshButtonProps) {
+export function CharacterRefreshButton({ character, onUpdate }: CharacterRefreshButtonProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
 
-  const handleRefresh = async () => {
+  const refreshCharacterStats = async () => {
     if (!character.name) {
       toast({
         title: "Error",
@@ -27,34 +37,34 @@ export function CharacterRefreshButton({ character, onRefresh }: CharacterRefres
 
     setIsRefreshing(true);
     try {
-      const stats = await osrsApi.fetchPlayerStats(character.name);
-      if (stats) {
+      console.log(`Refreshing stats for character: ${character.name}`);
+      const playerStats = await osrsApi.fetchPlayerStats(character.name);
+      
+      if (playerStats) {
         const updatedCharacter = {
           ...character,
-          combatLevel: stats.combat_level,
-          totalLevel: stats.total_level,
-          type: stats.account_type === 'ironman' ? 'ironman' as const : 
-                stats.account_type === 'hardcore' ? 'hardcore' as const :
-                stats.account_type === 'ultimate' ? 'ultimate' as const : character.type
+          combatLevel: playerStats.combat_level,
+          totalLevel: playerStats.total_level
         };
         
-        onRefresh(updatedCharacter);
+        onUpdate(updatedCharacter);
+        
         toast({
-          title: "Character Refreshed",
-          description: `Updated stats for ${character.name}`
+          title: "Stats Updated",
+          description: `${character.name}'s stats have been refreshed from TempleOSRS/Hiscores`,
         });
       } else {
         toast({
           title: "Refresh Failed",
-          description: `Could not find stats for ${character.name}`,
+          description: `Could not find stats for "${character.name}". Check the name spelling or try again later.`,
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error('Error refreshing character:', error);
+      console.error('Error refreshing character stats:', error);
       toast({
-        title: "Refresh Failed",
-        description: "Failed to refresh character stats",
+        title: "Refresh Error",
+        description: "Failed to refresh character stats. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -64,14 +74,14 @@ export function CharacterRefreshButton({ character, onRefresh }: CharacterRefres
 
   return (
     <Button
-      onClick={handleRefresh}
+      onClick={refreshCharacterStats}
       disabled={isRefreshing}
       size="sm"
       variant="outline"
-      className="flex items-center gap-2"
+      className="text-blue-600 border-blue-300 hover:bg-blue-50"
     >
-      <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-      {isRefreshing ? 'Refreshing...' : 'Refresh'}
+      <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+      {isRefreshing ? 'Refreshing...' : 'Refresh Stats'}
     </Button>
   );
 }

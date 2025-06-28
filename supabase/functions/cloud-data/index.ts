@@ -48,52 +48,65 @@ serve(async (req) => {
       console.log('Starting cloud save for user:', user.id)
 
       // Clear existing data first
-      await Promise.all([
+      const deleteResults = await Promise.allSettled([
         supabaseClient.from('characters').delete().eq('user_id', user.id),
         supabaseClient.from('money_methods').delete().eq('user_id', user.id),  
         supabaseClient.from('purchase_goals').delete().eq('user_id', user.id),
         supabaseClient.from('bank_items').delete().eq('user_id', user.id)
       ])
 
-      // Save characters with proper type mapping
+      // Log any delete errors but continue
+      deleteResults.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          console.warn(`Delete operation ${index} failed:`, result.reason)
+        }
+      })
+
+      // Save characters with proper validation
       if (characters && characters.length > 0) {
         const validCharacterTypes = ['main', 'alt', 'ironman', 'hardcore', 'ultimate'];
-        const { error: charactersError } = await supabaseClient.from('characters').insert(
-          characters.map((char: any) => ({
-            user_id: user.id,
-            name: char.name,
-            type: validCharacterTypes.includes(char.type) ? char.type : 'main',
-            combat_level: char.combatLevel || 0,
-            total_level: char.totalLevel || 0,
-            bank: char.bank || 0,
-            notes: char.notes || '',
-            plat_tokens: char.platTokens || 0
-          }))
-        )
+        const charactersToInsert = characters.map((char: any) => ({
+          user_id: user.id,
+          name: char.name || 'Unnamed Character',
+          type: validCharacterTypes.includes(char.type) ? char.type : 'main',
+          combat_level: Math.max(0, Math.min(126, char.combatLevel || 0)),
+          total_level: Math.max(0, Math.min(2277, char.totalLevel || 0)),
+          bank: Math.max(0, char.bank || 0),
+          notes: char.notes || '',
+          plat_tokens: Math.max(0, char.platTokens || 0)
+        }))
+
+        const { error: charactersError } = await supabaseClient
+          .from('characters')
+          .insert(charactersToInsert)
+        
         if (charactersError) {
           console.error('Error saving characters:', charactersError)
-          throw charactersError
+          throw new Error(`Failed to save characters: ${charactersError.message}`)
         }
       }
 
-      // Save money methods with proper category and intensity validation
+      // Save money methods with proper validation
       if (moneyMethods && moneyMethods.length > 0) {
         const validCategories = ['combat', 'skilling', 'bossing', 'other'];
-        const { error: methodsError } = await supabaseClient.from('money_methods').insert(
-          moneyMethods.map((method: any) => ({
-            user_id: user.id,
-            name: method.name,
-            character: method.character,
-            gp_hour: method.gpHour || 0,
-            click_intensity: Math.min(Math.max(parseInt(method.clickIntensity) || 1, 1), 5),
-            requirements: method.requirements || '',
-            notes: method.notes || '',
-            category: validCategories.includes(method.category) ? method.category : 'other'
-          }))
-        )
+        const methodsToInsert = moneyMethods.map((method: any) => ({
+          user_id: user.id,
+          name: method.name || 'Unnamed Method',
+          character: method.character || 'Unknown',
+          gp_hour: Math.max(0, method.gpHour || 0),
+          click_intensity: Math.min(Math.max(parseInt(method.clickIntensity) || 1, 1), 5),
+          requirements: method.requirements || '',
+          notes: method.notes || '',
+          category: validCategories.includes(method.category) ? method.category : 'other'
+        }))
+
+        const { error: methodsError } = await supabaseClient
+          .from('money_methods')
+          .insert(methodsToInsert)
+        
         if (methodsError) {
           console.error('Error saving money methods:', methodsError)
-          throw methodsError
+          throw new Error(`Failed to save money methods: ${methodsError.message}`)
         }
       }
 
@@ -101,46 +114,52 @@ serve(async (req) => {
       if (purchaseGoals && purchaseGoals.length > 0) {
         const validGoalCategories = ['gear', 'consumables', 'materials', 'other'];
         const validPriorities = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'];
-        const { error: goalsError } = await supabaseClient.from('purchase_goals').insert(
-          purchaseGoals.map((goal: any) => ({
-            user_id: user.id,
-            name: goal.name,
-            current_price: goal.currentPrice || 0,
-            target_price: goal.targetPrice,
-            quantity: goal.quantity || 1,
-            priority: validPriorities.includes(goal.priority) ? goal.priority : 'A',
-            category: validGoalCategories.includes(goal.category) ? goal.category : 'other',
-            notes: goal.notes || '',
-            image_url: goal.imageUrl || ''
-          }))
-        )
+        const goalsToInsert = purchaseGoals.map((goal: any) => ({
+          user_id: user.id,
+          name: goal.name || 'Unnamed Goal',
+          current_price: Math.max(0, goal.currentPrice || 0),
+          target_price: goal.targetPrice ? Math.max(0, goal.targetPrice) : null,
+          quantity: Math.max(1, goal.quantity || 1),
+          priority: validPriorities.includes(goal.priority) ? goal.priority : 'A',
+          category: validGoalCategories.includes(goal.category) ? goal.category : 'other',
+          notes: goal.notes || '',
+          image_url: goal.imageUrl || ''
+        }))
+
+        const { error: goalsError } = await supabaseClient
+          .from('purchase_goals')
+          .insert(goalsToInsert)
+        
         if (goalsError) {
           console.error('Error saving purchase goals:', goalsError)
-          throw goalsError
+          throw new Error(`Failed to save purchase goals: ${goalsError.message}`)
         }
       }
 
-      // Save bank items with proper category validation and character mapping
-      if (bankData) {
-        const allBankItems = Object.entries(bankData).flatMap(([character, items]) => 
-          items.map((item: any) => ({ ...item, character }))
+      // Save bank items with proper validation
+      if (bankData && typeof bankData === 'object') {
+        const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
+          Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
         );
         
         if (allBankItems.length > 0) {
           const validBankCategories = ['stackable', 'gear', 'materials', 'other'];
-          const { error: bankError } = await supabaseClient.from('bank_items').insert(
-            allBankItems.map((item: any) => ({
-              user_id: user.id,
-              name: item.name,
-              quantity: item.quantity || 0,
-              estimated_price: item.estimatedPrice || 0,
-              category: validBankCategories.includes(item.category) ? item.category : 'other',
-              character: item.character
-            }))
-          )
+          const bankItemsToInsert = allBankItems.map((item: any) => ({
+            user_id: user.id,
+            name: item.name || 'Unknown Item',
+            quantity: Math.max(0, item.quantity || 0),
+            estimated_price: Math.max(0, item.estimatedPrice || 0),
+            category: validBankCategories.includes(item.category) ? item.category : 'other',
+            character: item.characterName || item.character || 'Unknown'
+          }))
+
+          const { error: bankError } = await supabaseClient
+            .from('bank_items')
+            .insert(bankItemsToInsert)
+          
           if (bankError) {
             console.error('Error saving bank items:', bankError)
-            throw bankError
+            throw new Error(`Failed to save bank items: ${bankError.message}`)
           }
         }
       }
@@ -148,7 +167,7 @@ serve(async (req) => {
       console.log('Cloud save completed successfully')
       
       return new Response(
-        JSON.stringify({ success: true }),
+        JSON.stringify({ success: true, message: 'Data saved successfully' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
 
@@ -164,10 +183,10 @@ serve(async (req) => {
         supabaseClient.from('bank_items').select('*').eq('user_id', user.id)
       ])
 
-      if (charactersResult.error) throw charactersResult.error
-      if (methodsResult.error) throw methodsResult.error
-      if (goalsResult.error) throw goalsResult.error
-      if (bankResult.error) throw bankResult.error
+      if (charactersResult.error) throw new Error(`Failed to load characters: ${charactersResult.error.message}`)
+      if (methodsResult.error) throw new Error(`Failed to load money methods: ${methodsResult.error.message}`)
+      if (goalsResult.error) throw new Error(`Failed to load goals: ${goalsResult.error.message}`)
+      if (bankResult.error) throw new Error(`Failed to load bank items: ${bankResult.error.message}`)
 
       // Transform data back to frontend format
       const characters = (charactersResult.data || []).map(char => ({
@@ -245,7 +264,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in cloud-data function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        details: error.toString()
+      }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

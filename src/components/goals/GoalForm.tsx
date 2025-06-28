@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,62 +43,13 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
 
   const searchItems = async (query: string) => {
     try {
-      // Search for OSRS items using Wiki API with item-specific terms
-      const itemSearchQuery = `${query} item OR ${query} equipment OR ${query} weapon OR ${query} armour OR ${query} food OR ${query} potion`;
-      
-      // Use the Wiki API to search for items specifically
-      const params = new URLSearchParams({
-        action: 'query',
-        format: 'json',
-        list: 'search',
-        srsearch: itemSearchQuery,
-        srlimit: '15',
-        srnamespace: '0', // Main namespace only
-        srprop: 'size|wordcount|timestamp|snippet'
-      });
+      if (!query || query.length < 2) return [];
 
-      const response = await fetch(`https://oldschool.runescape.wiki/api.php?${params.toString()}`);
-      const data = await response.json();
+      // Search for OSRS items first
+      const osrsItems = await osrsApi.searchOSRSItems(query);
       
-      const itemResults = [];
-      
-      if (data.query && data.query.search) {
-        for (const item of data.query.search) {
-          // Filter out obvious non-items (quests, guides, etc.)
-          if (item.title && !item.title.includes('Quest') && !item.title.includes('Guide') && 
-              !item.title.includes('Update') && !item.title.includes('Category') &&
-              !item.title.includes('Template') && !item.title.includes('User:')) {
-            
-            try {
-              // Get current price for the item
-              const currentPrice = await osrsApi.fetchSingleItemPrice(item.pageid) || 0;
-              const itemIcon = await osrsApi.getItemIcon(item.pageid);
-              
-              itemResults.push({
-                id: item.pageid,
-                name: item.title,
-                subtitle: currentPrice > 0 ? `${currentPrice.toLocaleString()} GP` : 'OSRS Item',
-                icon: itemIcon,
-                value: currentPrice,
-                category: 'item'
-              });
-            } catch (error) {
-              // If we can't get price/icon, still include the item
-              itemResults.push({
-                id: item.pageid,
-                name: item.title,
-                subtitle: 'OSRS Item',
-                icon: '',
-                value: 0,
-                category: 'item'
-              });
-            }
-          }
-        }
-      }
-
-      // Also search money making methods
-      const moneyMethods = await osrsApi.getMoneyMakingMethods(query);
+      // Also get money making methods
+      const moneyMethods = await osrsApi.fetchMoneyMakingMethods(query);
       const methodResults = moneyMethods.slice(0, 5).map(method => ({
         id: method.id,
         name: method.name,
@@ -107,7 +59,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
         category: 'method'
       }));
 
-      return [...itemResults, ...methodResults];
+      return [...osrsItems, ...methodResults];
     } catch (error) {
       console.error('Error searching items:', error);
       return [];

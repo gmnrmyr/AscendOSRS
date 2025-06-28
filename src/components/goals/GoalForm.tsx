@@ -29,7 +29,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
   });
 
   const handleItemSelect = (item: any) => {
-    console.log('Selected item:', item);
+    console.log('Selected OSRS item:', item);
     setNewGoal({
       ...newGoal,
       name: item.name,
@@ -76,12 +76,12 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="goal-name">Item Name</Label>
+            <Label htmlFor="goal-name">OSRS Item Name</Label>
             <ItemSearchInput
               value={newGoal.name}
               onChange={(value) => setNewGoal({ ...newGoal, name: value })}
               onItemSelect={handleItemSelect}
-              placeholder="Search for OSRS items..."
+              placeholder="Search OSRS items with prices..."
             />
           </div>
           
@@ -93,7 +93,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
                   {newGoal.currentPrice.toLocaleString()} GP
                 </span>
               ) : (
-                <span className="text-gray-500">Select an item to fetch price</span>
+                <span className="text-gray-500">Select an OSRS item to fetch current price</span>
               )}
             </div>
           </div>

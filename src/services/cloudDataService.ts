@@ -10,6 +10,7 @@ interface Character {
   bank: number;
   notes: string;
   isActive: boolean;
+  platTokens?: number;
 }
 
 interface MoneyMethod {
@@ -33,6 +34,7 @@ interface PurchaseGoal {
   category: 'gear' | 'consumables' | 'materials' | 'other';
   notes: string;
   imageUrl?: string;
+  itemId?: number;
 }
 
 interface BankItem {
@@ -55,22 +57,57 @@ export class CloudDataService {
     try {
       console.log('Starting cloud save via edge function...');
       
-      const { data, error } = await supabase.functions.invoke('cloud-data/save', {
+      // Validate and clean data before sending
+      const cleanedData = {
+        characters: characters.map(char => ({
+          ...char,
+          combatLevel: Math.max(3, Math.min(126, Number(char.combatLevel) || 3)),
+          totalLevel: Math.max(32, Math.min(2277, Number(char.totalLevel) || 32)),
+          bank: Math.max(0, Number(char.bank) || 0),
+          platTokens: Math.max(0, Number(char.platTokens) || 0),
+          type: ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(char.type) ? char.type : 'main'
+        })),
+        moneyMethods: moneyMethods.map(method => ({
+          ...method,
+          gpHour: Math.max(0, Number(method.gpHour) || 0),
+          clickIntensity: Math.max(1, Math.min(5, Number(method.clickIntensity) || 1)),
+          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
+        })),
+        purchaseGoals: purchaseGoals.map(goal => ({
+          ...goal,
+          currentPrice: Math.max(0, Number(goal.currentPrice) || 0),
+          targetPrice: goal.targetPrice ? Math.max(0, Number(goal.targetPrice)) : undefined,
+          quantity: Math.max(1, Number(goal.quantity) || 1),
+          priority: ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(goal.priority) ? goal.priority : 'A',
+          category: ['gear', 'consumables', 'materials', 'other'].includes(goal.category) ? goal.category : 'other'
+        })),
+        bankData: Object.fromEntries(
+          Object.entries(bankData).map(([character, items]) => [
+            character,
+            items.map(item => ({
+              ...item,
+              quantity: Math.max(0, Number(item.quantity) || 0),
+              estimatedPrice: Math.max(0, Number(item.estimatedPrice) || 0),
+              category: ['stackable', 'gear', 'materials', 'other'].includes(item.category) ? item.category : 'other'
+            }))
+          ])
+        ),
+        hoursPerDay: Math.max(1, Math.min(24, Number(hoursPerDay) || 10))
+      };
+
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
         body: {
-          characters,
-          moneyMethods,
-          purchaseGoals,
-          bankData,
-          hoursPerDay
+          action: 'save',
+          ...cleanedData
         }
       });
 
       if (error) {
-        console.error('Cloud save error:', error);
-        throw error;
+        console.error('Cloud save error details:', error);
+        throw new Error(`Cloud save failed: ${error.message || 'Unknown error'}`);
       }
 
-      console.log('Cloud save completed successfully via edge function');
+      console.log('Cloud save completed successfully');
       return data;
     } catch (error) {
       console.error('Error saving to cloud:', error);
@@ -82,15 +119,23 @@ export class CloudDataService {
     try {
       console.log('Loading cloud data via edge function...');
       
-      const { data, error } = await supabase.functions.invoke('cloud-data/load');
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
+        body: { action: 'load' }
+      });
 
       if (error) {
-        console.error('Cloud load error:', error);
-        throw error;
+        console.error('Cloud load error details:', error);
+        throw new Error(`Cloud load failed: ${error.message || 'Unknown error'}`);
       }
 
-      console.log('Cloud data loaded successfully via edge function');
-      return data;
+      console.log('Cloud data loaded successfully');
+      return data || {
+        characters: [],
+        moneyMethods: [],
+        purchaseGoals: [],
+        bankData: {},
+        hoursPerDay: 10
+      };
     } catch (error) {
       console.error('Error loading from cloud:', error);
       throw error;

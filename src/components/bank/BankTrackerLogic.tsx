@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { osrsApi } from "@/services/osrsApi";
@@ -16,6 +15,13 @@ interface UseBankTrackerProps {
   bankData: Record<string, BankItem[]>;
   setBankData: (bankData: Record<string, BankItem[]>) => void;
 }
+
+// Safe number conversion that handles NaN, null, undefined, and invalid values
+const safeNumber = (value: any, defaultValue: number = 0): number => {
+  if (value === null || value === undefined || value === '') return defaultValue;
+  const num = Number(value);
+  return isNaN(num) || !isFinite(num) ? defaultValue : num;
+};
 
 export function useBankTracker({ bankData, setBankData }: UseBankTrackerProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<string>('');
@@ -51,8 +57,8 @@ export function useBankTracker({ bankData, setBankData }: UseBankTrackerProps) {
     const item: BankItem = {
       id: Date.now().toString(),
       name: newItem.name,
-      quantity: newItem.quantity || 1,
-      estimatedPrice: newItem.estimatedPrice || 0,
+      quantity: safeNumber(newItem.quantity, 1),
+      estimatedPrice: safeNumber(newItem.estimatedPrice, 0),
       category: newItem.category || 'other',
       character: selectedCharacter
     };
@@ -178,6 +184,7 @@ export function useBankTracker({ bankData, setBankData }: UseBankTrackerProps) {
   };
 
   const updateGoldTokens = (character: string, type: 'coins' | 'platinum', quantity: number) => {
+    const safeQuantity = safeNumber(quantity, 0);
     const currentItems = bankData[character] || [];
     const itemName = type === 'coins' ? 'Coins' : 'Platinum Tokens';
     const itemPrice = type === 'coins' ? 1 : 1000;
@@ -190,7 +197,7 @@ export function useBankTracker({ bankData, setBankData }: UseBankTrackerProps) {
       const updatedItems = [...currentItems];
       updatedItems[existingItemIndex] = {
         ...updatedItems[existingItemIndex],
-        quantity: quantity
+        quantity: safeQuantity
       };
       setBankData({
         ...bankData,
@@ -200,7 +207,7 @@ export function useBankTracker({ bankData, setBankData }: UseBankTrackerProps) {
       const newItem: BankItem = {
         id: Date.now().toString(),
         name: itemName,
-        quantity: quantity,
+        quantity: safeQuantity,
         estimatedPrice: itemPrice,
         category: 'stackable',
         character: character
@@ -276,8 +283,7 @@ export function useBankTracker({ bankData, setBankData }: UseBankTrackerProps) {
 
 export function useBankCalculations(bankData: Record<string, BankItem[]>) {
   const formatGP = (amount: number) => {
-    // Handle NaN and undefined values
-    const safeAmount = Number(amount) || 0;
+    const safeAmount = safeNumber(amount, 0);
     
     if (safeAmount >= 1000000000) {
       return `${(safeAmount / 1000000000).toFixed(1)}B`;
@@ -292,45 +298,45 @@ export function useBankCalculations(bankData: Record<string, BankItem[]>) {
   const getCharacterBankValue = (character: string) => {
     const items = bankData[character] || [];
     const total = items.reduce((sum, item) => {
-      const quantity = Number(item.quantity) || 0;
-      const price = Number(item.estimatedPrice) || 0;
+      const quantity = safeNumber(item.quantity, 0);
+      const price = safeNumber(item.estimatedPrice, 0);
       return sum + (quantity * price);
     }, 0);
-    return Number(total) || 0;
+    return safeNumber(total, 0);
   };
 
   const getCharacterGoldValue = (character: string) => {
     const items = bankData[character] || [];
-    const coins = items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
-    const platTokens = items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
-    const total = Number(coins) + (Number(platTokens) * 1000);
-    return Number(total) || 0;
+    const coins = safeNumber(items.find(item => item.name.toLowerCase().includes('coin'))?.quantity, 0);
+    const platTokens = safeNumber(items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity, 0);
+    const total = coins + (platTokens * 1000);
+    return safeNumber(total, 0);
   };
 
   const getTotalBankValue = () => {
     const total = Object.keys(bankData).reduce((sum, character) => {
       return sum + getCharacterBankValue(character);
     }, 0);
-    return Number(total) || 0;
+    return safeNumber(total, 0);
   };
 
   const getTotalGoldValue = () => {
     const total = Object.keys(bankData).reduce((sum, character) => {
       return sum + getCharacterGoldValue(character);
     }, 0);
-    return Number(total) || 0;
+    return safeNumber(total, 0);
   };
 
   const getCharacterCoins = (character: string) => {
     const items = bankData[character] || [];
-    const coins = items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
-    return Number(coins) || 0;
+    const coins = safeNumber(items.find(item => item.name.toLowerCase().includes('coin'))?.quantity, 0);
+    return coins;
   };
 
   const getCharacterPlatTokens = (character: string) => {
     const items = bankData[character] || [];
-    const platTokens = items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
-    return Number(platTokens) || 0;
+    const platTokens = safeNumber(items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity, 0);
+    return platTokens;
   };
 
   const getCategoryColor = (category: string) => {

@@ -46,13 +46,20 @@ interface BankItem {
   character: string;
 }
 
+// Safe number conversion that handles NaN, null, undefined, and invalid values
+const safeNumber = (value: any, defaultValue: number = 0): number => {
+  if (value === null || value === undefined || value === '') return defaultValue;
+  const num = Number(value);
+  return isNaN(num) || !isFinite(num) ? defaultValue : num;
+};
+
 // Map frontend categories to database-safe categories
 const mapBankItemCategory = (category: string): string => {
   if (!category || typeof category !== 'string') return 'other';
   
   const normalized = category.toLowerCase().trim();
   
-  // Direct mapping to what the database expects
+  // Valid database categories: gear, consumables, materials, other
   const categoryMappings: Record<string, string> = {
     'stackable': 'consumables',
     'consumable': 'consumables',
@@ -93,57 +100,62 @@ export class CloudDataService {
     try {
       console.log('Starting cloud save via edge function...');
       
-      // Validate and normalize bank data with proper category mapping
-      const normalizedBankData: Record<string, BankItem[]> = {};
-      
-      Object.entries(bankData).forEach(([character, items]) => {
-        if (!Array.isArray(items)) {
-          console.warn(`Invalid items for character ${character}, skipping`);
-          normalizedBankData[character] = [];
-          return;
-        }
-        
-        normalizedBankData[character] = items
-          .filter(item => item && typeof item === 'object' && item.name)
-          .map(item => {
-            const mappedCategory = mapBankItemCategory(item.category);
-            console.log(`Bank item: ${item.name}, Original: ${item.category}, Mapped: ${mappedCategory}`);
-            
-            return {
-              ...item,
-              category: mappedCategory,
-              quantity: Math.max(0, Number(item.quantity) || 0),
-              estimatedPrice: Math.max(0, Number(item.estimatedPrice) || 0)
-            };
-          });
-      });
-
-      // Validate and clean other data
+      // Robust data cleaning with safe number conversion
       const cleanedData = {
         characters: characters.map(char => ({
           ...char,
-          combatLevel: Math.max(3, Math.min(126, Number(char.combatLevel) || 3)),
-          totalLevel: Math.max(32, Math.min(2277, Number(char.totalLevel) || 32)),
-          bank: Math.max(0, Number(char.bank) || 0),
-          platTokens: Math.max(0, Number(char.platTokens) || 0),
-          type: ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(char.type) ? char.type : 'main'
+          combatLevel: Math.max(3, Math.min(126, safeNumber(char.combatLevel) || 3)),
+          totalLevel: Math.max(32, Math.min(2277, safeNumber(char.totalLevel) || 32)),
+          bank: Math.max(0, safeNumber(char.bank) || 0),
+          platTokens: Math.max(0, safeNumber(char.platTokens) || 0),
+          type: ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(char.type) ? char.type : 'main',
+          name: String(char.name || 'Unnamed Character'),
+          notes: String(char.notes || '')
         })),
         moneyMethods: moneyMethods.map(method => ({
           ...method,
-          gpHour: Math.max(0, Number(method.gpHour) || 0),
-          clickIntensity: Math.max(1, Math.min(5, Number(method.clickIntensity) || 1)) as 1 | 2 | 3 | 4 | 5,
-          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
+          gpHour: Math.max(0, safeNumber(method.gpHour) || 0),
+          clickIntensity: Math.max(1, Math.min(5, safeNumber(method.clickIntensity) || 1)) as 1 | 2 | 3 | 4 | 5,
+          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other',
+          name: String(method.name || 'Unnamed Method'),
+          character: String(method.character || 'Unknown'),
+          requirements: String(method.requirements || ''),
+          notes: String(method.notes || '')
         })),
         purchaseGoals: purchaseGoals.map(goal => ({
           ...goal,
-          currentPrice: Math.max(0, Number(goal.currentPrice) || 0),
-          targetPrice: goal.targetPrice ? Math.max(0, Number(goal.targetPrice)) : undefined,
-          quantity: Math.max(1, Number(goal.quantity) || 1),
+          currentPrice: Math.max(0, safeNumber(goal.currentPrice) || 0),
+          targetPrice: goal.targetPrice ? Math.max(0, safeNumber(goal.targetPrice)) : undefined,
+          quantity: Math.max(1, safeNumber(goal.quantity) || 1),
           priority: ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(goal.priority) ? goal.priority : 'A',
-          category: ['gear', 'consumables', 'materials', 'other'].includes(goal.category) ? goal.category : 'other'
+          category: ['gear', 'consumables', 'materials', 'other'].includes(goal.category) ? goal.category : 'other',
+          name: String(goal.name || 'Unnamed Goal'),
+          notes: String(goal.notes || ''),
+          imageUrl: String(goal.imageUrl || '')
         })),
-        bankData: normalizedBankData,
-        hoursPerDay: Math.max(1, Math.min(24, Number(hoursPerDay) || 10))
+        bankData: Object.fromEntries(
+          Object.entries(bankData).map(([character, items]) => [
+            character,
+            items
+              .filter(item => item && typeof item === 'object' && item.name && String(item.name).trim())
+              .map(item => {
+                const mappedCategory = mapBankItemCategory(item.category);
+                const quantity = safeNumber(item.quantity, 0);
+                const estimatedPrice = safeNumber(item.estimatedPrice, 0);
+                
+                console.log(`Bank item: ${item.name}, Original: ${item.category}, Mapped: ${mappedCategory}, Qty: ${quantity}, Price: ${estimatedPrice}`);
+                
+                return {
+                  ...item,
+                  category: mappedCategory,
+                  quantity: quantity,
+                  estimatedPrice: estimatedPrice,
+                  name: String(item.name).trim()
+                };
+              })
+          ])
+        ),
+        hoursPerDay: Math.max(1, Math.min(24, safeNumber(hoursPerDay) || 10))
       };
 
       console.log('Sending cleaned data to edge function:', {

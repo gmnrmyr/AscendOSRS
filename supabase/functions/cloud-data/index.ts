@@ -7,30 +7,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// First let's check what categories are actually allowed in the database
-const getValidBankCategories = async (supabaseClient: any) => {
-  try {
-    // Try to get the enum values from the database
-    const { data, error } = await supabaseClient
-      .rpc('get_enum_values', { enum_name: 'bank_category' })
-    
-    if (error) {
-      console.log('Could not get enum values, using defaults')
-      return ['gear', 'consumables', 'materials', 'other']
-    }
-    
-    return data || ['gear', 'consumables', 'materials', 'other']
-  } catch (error) {
-    console.log('Error getting enum values:', error)
-    return ['gear', 'consumables', 'materials', 'other']
-  }
-}
-
-// Safe category mapping function
-const validateBankCategory = (category: string, validCategories: string[] = ['gear', 'consumables', 'materials', 'other']): string => {
+// Safe category mapping function with strict validation
+const validateBankCategory = (category: string): string => {
   if (!category || typeof category !== 'string') return 'other'
   
   const normalized = category.toLowerCase().trim()
+  
+  // Valid categories in database: gear, consumables, materials, other
+  const validCategories = ['gear', 'consumables', 'materials', 'other']
   
   // Direct matches first
   if (validCategories.includes(normalized)) return normalized
@@ -58,14 +42,20 @@ const validateBankCategory = (category: string, validCategories: string[] = ['ge
     'bars': 'materials'
   }
   
-  // Check if we have a mapping for this category
-  if (categoryMappings[normalized]) {
-    const mapped = categoryMappings[normalized]
-    return validCategories.includes(mapped) ? mapped : 'other'
-  }
-  
-  // If no mapping found, default to 'other'
-  return 'other'
+  return categoryMappings[normalized] || 'other'
+}
+
+// Safe number conversion that handles NaN and invalid values
+const safeNumber = (value: any, defaultValue: number = 0): number => {
+  if (value === null || value === undefined || value === '') return defaultValue
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? defaultValue : num
+}
+
+// Safe string conversion
+const safeString = (value: any, maxLength: number = 1000): string => {
+  if (value === null || value === undefined) return ''
+  return String(value).substring(0, maxLength)
 }
 
 serve(async (req) => {
@@ -107,23 +97,6 @@ serve(async (req) => {
 
       console.log('Starting cloud save for user:', user.id)
 
-      // Get valid categories from the database
-      const validBankCategories = await getValidBankCategories(supabaseClient)
-      console.log('Valid bank categories:', validBankCategories)
-
-      // Validation helper functions
-      const validateCharacterType = (type: string) => 
-        ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(type) ? type : 'main'
-      
-      const validateMethodCategory = (category: string) => 
-        ['combat', 'skilling', 'bossing', 'other'].includes(category) ? category : 'other'
-      
-      const validateGoalCategory = (category: string) => 
-        ['gear', 'consumables', 'materials', 'other'].includes(category) ? category : 'other'
-      
-      const validatePriority = (priority: string) => 
-        ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(priority) ? priority : 'A'
-
       // Clear existing data first
       console.log('Clearing existing user data...')
       try {
@@ -138,18 +111,18 @@ serve(async (req) => {
         console.warn('Some delete operations failed, continuing anyway:', deleteError)
       }
 
-      // Save characters
+      // Save characters with safe number conversion
       if (Array.isArray(characters) && characters.length > 0) {
         console.log(`Saving ${characters.length} characters...`)
         const charactersToInsert = characters.map((char: any) => ({
           user_id: user.id,
-          name: String(char.name || 'Unnamed Character').substring(0, 100),
-          type: validateCharacterType(char.type),
-          combat_level: Math.max(3, Math.min(126, parseInt(String(char.combatLevel)) || 3)),
-          total_level: Math.max(32, Math.min(2277, parseInt(String(char.totalLevel)) || 32)),
-          bank: Math.max(0, parseInt(String(char.bank)) || 0),
-          notes: String(char.notes || '').substring(0, 1000),
-          plat_tokens: Math.max(0, parseInt(String(char.platTokens)) || 0)
+          name: safeString(char.name || 'Unnamed Character', 100),
+          type: ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(char.type) ? char.type : 'main',
+          combat_level: Math.max(3, Math.min(126, safeNumber(char.combatLevel, 3))),
+          total_level: Math.max(32, Math.min(2277, safeNumber(char.totalLevel, 32))),
+          bank: Math.max(0, safeNumber(char.bank, 0)),
+          notes: safeString(char.notes, 1000),
+          plat_tokens: Math.max(0, safeNumber(char.platTokens, 0))
         }))
 
         const { error: charactersError } = await supabaseClient
@@ -163,18 +136,18 @@ serve(async (req) => {
         console.log('Characters saved successfully')
       }
 
-      // Save money methods
+      // Save money methods with safe number conversion
       if (Array.isArray(moneyMethods) && moneyMethods.length > 0) {
         console.log(`Saving ${moneyMethods.length} money methods...`)
         const methodsToInsert = moneyMethods.map((method: any) => ({
           user_id: user.id,
-          name: String(method.name || 'Unnamed Method').substring(0, 100),
-          character: String(method.character || 'Unknown').substring(0, 100),
-          gp_hour: Math.max(0, parseInt(String(method.gpHour)) || 0),
-          click_intensity: Math.min(Math.max(parseInt(String(method.clickIntensity)) || 1, 1), 5),
-          requirements: String(method.requirements || '').substring(0, 500),
-          notes: String(method.notes || '').substring(0, 1000),
-          category: validateMethodCategory(method.category)
+          name: safeString(method.name || 'Unnamed Method', 100),
+          character: safeString(method.character || 'Unknown', 100),
+          gp_hour: Math.max(0, safeNumber(method.gpHour, 0)),
+          click_intensity: Math.min(Math.max(safeNumber(method.clickIntensity, 1), 1), 5),
+          requirements: safeString(method.requirements, 500),
+          notes: safeString(method.notes, 1000),
+          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
         }))
 
         const { error: methodsError } = await supabaseClient
@@ -188,19 +161,19 @@ serve(async (req) => {
         console.log('Money methods saved successfully')
       }
 
-      // Save purchase goals
+      // Save purchase goals with safe number conversion
       if (Array.isArray(purchaseGoals) && purchaseGoals.length > 0) {
         console.log(`Saving ${purchaseGoals.length} purchase goals...`)
         const goalsToInsert = purchaseGoals.map((goal: any) => ({
           user_id: user.id,
-          name: String(goal.name || 'Unnamed Goal').substring(0, 100),
-          current_price: Math.max(0, parseInt(String(goal.currentPrice)) || 0),
-          target_price: goal.targetPrice ? Math.max(0, parseInt(String(goal.targetPrice))) : null,
-          quantity: Math.max(1, parseInt(String(goal.quantity)) || 1),
-          priority: validatePriority(goal.priority),
-          category: validateGoalCategory(goal.category),
-          notes: String(goal.notes || '').substring(0, 1000),
-          image_url: String(goal.imageUrl || '').substring(0, 500)
+          name: safeString(goal.name || 'Unnamed Goal', 100),
+          current_price: Math.max(0, safeNumber(goal.currentPrice, 0)),
+          target_price: goal.targetPrice ? Math.max(0, safeNumber(goal.targetPrice, 0)) : null,
+          quantity: Math.max(1, safeNumber(goal.quantity, 1)),
+          priority: ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(goal.priority) ? goal.priority : 'A',
+          category: ['gear', 'consumables', 'materials', 'other'].includes(goal.category) ? goal.category : 'other',
+          notes: safeString(goal.notes, 1000),
+          image_url: safeString(goal.imageUrl, 500)
         }))
 
         const { error: goalsError } = await supabaseClient
@@ -214,7 +187,7 @@ serve(async (req) => {
         console.log('Purchase goals saved successfully')
       }
 
-      // Save bank items with proper category validation
+      // Save bank items with strict validation and safe number conversion
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -224,35 +197,39 @@ serve(async (req) => {
           console.log(`Processing ${allBankItems.length} bank items...`)
           
           const bankItemsToInsert = allBankItems
-            .filter((item: any) => item && typeof item === 'object' && item.name && String(item.name).trim())
+            .filter((item: any) => {
+              // Only include items that have a valid name
+              const hasValidName = item && typeof item === 'object' && item.name && String(item.name).trim();
+              if (!hasValidName) {
+                console.log(`Skipping invalid item:`, item);
+              }
+              return hasValidName;
+            })
             .map((item: any) => {
-              const validatedCategory = validateBankCategory(item.category, validBankCategories);
-              console.log(`Processing bank item: ${item.name}, category: ${item.category} -> ${validatedCategory}`);
+              const validatedCategory = validateBankCategory(item.category);
+              const quantity = safeNumber(item.quantity, 0);
+              const estimatedPrice = safeNumber(item.estimatedPrice, 0);
+              
+              console.log(`Processing: ${item.name}, category: ${item.category} -> ${validatedCategory}, qty: ${quantity}, price: ${estimatedPrice}`);
               
               return {
                 user_id: user.id,
-                name: String(item.name || 'Unknown Item').trim().substring(0, 100),
-                quantity: Math.max(0, parseInt(String(item.quantity)) || 0),
-                estimated_price: Math.max(0, parseInt(String(item.estimatedPrice)) || 0),
+                name: safeString(item.name, 100).trim(),
+                quantity: quantity,
+                estimated_price: estimatedPrice,
                 category: validatedCategory,
-                character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
+                character: safeString(item.characterName || item.character || 'Unknown', 100)
               };
             })
 
           console.log(`Inserting ${bankItemsToInsert.length} validated bank items...`)
           
           if (bankItemsToInsert.length > 0) {
-            const batchSize = 50
+            // Insert in smaller batches to avoid timeout
+            const batchSize = 25
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize)
               console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)} with ${batch.length} items`)
-              
-              // Log a sample of items being inserted for debugging
-              console.log('Sample batch items:', batch.slice(0, 3).map(item => ({
-                name: item.name,
-                category: item.category,
-                character: item.character
-              })))
               
               const { error: bankError } = await supabaseClient
                 .from('bank_items')
@@ -260,7 +237,7 @@ serve(async (req) => {
               
               if (bankError) {
                 console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
-                console.error('Failed batch sample:', batch.slice(0, 3))
+                console.error('Failed batch sample:', batch.slice(0, 2))
                 throw new Error(`Failed to save bank items: ${bankError.message}`)
               }
             }
@@ -293,24 +270,24 @@ serve(async (req) => {
       if (goalsResult.error) throw new Error(`Failed to load goals: ${goalsResult.error.message}`)
       if (bankResult.error) throw new Error(`Failed to load bank items: ${bankResult.error.message}`)
 
-      // Transform data back to frontend format
+      // Transform data back to frontend format with safe number conversion
       const characters = (charactersResult.data || []).map(char => ({
         id: char.id,
         name: char.name,
         type: char.type,
-        combatLevel: char.combat_level || 0,
-        totalLevel: char.total_level || 0,
-        bank: Number(char.bank) || 0,
+        combatLevel: safeNumber(char.combat_level, 0),
+        totalLevel: safeNumber(char.total_level, 0),
+        bank: safeNumber(char.bank, 0),
         notes: char.notes || '',
         isActive: true,
-        platTokens: char.plat_tokens || 0
+        platTokens: safeNumber(char.plat_tokens, 0)
       }))
 
       const moneyMethods = (methodsResult.data || []).map(method => ({
         id: method.id,
         name: method.name,
         character: method.character,
-        gpHour: method.gp_hour || 0,
+        gpHour: safeNumber(method.gp_hour, 0),
         clickIntensity: method.click_intensity,
         requirements: method.requirements || '',
         notes: method.notes || '',
@@ -320,22 +297,22 @@ serve(async (req) => {
       const purchaseGoals = (goalsResult.data || []).map(goal => ({
         id: goal.id,
         name: goal.name,
-        currentPrice: goal.current_price || 0,
-        targetPrice: goal.target_price,
-        quantity: goal.quantity || 1,
+        currentPrice: safeNumber(goal.current_price, 0),
+        targetPrice: goal.target_price ? safeNumber(goal.target_price, 0) : undefined,
+        quantity: safeNumber(goal.quantity, 1),
         priority: goal.priority,
         category: goal.category,
         notes: goal.notes || '',
         imageUrl: goal.image_url || ''
       }))
 
-      // Group bank items by character
+      // Group bank items by character with safe number conversion
       const bankData: Record<string, any[]> = {}
       const bankItems = (bankResult.data || []).map(item => ({
         id: item.id,
         name: item.name,
-        quantity: item.quantity || 0,
-        estimatedPrice: item.estimated_price || 0,
+        quantity: safeNumber(item.quantity, 0),
+        estimatedPrice: safeNumber(item.estimated_price, 0),
         category: item.category,
         character: item.character
       }))

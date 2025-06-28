@@ -55,24 +55,27 @@ serve(async (req) => {
         if (!category || typeof category !== 'string') return 'other'
         const lowerCategory = category.toLowerCase().trim()
         
-        // Direct mappings for valid categories
-        const validCategories = ['stackable', 'gear', 'materials', 'other']
-        if (validCategories.includes(lowerCategory)) return lowerCategory
-        
-        // Fallback mappings
+        // Map all possible categories to the 4 allowed ones: stackable, gear, materials, other
         const categoryMap: Record<string, string> = {
-          'consumables': 'materials',
+          'stackable': 'stackable',
+          'gear': 'gear', 
           'equipment': 'gear',
-          'misc': 'other',
-          'tool': 'gear',
           'weapon': 'gear',
           'armour': 'gear',
           'armor': 'gear',
+          'tool': 'gear',
+          'materials': 'materials',
+          'material': 'materials',
+          'consumables': 'materials', // Map consumables to materials
+          'consumable': 'materials',
           'food': 'materials',
           'potion': 'materials',
           'rune': 'stackable',
           'arrow': 'stackable',
-          'bolt': 'stackable'
+          'bolt': 'stackable',
+          'misc': 'other',
+          'miscellaneous': 'other',
+          'other': 'other'
         }
         
         return categoryMap[lowerCategory] || 'other'
@@ -192,7 +195,7 @@ serve(async (req) => {
         }
       }
 
-      // Save bank items with enhanced validation and better error handling
+      // Save bank items with proper category validation
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -206,6 +209,7 @@ serve(async (req) => {
               .filter((item: any) => item && typeof item === 'object')
               .map((item: any) => {
                 const validatedCategory = validateBankCategory(item.category)
+                console.log(`Mapping category "${item.category}" to "${validatedCategory}"`)
                 
                 return {
                   user_id: user.id,

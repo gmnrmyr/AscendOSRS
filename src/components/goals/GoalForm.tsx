@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { ItemSearchInput } from "./ItemSearchInput";
 
 interface GoalFormProps {
   goals: any[];
@@ -23,8 +24,21 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     priority: 'A' as 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-',
     category: 'gear' as 'gear' | 'consumables' | 'materials' | 'other',
     notes: '',
-    imageUrl: ''
+    imageUrl: '',
+    itemId: null as number | null
   });
+
+  const handleItemSelect = (item: any) => {
+    console.log('Selected item:', item);
+    setNewGoal({
+      ...newGoal,
+      name: item.name,
+      currentPrice: item.value || 0,
+      targetPrice: item.value || 0,
+      imageUrl: item.icon || '',
+      itemId: item.id || null
+    });
+  };
 
   const addGoal = () => {
     if (newGoal.name) {
@@ -41,7 +55,8 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
         priority: 'A' as 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-',
         category: 'gear' as 'gear' | 'consumables' | 'materials' | 'other',
         notes: '',
-        imageUrl: ''
+        imageUrl: '',
+        itemId: null
       });
     }
   };
@@ -62,23 +77,25 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="goal-name">Item Name</Label>
-            <Input
-              id="goal-name"
+            <ItemSearchInput
               value={newGoal.name}
-              onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
-              placeholder="e.g., Dragon Claws"
+              onChange={(value) => setNewGoal({ ...newGoal, name: value })}
+              onItemSelect={handleItemSelect}
+              placeholder="Search for OSRS items..."
             />
           </div>
           
           <div>
             <Label htmlFor="current-price">Current Price (GP)</Label>
-            <Input
-              id="current-price"
-              type="number"
-              value={newGoal.currentPrice}
-              onChange={(e) => setNewGoal({ ...newGoal, currentPrice: parseInt(e.target.value) || 0 })}
-              placeholder="0"
-            />
+            <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm">
+              {newGoal.currentPrice > 0 ? (
+                <span className="text-green-600 font-medium">
+                  {newGoal.currentPrice.toLocaleString()} GP
+                </span>
+              ) : (
+                <span className="text-gray-500">Select an item to fetch price</span>
+              )}
+            </div>
           </div>
 
           <div>
@@ -145,15 +162,18 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
           </div>
         </div>
 
-        <div>
-          <Label htmlFor="image-url">Image URL (Optional)</Label>
-          <Input
-            id="image-url"
-            value={newGoal.imageUrl}
-            onChange={(e) => setNewGoal({ ...newGoal, imageUrl: e.target.value })}
-            placeholder="https://example.com/image.png"
-          />
-        </div>
+        {newGoal.imageUrl && (
+          <div className="flex items-center gap-2">
+            <Label>Preview:</Label>
+            <img 
+              src={newGoal.imageUrl} 
+              alt={newGoal.name} 
+              className="w-8 h-8 object-cover rounded"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+            <span className="text-sm text-gray-600">{newGoal.name}</span>
+          </div>
+        )}
 
         <div>
           <Label htmlFor="goal-notes">Notes</Label>

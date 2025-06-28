@@ -53,29 +53,56 @@ const safeNumber = (value: any, defaultValue: number = 0): number => {
   return isNaN(num) || !isFinite(num) ? defaultValue : num;
 };
 
-// Map frontend categories to database-safe categories
+// Map frontend categories to database-safe categories - MUST match database constraint
 const mapBankItemCategory = (category: string): string => {
   if (!category || typeof category !== 'string') return 'other';
   
   const normalized = category.toLowerCase().trim();
   
-  // Valid database categories: stackable, gear, materials, other
+  // ONLY these 4 categories are valid in database: stackable, gear, materials, other
   const categoryMappings: Record<string, string> = {
-    'consumables': 'stackable', // Map consumables to stackable
+    // All consumable-type items -> stackable
+    'consumables': 'stackable',
     'consumable': 'stackable',
     'stackable': 'stackable',
     'food': 'stackable',
     'potion': 'stackable',
     'potions': 'stackable',
     'coins': 'stackable',
+    'coin': 'stackable',
     'token': 'stackable',
     'tokens': 'stackable',
+    'rune': 'stackable',
+    'runes': 'stackable',
+    'bolt': 'stackable',
+    'bolts': 'stackable',
+    'arrow': 'stackable',
+    'arrows': 'stackable',
+    'teleport': 'stackable',
+    'scroll': 'stackable',
+    'scrolls': 'stackable',
+    
+    // All equipment-type items -> gear
     'gear': 'gear',
     'weapon': 'gear',
     'weapons': 'gear',
     'armor': 'gear',
     'armour': 'gear',
     'equipment': 'gear',
+    'helmet': 'gear',
+    'helm': 'gear',
+    'shield': 'gear',
+    'gloves': 'gear',
+    'boots': 'gear',
+    'ring': 'gear',
+    'rings': 'gear',
+    'amulet': 'gear',
+    'necklace': 'gear',
+    'bracelet': 'gear',
+    'cape': 'gear',
+    'cloak': 'gear',
+    
+    // All raw materials -> materials
     'materials': 'materials',
     'material': 'materials',
     'resource': 'materials',
@@ -86,7 +113,23 @@ const mapBankItemCategory = (category: string): string => {
     'ores': 'materials',
     'bar': 'materials',
     'bars': 'materials',
-    'other': 'other'
+    'gem': 'materials',
+    'gems': 'materials',
+    'herb': 'materials',
+    'herbs': 'materials',
+    'seed': 'materials',
+    'seeds': 'materials',
+    'essence': 'materials',
+    
+    // Everything else -> other
+    'other': 'other',
+    'misc': 'other',
+    'miscellaneous': 'other',
+    'quest': 'other',
+    'key': 'other',
+    'keys': 'other',
+    'book': 'other',
+    'books': 'other'
   };
   
   return categoryMappings[normalized] || 'other';
@@ -103,7 +146,7 @@ export class CloudDataService {
     try {
       console.log('Starting cloud save via edge function...');
       
-      // Robust data cleaning with safe number conversion
+      // Robust data cleaning with safe number conversion and STRICT category validation
       const cleanedData = {
         characters: characters.map(char => ({
           ...char,
@@ -143,14 +186,14 @@ export class CloudDataService {
               .filter(item => item && typeof item === 'object' && item.name && String(item.name).trim())
               .map(item => {
                 const mappedCategory = mapBankItemCategory(item.category);
-                const quantity = safeNumber(item.quantity, 0);
-                const estimatedPrice = safeNumber(item.estimatedPrice, 0);
+                const quantity = Math.max(0, safeNumber(item.quantity, 0));
+                const estimatedPrice = Math.max(0, safeNumber(item.estimatedPrice, 0));
                 
                 console.log(`Bank item: ${item.name}, Original: ${item.category}, Mapped: ${mappedCategory}, Qty: ${quantity}, Price: ${estimatedPrice}`);
                 
                 return {
                   ...item,
-                  category: mappedCategory,
+                  category: mappedCategory, // This is now guaranteed to be valid
                   quantity: quantity,
                   estimatedPrice: estimatedPrice,
                   name: String(item.name).trim()

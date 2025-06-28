@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -7,30 +6,56 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Safe category mapping function - map to valid database categories
+// Safe category mapping function - MUST map to valid database categories only
 const validateBankCategory = (category: string): string => {
   if (!category || typeof category !== 'string') return 'other'
   
   const normalized = category.toLowerCase().trim()
   
-  // Map frontend categories to valid database categories
-  // Based on database constraint, valid categories are: stackable, gear, materials, other
+  // Based on database constraint, ONLY these categories are valid: stackable, gear, materials, other
   const categoryMappings: Record<string, string> = {
-    'consumables': 'stackable',  // Map consumables to stackable
+    // All consumable-type items -> stackable
+    'consumables': 'stackable',
     'consumable': 'stackable',
     'stackable': 'stackable',
     'food': 'stackable',
     'potion': 'stackable',
     'potions': 'stackable',
     'coins': 'stackable',
+    'coin': 'stackable',
     'token': 'stackable',
     'tokens': 'stackable',
+    'rune': 'stackable',
+    'runes': 'stackable',
+    'bolt': 'stackable',
+    'bolts': 'stackable',
+    'arrow': 'stackable',
+    'arrows': 'stackable',
+    'teleport': 'stackable',
+    'scroll': 'stackable',
+    'scrolls': 'stackable',
+    
+    // All equipment-type items -> gear
     'weapon': 'gear',
     'weapons': 'gear',
     'armor': 'gear',
     'armour': 'gear',
     'equipment': 'gear',
     'gear': 'gear',
+    'helmet': 'gear',
+    'helm': 'gear',
+    'shield': 'gear',
+    'gloves': 'gear',
+    'boots': 'gear',
+    'ring': 'gear',
+    'rings': 'gear',
+    'amulet': 'gear',
+    'necklace': 'gear',
+    'bracelet': 'gear',
+    'cape': 'gear',
+    'cloak': 'gear',
+    
+    // All raw materials -> materials
     'resource': 'materials',
     'resources': 'materials',
     'material': 'materials',
@@ -41,7 +66,23 @@ const validateBankCategory = (category: string): string => {
     'ores': 'materials',
     'bar': 'materials',
     'bars': 'materials',
-    'other': 'other'
+    'gem': 'materials',
+    'gems': 'materials',
+    'herb': 'materials',
+    'herbs': 'materials',
+    'seed': 'materials',
+    'seeds': 'materials',
+    'essence': 'materials',
+    
+    // Everything else -> other
+    'other': 'other',
+    'misc': 'other',
+    'miscellaneous': 'other',
+    'quest': 'other',
+    'key': 'other',
+    'keys': 'other',
+    'book': 'other',
+    'books': 'other'
   }
   
   return categoryMappings[normalized] || 'other'
@@ -189,7 +230,7 @@ serve(async (req) => {
         console.log('Purchase goals saved successfully')
       }
 
-      // Save bank items with strict validation and safe number conversion
+      // Save bank items with STRICT validation and safe number conversion
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -208,8 +249,8 @@ serve(async (req) => {
             })
             .map((item: any) => {
               const validatedCategory = validateBankCategory(item.category);
-              const quantity = safeNumber(item.quantity, 0);
-              const estimatedPrice = safeNumber(item.estimatedPrice, 0);
+              const quantity = Math.max(0, safeNumber(item.quantity, 0));
+              const estimatedPrice = Math.max(0, safeNumber(item.estimatedPrice, 0));
               
               console.log(`Processing: ${item.name}, original category: ${item.category} -> mapped: ${validatedCategory}, qty: ${quantity}, price: ${estimatedPrice}`);
               
@@ -218,7 +259,7 @@ serve(async (req) => {
                 name: safeString(item.name, 100).trim(),
                 quantity: quantity,
                 estimated_price: estimatedPrice,
-                category: validatedCategory,
+                category: validatedCategory, // This is now guaranteed to be valid
                 character: safeString(item.characterName || item.character || 'Unknown', 100)
               };
             })
@@ -227,18 +268,24 @@ serve(async (req) => {
           
           if (bankItemsToInsert.length > 0) {
             // Insert in smaller batches to avoid timeout
-            const batchSize = 25
+            const batchSize = 20
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize)
               console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)} with ${batch.length} items`)
               
+              // Double-check each item in the batch before inserting
+              const safeBatch = batch.map(item => ({
+                ...item,
+                category: validateBankCategory(item.category) // Final validation
+              }))
+              
               const { error: bankError } = await supabaseClient
                 .from('bank_items')
-                .insert(batch)
+                .insert(safeBatch)
               
               if (bankError) {
                 console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
-                console.error('Failed batch sample:', batch.slice(0, 2))
+                console.error('Failed batch sample:', safeBatch.slice(0, 2))
                 throw new Error(`Failed to save bank items: ${bankError.message}`)
               }
             }
@@ -307,15 +354,14 @@ serve(async (req) => {
         imageUrl: goal.image_url || ''
       }))
 
-      // Group bank items by character with safe number conversion and map back to frontend categories
+      // Group bank items by character with safe number conversion
       const bankData: Record<string, any[]> = {}
       const bankItems = (bankResult.data || []).map(item => ({
         id: item.id,
         name: item.name,
         quantity: safeNumber(item.quantity, 0),
         estimatedPrice: safeNumber(item.estimated_price, 0),
-        // Map database categories back to frontend categories
-        category: item.category === 'stackable' ? 'stackable' : item.category,
+        category: item.category, // Keep the database category as-is
         character: item.character
       }))
 

@@ -7,39 +7,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Safe category mapping function with strict validation
+// Safe category mapping function - map to valid database categories
 const validateBankCategory = (category: string): string => {
   if (!category || typeof category !== 'string') return 'other'
   
   const normalized = category.toLowerCase().trim()
   
-  // Valid categories in database: gear, consumables, materials, other
-  const validCategories = ['gear', 'consumables', 'materials', 'other']
-  
-  // Direct matches first
-  if (validCategories.includes(normalized)) return normalized
-  
-  // Map common variations to valid categories
+  // Map frontend categories to valid database categories
+  // Based on database constraint, valid categories are: stackable, gear, materials, other
   const categoryMappings: Record<string, string> = {
-    'stackable': 'consumables',
-    'food': 'consumables',
-    'potion': 'consumables',
-    'potions': 'consumables',
-    'consumable': 'consumables',
+    'consumables': 'stackable',  // Map consumables to stackable
+    'consumable': 'stackable',
+    'stackable': 'stackable',
+    'food': 'stackable',
+    'potion': 'stackable',
+    'potions': 'stackable',
+    'coins': 'stackable',
+    'token': 'stackable',
+    'tokens': 'stackable',
     'weapon': 'gear',
     'weapons': 'gear',
     'armor': 'gear',
     'armour': 'gear',
     'equipment': 'gear',
+    'gear': 'gear',
     'resource': 'materials',
     'resources': 'materials',
     'material': 'materials',
+    'materials': 'materials',
     'log': 'materials',
     'logs': 'materials',
     'ore': 'materials',
     'ores': 'materials',
     'bar': 'materials',
-    'bars': 'materials'
+    'bars': 'materials',
+    'other': 'other'
   }
   
   return categoryMappings[normalized] || 'other'
@@ -198,7 +200,6 @@ serve(async (req) => {
           
           const bankItemsToInsert = allBankItems
             .filter((item: any) => {
-              // Only include items that have a valid name
               const hasValidName = item && typeof item === 'object' && item.name && String(item.name).trim();
               if (!hasValidName) {
                 console.log(`Skipping invalid item:`, item);
@@ -210,7 +211,7 @@ serve(async (req) => {
               const quantity = safeNumber(item.quantity, 0);
               const estimatedPrice = safeNumber(item.estimatedPrice, 0);
               
-              console.log(`Processing: ${item.name}, category: ${item.category} -> ${validatedCategory}, qty: ${quantity}, price: ${estimatedPrice}`);
+              console.log(`Processing: ${item.name}, original category: ${item.category} -> mapped: ${validatedCategory}, qty: ${quantity}, price: ${estimatedPrice}`);
               
               return {
                 user_id: user.id,
@@ -306,14 +307,15 @@ serve(async (req) => {
         imageUrl: goal.image_url || ''
       }))
 
-      // Group bank items by character with safe number conversion
+      // Group bank items by character with safe number conversion and map back to frontend categories
       const bankData: Record<string, any[]> = {}
       const bankItems = (bankResult.data || []).map(item => ({
         id: item.id,
         name: item.name,
         quantity: safeNumber(item.quantity, 0),
         estimatedPrice: safeNumber(item.estimated_price, 0),
-        category: item.category,
+        // Map database categories back to frontend categories
+        category: item.category === 'stackable' ? 'stackable' : item.category,
         character: item.character
       }))
 

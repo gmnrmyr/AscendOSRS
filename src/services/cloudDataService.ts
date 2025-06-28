@@ -59,14 +59,17 @@ const mapBankItemCategory = (category: string): string => {
   
   const normalized = category.toLowerCase().trim();
   
-  // Valid database categories: gear, consumables, materials, other
+  // Valid database categories: stackable, gear, materials, other
   const categoryMappings: Record<string, string> = {
-    'stackable': 'consumables',
-    'consumable': 'consumables',
-    'consumables': 'consumables',
-    'food': 'consumables',
-    'potion': 'consumables',
-    'potions': 'consumables',
+    'consumables': 'stackable', // Map consumables to stackable
+    'consumable': 'stackable',
+    'stackable': 'stackable',
+    'food': 'stackable',
+    'potion': 'stackable',
+    'potions': 'stackable',
+    'coins': 'stackable',
+    'token': 'stackable',
+    'tokens': 'stackable',
     'gear': 'gear',
     'weapon': 'gear',
     'weapons': 'gear',

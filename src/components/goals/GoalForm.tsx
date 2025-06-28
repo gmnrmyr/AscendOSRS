@@ -40,17 +40,22 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     imageUrl: '',
     itemId: undefined
   });
+  const [isSearching, setIsSearching] = useState(false);
 
   const searchItems = async (query: string) => {
+    console.log('Searching for items:', query);
+    setIsSearching(true);
+    
     try {
       if (!query || query.length < 2) return [];
 
-      // Search for OSRS items first
+      // Search for OSRS items
       const osrsItems = await osrsApi.searchOSRSItems(query);
+      console.log('Found OSRS items:', osrsItems);
       
-      // Also get money making methods
+      // Also get money making methods as alternative suggestions
       const moneyMethods = await osrsApi.fetchMoneyMakingMethods(query);
-      const methodResults = moneyMethods.slice(0, 5).map(method => ({
+      const methodResults = moneyMethods.slice(0, 3).map(method => ({
         id: method.id,
         name: method.name,
         subtitle: `${(method.profit || method.gpHour).toLocaleString()} GP/hr - ${method.category}`,
@@ -59,14 +64,20 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
         category: 'method'
       }));
 
-      return [...osrsItems, ...methodResults];
+      const allResults = [...osrsItems, ...methodResults];
+      console.log('All search results:', allResults);
+      return allResults;
     } catch (error) {
       console.error('Error searching items:', error);
       return [];
+    } finally {
+      setIsSearching(false);
     }
   };
 
   const handleItemSelect = async (option: any) => {
+    console.log('Item selected:', option);
+    
     let currentPrice = 0;
     let itemIcon = option.icon;
     let itemId = option.id;
@@ -78,20 +89,23 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     } else {
       // For items, get the current price and proper icon
       try {
-        if (option.value > 0) {
-          currentPrice = option.value;
-        } else {
-          currentPrice = await osrsApi.fetchSingleItemPrice(itemId) || 0;
+        currentPrice = option.value || 0;
+        
+        // If we don't have a price, try to fetch it
+        if (currentPrice === 0 && itemId) {
+          console.log('Fetching price for item ID:', itemId);
+          const fetchedPrice = await osrsApi.fetchSingleItemPrice(itemId);
+          currentPrice = fetchedPrice || 0;
+          console.log('Fetched price:', currentPrice);
         }
         
-        if (!itemIcon) {
+        // Ensure we have an icon
+        if (!itemIcon && itemId) {
           itemIcon = await osrsApi.getItemIcon(itemId);
         }
       } catch (error) {
+        console.error('Error fetching item details:', error);
         currentPrice = option.value || 0;
-        if (!itemIcon) {
-          itemIcon = await osrsApi.getItemIcon(itemId);
-        }
       }
     }
 
@@ -99,13 +113,25 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
       ...newGoal,
       name: option.name,
       currentPrice: currentPrice,
-      imageUrl: itemIcon,
+      imageUrl: itemIcon || '',
       itemId: itemId
+    });
+    
+    console.log('Updated goal state:', {
+      name: option.name,
+      currentPrice,
+      imageUrl: itemIcon,
+      itemId
     });
   };
 
   const addGoal = async () => {
-    if (!newGoal.name?.trim()) return;
+    if (!newGoal.name?.trim()) {
+      console.log('No goal name provided');
+      return;
+    }
+
+    console.log('Adding goal:', newGoal);
 
     let finalItemId = newGoal.itemId;
     let finalCurrentPrice = newGoal.currentPrice || 0;
@@ -113,22 +139,30 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
 
     // If we don't have proper item data, try to fetch it
     if (!finalItemId || finalCurrentPrice === 0) {
-      const searchResults = await osrsApi.searchItems(newGoal.name);
-      if (searchResults.length > 0) {
-        const item = searchResults[0];
-        finalItemId = item.id;
-        finalImageUrl = item.icon;
-        
-        try {
-          finalCurrentPrice = await osrsApi.fetchSingleItemPrice(item.id) || item.current_price || 0;
-        } catch (error) {
-          finalCurrentPrice = item.current_price || 0;
+      console.log('Missing item data, searching for item:', newGoal.name);
+      
+      try {
+        const searchResults = await osrsApi.searchOSRSItems(newGoal.name);
+        if (searchResults.length > 0) {
+          const item = searchResults[0];
+          finalItemId = item.id;
+          finalImageUrl = item.icon;
+          finalCurrentPrice = item.value || 0;
+          
+          console.log('Found item data:', { finalItemId, finalCurrentPrice, finalImageUrl });
         }
+      } catch (error) {
+        console.error('Error searching for item data:', error);
       }
     }
 
-    if (!finalImageUrl || finalImageUrl === '') {
-      finalImageUrl = await osrsApi.getItemIcon(finalItemId || 995);
+    // Ensure we have an icon
+    if (!finalImageUrl && finalItemId) {
+      try {
+        finalImageUrl = await osrsApi.getItemIcon(finalItemId) || '';
+      } catch (error) {
+        console.error('Error getting item icon:', error);
+      }
     }
 
     const goal: PurchaseGoal = {
@@ -140,11 +174,14 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
       priority: newGoal.priority || 'A',
       category: newGoal.category || 'gear',
       notes: newGoal.notes || '',
-      imageUrl: finalImageUrl,
+      imageUrl: finalImageUrl || '',
       itemId: finalItemId
     };
 
+    console.log('Final goal to add:', goal);
     setGoals([...goals, goal]);
+    
+    // Reset form
     setNewGoal({
       name: '',
       currentPrice: 0,
@@ -178,12 +215,21 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
               searchFunction={searchItems}
               className="bg-white dark:bg-slate-800"
             />
+            {isSearching && (
+              <div className="text-xs text-gray-500 mt-1">Searching OSRS items...</div>
+            )}
           </div>
           
           <div>
-            <Label>Current Price (GP) - From OSRS Wiki</Label>
-            <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
-              {newGoal.currentPrice ? `${newGoal.currentPrice.toLocaleString()} GP` : 'Select an item to fetch price'}
+            <Label>Current Price (GP)</Label>
+            <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm">
+              {newGoal.currentPrice ? (
+                <span className="text-amber-700 dark:text-amber-300 font-medium">
+                  {newGoal.currentPrice.toLocaleString()} GP
+                </span>
+              ) : (
+                <span className="text-gray-500">Select an item to fetch price</span>
+              )}
             </div>
           </div>
         </div>

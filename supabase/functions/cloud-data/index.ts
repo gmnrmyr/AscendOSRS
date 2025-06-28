@@ -64,16 +64,15 @@ serve(async (req) => {
 
       // Save characters with proper validation
       if (characters && characters.length > 0) {
-        const validCharacterTypes = ['main', 'alt', 'ironman', 'hardcore', 'ultimate'];
         const charactersToInsert = characters.map((char: any) => ({
           user_id: user.id,
-          name: char.name || 'Unnamed Character',
-          type: validCharacterTypes.includes(char.type) ? char.type : 'main',
-          combat_level: Math.max(0, Math.min(126, char.combatLevel || 0)),
-          total_level: Math.max(0, Math.min(2277, char.totalLevel || 0)),
-          bank: Math.max(0, char.bank || 0),
-          notes: char.notes || '',
-          plat_tokens: Math.max(0, char.platTokens || 0)
+          name: String(char.name || 'Unnamed Character').substring(0, 100),
+          type: ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(char.type) ? char.type : 'main',
+          combat_level: Math.max(3, Math.min(126, parseInt(char.combatLevel) || 3)),
+          total_level: Math.max(32, Math.min(2277, parseInt(char.totalLevel) || 32)),
+          bank: Math.max(0, parseInt(char.bank) || 0),
+          notes: String(char.notes || '').substring(0, 1000),
+          plat_tokens: Math.max(0, parseInt(char.platTokens) || 0)
         }))
 
         const { error: charactersError } = await supabaseClient
@@ -88,16 +87,15 @@ serve(async (req) => {
 
       // Save money methods with proper validation
       if (moneyMethods && moneyMethods.length > 0) {
-        const validCategories = ['combat', 'skilling', 'bossing', 'other'];
         const methodsToInsert = moneyMethods.map((method: any) => ({
           user_id: user.id,
-          name: method.name || 'Unnamed Method',
-          character: method.character || 'Unknown',
-          gp_hour: Math.max(0, method.gpHour || 0),
+          name: String(method.name || 'Unnamed Method').substring(0, 100),
+          character: String(method.character || 'Unknown').substring(0, 100),
+          gp_hour: Math.max(0, parseInt(method.gpHour) || 0),
           click_intensity: Math.min(Math.max(parseInt(method.clickIntensity) || 1, 1), 5),
-          requirements: method.requirements || '',
-          notes: method.notes || '',
-          category: validCategories.includes(method.category) ? method.category : 'other'
+          requirements: String(method.requirements || '').substring(0, 500),
+          notes: String(method.notes || '').substring(0, 1000),
+          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
         }))
 
         const { error: methodsError } = await supabaseClient
@@ -112,18 +110,16 @@ serve(async (req) => {
 
       // Save purchase goals with proper validation
       if (purchaseGoals && purchaseGoals.length > 0) {
-        const validGoalCategories = ['gear', 'consumables', 'materials', 'other'];
-        const validPriorities = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'];
         const goalsToInsert = purchaseGoals.map((goal: any) => ({
           user_id: user.id,
-          name: goal.name || 'Unnamed Goal',
-          current_price: Math.max(0, goal.currentPrice || 0),
-          target_price: goal.targetPrice ? Math.max(0, goal.targetPrice) : null,
-          quantity: Math.max(1, goal.quantity || 1),
-          priority: validPriorities.includes(goal.priority) ? goal.priority : 'A',
-          category: validGoalCategories.includes(goal.category) ? goal.category : 'other',
-          notes: goal.notes || '',
-          image_url: goal.imageUrl || ''
+          name: String(goal.name || 'Unnamed Goal').substring(0, 100),
+          current_price: Math.max(0, parseInt(goal.currentPrice) || 0),
+          target_price: goal.targetPrice ? Math.max(0, parseInt(goal.targetPrice)) : null,
+          quantity: Math.max(1, parseInt(goal.quantity) || 1),
+          priority: ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(goal.priority) ? goal.priority : 'A',
+          category: ['gear', 'consumables', 'materials', 'other'].includes(goal.category) ? goal.category : 'other',
+          notes: String(goal.notes || '').substring(0, 1000),
+          image_url: String(goal.imageUrl || '').substring(0, 500)
         }))
 
         const { error: goalsError } = await supabaseClient
@@ -143,14 +139,13 @@ serve(async (req) => {
         );
         
         if (allBankItems.length > 0) {
-          const validBankCategories = ['stackable', 'gear', 'materials', 'other'];
           const bankItemsToInsert = allBankItems.map((item: any) => ({
             user_id: user.id,
-            name: item.name || 'Unknown Item',
-            quantity: Math.max(0, item.quantity || 0),
-            estimated_price: Math.max(0, item.estimatedPrice || 0),
-            category: validBankCategories.includes(item.category) ? item.category : 'other',
-            character: item.characterName || item.character || 'Unknown'
+            name: String(item.name || 'Unknown Item').substring(0, 100),
+            quantity: Math.max(0, parseInt(item.quantity) || 0),
+            estimated_price: Math.max(0, parseInt(item.estimatedPrice) || 0),
+            category: ['stackable', 'gear', 'materials', 'other'].includes(item.category) ? item.category : 'other',
+            character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
           }))
 
           const { error: bankError } = await supabaseClient

@@ -7,31 +7,44 @@ const GE_API_BASE = 'https://secure.runescape.com/m=itemdb_oldschool/api/catalog
 
 export const osrsApi = {
   fetchPlayerStats: async (playerName: string): Promise<PlayerStats | null> => {
+    console.log(`Fetching stats for player: ${playerName}`);
+    
     try {
-      // Try TempleOSRS first for more reliable data
-      const templeResponse = await fetch(`${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`);
+      // Try TempleOSRS first for most reliable data
+      console.log('Trying TempleOSRS API...');
+      const templeUrl = `${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`;
+      const templeResponse = await fetch(templeUrl);
+      
       if (templeResponse.ok) {
-        const data = await templeResponse.json();
-        if (data && data.data && !data.error) {
-          return {
-            combat_level: data.data.Combat_level || data.data.combat_level || 3,
-            total_level: data.data.Overall || data.data.total_level || 32,
-            account_type: data.data.account_type || 'main',
+        const templeData = await templeResponse.json();
+        console.log('TempleOSRS response:', templeData);
+        
+        if (templeData && templeData.data && !templeData.error) {
+          const stats = {
+            combat_level: templeData.data.Combat_level || templeData.data.combat_level || 3,
+            total_level: templeData.data.Overall || templeData.data.total_level || 32,
+            account_type: templeData.data.Game_mode || 'main',
             username: playerName
           };
+          console.log('Successfully fetched from TempleOSRS:', stats);
+          return stats;
         }
       }
 
       // Fallback to official hiscores
-      const response = await fetch(`https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=${encodeURIComponent(playerName)}`);
-      if (!response.ok) {
-        console.error('Failed to fetch player stats:', response.status, response.statusText);
+      console.log('Trying official OSRS hiscores...');
+      const hiscoreUrl = `https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=${encodeURIComponent(playerName)}`;
+      const hiscoreResponse = await fetch(hiscoreUrl);
+      
+      if (!hiscoreResponse.ok) {
+        console.error('Hiscore API failed:', hiscoreResponse.status, hiscoreResponse.statusText);
         return null;
       }
 
-      const text = await response.text();
-      const lines = text.split('\n');
-      if (lines.length < 3) {
+      const text = await hiscoreResponse.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 8) {
         console.error('Invalid hiscore format for player:', playerName);
         return null;
       }
@@ -40,34 +53,39 @@ export const osrsApi = {
       const overallStats = lines[0].split(',');
       const totalLevel = parseInt(overallStats[1]) || 32;
       
-      // Calculate combat level from individual combat stats
-      const attackStats = lines[1].split(',');
-      const defenceStats = lines[2].split(',');
-      const strengthStats = lines[3].split(',');
-      const hpStats = lines[4].split(',');
-      const rangedStats = lines[5].split(',');
-      const prayerStats = lines[6].split(',');
-      const magicStats = lines[7].split(',');
+      // Parse individual combat stats for combat level calculation
+      const attackLevel = parseInt(lines[1].split(',')[1]) || 1;
+      const defenceLevel = parseInt(lines[2].split(',')[1]) || 1;
+      const strengthLevel = parseInt(lines[3].split(',')[1]) || 1;
+      const hitpointsLevel = parseInt(lines[4].split(',')[1]) || 10;
+      const rangedLevel = parseInt(lines[5].split(',')[1]) || 1;
+      const prayerLevel = parseInt(lines[6].split(',')[1]) || 1;
+      const magicLevel = parseInt(lines[7].split(',')[1]) || 1;
 
-      const attack = parseInt(attackStats[1]) || 1;
-      const defence = parseInt(defenceStats[1]) || 1;
-      const strength = parseInt(strengthStats[1]) || 1;
-      const hitpoints = parseInt(hpStats[1]) || 10;
-      const ranged = parseInt(rangedStats[1]) || 1;
-      const prayer = parseInt(prayerStats[1]) || 1;
-      const magic = parseInt(magicStats[1]) || 1;
+      // Calculate combat level using OSRS formula
+      const baseCombat = (attackLevel + strengthLevel) * 0.325;
+      const defenceCombat = defenceLevel * 0.325;
+      const hitpointsCombat = hitpointsLevel * 0.25;
+      const prayerCombat = Math.floor(prayerLevel / 2) * 0.25;
+      const rangedCombat = rangedLevel * 0.325;
+      const magicCombat = magicLevel * 0.325;
+      
+      const meleeCombat = baseCombat + defenceCombat + hitpointsCombat + prayerCombat;
+      const rangedCombatTotal = rangedCombat + defenceCombat + hitpointsCombat + prayerCombat;
+      const magicCombatTotal = magicCombat + defenceCombat + hitpointsCombat + prayerCombat;
+      
+      const combatLevel = Math.floor(Math.max(meleeCombat, rangedCombatTotal, magicCombatTotal)) + 1;
 
-      // Calculate combat level
-      const combatLevel = Math.floor(((attack + strength) * 0.325 + defence * 0.325 + hitpoints * 0.25 + 
-                                   Math.floor(prayer * 0.125) + Math.floor(ranged * 0.325) + 
-                                   Math.floor(magic * 0.325)) * 0.25) + 1;
-
-      return {
-        combat_level: Math.min(126, combatLevel),
+      const stats = {
+        combat_level: Math.min(126, Math.max(3, combatLevel)),
         total_level: totalLevel,
         account_type: 'main',
         username: playerName
       };
+      
+      console.log('Successfully parsed from hiscores:', stats);
+      return stats;
+      
     } catch (error) {
       console.error('Error fetching player stats:', error);
       return null;
@@ -75,65 +93,83 @@ export const osrsApi = {
   },
 
   searchOSRSItems: async (query: string): Promise<any[]> => {
+    console.log(`Searching OSRS items for: ${query}`);
+    
     try {
       if (!query || query.length < 2) return [];
 
-      // Search Wiki for items with specific filtering
+      // Search Wiki for items with better filtering
       const params = new URLSearchParams({
-        action: 'query',
-        format: 'json',
-        list: 'search',
-        srsearch: `${query} incategory:"Items" OR incategory:"Weapons" OR incategory:"Armour" OR incategory:"Equipment"`,
-        srlimit: '20',
-        srnamespace: '0'
+        action: 'opensearch',
+        search: query,
+        limit: '10',
+        namespace: '0',
+        format: 'json'
       });
 
       const response = await fetch(`${WIKI_API_BASE_URL}?${params.toString()}`);
       const data = await response.json();
       
-      if (!data.query?.search) return [];
+      if (!data || !Array.isArray(data) || data.length < 2) {
+        console.log('No search results from Wiki API');
+        return [];
+      }
 
+      const [, titles, , urls] = data;
       const items = [];
-      for (const item of data.query.search) {
-        // Filter out non-item pages
-        if (item.title && 
-            !item.title.includes('Quest') && 
-            !item.title.includes('Guide') && 
-            !item.title.includes('Update') && 
-            !item.title.includes('Category') &&
-            !item.title.includes('Template') && 
-            !item.title.includes('User:') &&
-            !item.title.includes('Talk:') &&
-            !item.title.includes('File:')) {
+
+      for (let i = 0; i < Math.min(titles.length, 10); i++) {
+        const title = titles[i];
+        
+        // Filter out non-item pages more effectively
+        if (!title || 
+            title.includes('Quest') || 
+            title.includes('Guide') || 
+            title.includes('Update') || 
+            title.includes('Category') ||
+            title.includes('Template') || 
+            title.includes('User:') ||
+            title.includes('Talk:') ||
+            title.includes('File:') ||
+            title.includes('List of') ||
+            title.includes('History of')) {
+          continue;
+        }
+        
+        try {
+          // Get item ID from wiki page
+          const itemId = await osrsApi.getItemIdByName(title);
+          let currentPrice = 0;
+          let itemIcon = null;
           
-          try {
-            // Get price and icon
-            const currentPrice = await osrsApi.fetchSingleItemPrice(item.pageid) || 0;
-            const itemIcon = await osrsApi.getItemIcon(item.pageid);
-            
-            items.push({
-              id: item.pageid,
-              name: item.title,
-              subtitle: currentPrice > 0 ? `${currentPrice.toLocaleString()} GP` : 'OSRS Item',
-              icon: itemIcon,
-              value: currentPrice,
-              category: 'item'
-            });
-          } catch (error) {
-            console.error(`Error fetching data for ${item.title}:`, error);
-            // Still include the item even if price/icon fails
-            items.push({
-              id: item.pageid,
-              name: item.title,
-              subtitle: 'OSRS Item',
-              icon: '',
-              value: 0,
-              category: 'item'
-            });
+          if (itemId) {
+            currentPrice = await osrsApi.fetchSingleItemPrice(itemId) || 0;
+            itemIcon = `https://oldschool.runescape.wiki/images/thumb/${itemId}.png/32px-${itemId}.png`;
           }
+          
+          items.push({
+            id: itemId || Date.now() + i,
+            name: title,
+            subtitle: currentPrice > 0 ? `${currentPrice.toLocaleString()} GP` : 'OSRS Item',
+            icon: itemIcon || '',
+            value: currentPrice,
+            category: 'item'
+          });
+        } catch (error) {
+          console.error(`Error processing item ${title}:`, error);
+          // Still include the item even if price/icon fails
+          items.push({
+            id: Date.now() + i,
+            name: title,
+            subtitle: 'OSRS Item',
+            icon: '',
+            value: 0,
+            category: 'item'
+          });
         }
       }
 
+      console.log(`Found ${items.length} OSRS items`);
       return items;
     } catch (error) {
       console.error('Error searching OSRS items:', error);
@@ -142,42 +178,86 @@ export const osrsApi = {
   },
 
   fetchMoneyMakingMethods: async (query?: string): Promise<MoneyMakingGuide[]> => {
-    // Get methods from wiki and local data
-    const localMethods = osrsApi.getDefaultMoneyMakers();
+    console.log(`Fetching money making methods, query: ${query}`);
     
-    if (!query) {
-      return localMethods;
-    }
+    try {
+      // Get local methods first
+      const localMethods = osrsApi.getDefaultMoneyMakers();
+      
+      // Try to fetch from OSRS Wiki money making guide
+      const wikiMethods = await osrsApi.fetchWikiMoneyMethods();
+      
+      // Combine and filter
+      const allMethods = [...localMethods, ...wikiMethods];
+      
+      if (!query) {
+        return allMethods;
+      }
 
-    const lowerQuery = query.toLowerCase();
-    return localMethods.filter(method =>
-      method.name.toLowerCase().includes(lowerQuery) ||
-      method.category.toLowerCase().includes(lowerQuery)
-    );
+      const lowerQuery = query.toLowerCase();
+      return allMethods.filter(method =>
+        method.name.toLowerCase().includes(lowerQuery) ||
+        method.category.toLowerCase().includes(lowerQuery) ||
+        method.description?.toLowerCase().includes(lowerQuery)
+      );
+    } catch (error) {
+      console.error('Error fetching money making methods:', error);
+      return osrsApi.getDefaultMoneyMakers();
+    }
   },
 
-  getEstimatedItemValue: async (itemName: string): Promise<number | null> => {
+  fetchWikiMoneyMethods: async (): Promise<MoneyMakingGuide[]> => {
     try {
-      // Try Wiki prices API first
-      const response = await fetch(API_BASE_URL);
-      if (!response.ok) {
-        console.error('Failed to fetch item prices:', response.status, response.statusText);
-        return null;
-      }
-      const data = await response.json();
+      console.log('Fetching money making methods from OSRS Wiki...');
+      
+      // Search for money making guide pages
+      const searchParams = new URLSearchParams({
+        action: 'query',
+        format: 'json',
+        list: 'search',
+        srsearch: 'money making guide',
+        srlimit: '20',
+        srnamespace: '0'
+      });
 
-      // Search through the data for matching item name
-      for (const [itemId, itemData] of Object.entries(data.data)) {
-        if (itemData && typeof itemData === 'object' && 'high' in itemData) {
-          // We'd need to match by name here - this is a limitation without item mapping
-          // For now, return a reasonable default if we can't find the exact item
+      const searchResponse = await fetch(`${WIKI_API_BASE_URL}?${searchParams.toString()}`);
+      const searchData = await searchResponse.json();
+      
+      if (!searchData.query?.search) {
+        return [];
+      }
+
+      const methods: MoneyMakingGuide[] = [];
+      
+      for (const page of searchData.query.search.slice(0, 10)) {
+        if (page.title && 
+            page.title.includes('Money making guide') && 
+            !page.title.includes('Free-to-play')) {
+          
+          const methodName = page.title.replace('Money making guide/', '').replace('Money making guide', '').trim();
+          if (methodName && methodName.length > 0) {
+            methods.push({
+              id: `wiki-${page.pageid}`,
+              name: methodName,
+              category: 'other' as const,
+              gpHour: 500000, // Default estimate
+              clickIntensity: 3 as const,
+              requirements: 'See OSRS Wiki for details',
+              notes: `From OSRS Wiki: ${page.title}`,
+              profit: 500000,
+              difficulty: 'Medium',
+              description: page.snippet?.replace(/<[^>]*>/g, '') || methodName,
+              membership: 'p2p'
+            });
+          }
         }
       }
-
-      return null;
+      
+      console.log(`Fetched ${methods.length} methods from Wiki`);
+      return methods;
     } catch (error) {
-      console.error('Error fetching item value:', error);
-      return null;
+      console.error('Error fetching Wiki money methods:', error);
+      return [];
     }
   },
 
@@ -186,33 +266,48 @@ export const osrsApi = {
       const numericId = typeof itemId === 'string' ? parseInt(itemId) : itemId;
       if (isNaN(numericId)) return null;
 
-      // Try Wiki prices API
+      console.log(`Fetching price for item ID: ${numericId}`);
+
+      // Try Wiki prices API first
       const response = await fetch(API_BASE_URL);
-      if (!response.ok) return null;
-      
-      const data = await response.json();
-      const itemData = data.data?.[numericId.toString()];
-      
-      if (itemData && itemData.high) {
-        return itemData.high;
+      if (response.ok) {
+        const data = await response.json();
+        const itemData = data.data?.[numericId.toString()];
+        
+        if (itemData && (itemData.high || itemData.low)) {
+          const price = itemData.high || itemData.low;
+          console.log(`Found price from Wiki API: ${price}`);
+          return price;
+        }
       }
 
       // Fallback to GE API
-      const geResponse = await fetch(`${GE_API_BASE}?item=${numericId}`);
-      if (geResponse.ok) {
-        const geData = await geResponse.json();
-        if (geData && geData.item && geData.item.current && geData.item.current.price) {
-          // Parse price string (e.g., "1.2m" to 1200000)
-          const priceStr = geData.item.current.price.replace(/,/g, '');
-          if (priceStr.includes('k')) {
-            return parseFloat(priceStr) * 1000;
-          } else if (priceStr.includes('m')) {
-            return parseFloat(priceStr) * 1000000;
-          } else if (priceStr.includes('b')) {
-            return parseFloat(priceStr) * 1000000000;
+      try {
+        const geResponse = await fetch(`${GE_API_BASE}?item=${numericId}`);
+        if (geResponse.ok) {
+          const geData = await geResponse.json();
+          if (geData?.item?.current?.price) {
+            const priceStr = geData.item.current.price.replace(/,/g, '');
+            let price = 0;
+            
+            if (priceStr.includes('k')) {
+              price = parseFloat(priceStr) * 1000;
+            } else if (priceStr.includes('m')) {
+              price = parseFloat(priceStr) * 1000000;
+            } else if (priceStr.includes('b')) {
+              price = parseFloat(priceStr) * 1000000000;
+            } else {
+              price = parseInt(priceStr) || 0;
+            }
+            
+            if (price > 0) {
+              console.log(`Found price from GE API: ${price}`);
+              return price;
+            }
           }
-          return parseInt(priceStr) || null;
         }
+      } catch (geError) {
+        console.error('GE API error:', geError);
       }
 
       return null;
@@ -227,7 +322,6 @@ export const osrsApi = {
       const numericId = typeof itemId === 'string' ? parseInt(itemId) : itemId;
       if (isNaN(numericId)) return null;
       
-      // Use OSRS Wiki item icon URL format
       return `https://oldschool.runescape.wiki/images/thumb/${numericId}.png/32px-${numericId}.png`;
     } catch (error) {
       console.error('Error getting item icon:', error);
@@ -237,21 +331,23 @@ export const osrsApi = {
 
   getItemIdByName: async (itemName: string): Promise<number | null> => {
     try {
-      // Search Wiki API for item
+      // Search Wiki API for item page ID
       const params = new URLSearchParams({
         action: 'query',
         format: 'json',
-        list: 'search',
-        srsearch: itemName,
-        srlimit: '1',
+        titles: itemName,
+        prop: 'info'
       });
 
       const response = await fetch(`${WIKI_API_BASE_URL}?${params.toString()}`);
-      if (!response.ok) return null;
-      
       const data = await response.json();
-      if (data.query && data.query.search && data.query.search.length > 0) {
-        return data.query.search[0].pageid;
+      
+      if (data.query?.pages) {
+        const pages = Object.values(data.query.pages) as any[];
+        const page = pages[0];
+        if (page && !page.missing && page.pageid) {
+          return page.pageid;
+        }
       }
       
       return null;
@@ -259,122 +355,6 @@ export const osrsApi = {
       console.error('Error getting item ID by name:', error);
       return null;
     }
-  },
-
-  getItemDetails: async (itemName: string): Promise<OSRSItem> => {
-    const params = new URLSearchParams({
-      action: 'query',
-      format: 'json',
-      titles: itemName,
-      prop: 'pageimages|extracts',
-      piprop: 'original',
-      exintro: 'true',
-      explaintext: 'true',
-    });
-
-    const url = `${WIKI_API_BASE_URL}?${params.toString()}`;
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      const pageId = Object.keys(data.query?.pages || {})[0];
-      const page = data.query?.pages?.[pageId];
-
-      if (!page || page.missing !== undefined) {
-        throw new Error(`Item "${itemName}" not found on the OSRS Wiki.`);
-      }
-
-      // Try to get current price with proper null checks
-      const pageIdValue = (page && typeof page.pageid === 'number') ? page.pageid : 0;
-      let currentPrice = 0;
-      let iconUrl = null;
-      
-      if (pageIdValue > 0) {
-        currentPrice = (await osrsApi.fetchSingleItemPrice(pageIdValue)) || 0;
-        iconUrl = (await osrsApi.getItemIcon(pageIdValue)) || null;
-      }
-
-      return {
-        pageId: (page && typeof page.pageid === 'number') ? page.pageid : 0,
-        title: (page && typeof page.title === 'string') ? page.title : itemName,
-        imageUrl: (page && page.original && typeof page.original.source === 'string') ? page.original.source : null,
-        extract: (page && typeof page.extract === 'string') ? page.extract : null,
-        id: (page && typeof page.pageid === 'number') ? page.pageid : 0,
-        name: (page && typeof page.title === 'string') ? page.title : itemName,
-        current_price: currentPrice,
-        icon: (page && page.original && typeof page.original.source === 'string') ? page.original.source : iconUrl
-      };
-    } catch (error) {
-      console.error('Error fetching item details from OSRS Wiki:', error);
-      throw error;
-    }
-  },
-
-  searchItems: async (query: string): Promise<OSRSItem[]> => {
-    const params = new URLSearchParams({
-      action: 'query',
-      format: 'json',
-      list: 'search',
-      srsearch: query,
-      srlimit: '10',
-    });
-
-    const url = `${WIKI_API_BASE_URL}?${params.toString()}`;
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      
-      const items = await Promise.all(
-        (data.query?.search || []).map(async (item: any) => {
-          if (!item) {
-            return null;
-          }
-          
-          const itemPageId = (item && typeof item.pageid === 'number') ? item.pageid : 0;
-          const itemTitle = (item && typeof item.title === 'string') ? item.title : '';
-          
-          let currentPrice = 0;
-          let icon = null;
-          
-          if (itemPageId > 0) {
-            currentPrice = (await osrsApi.fetchSingleItemPrice(itemPageId)) || 0;
-            icon = (await osrsApi.getItemIcon(itemPageId)) || null;
-          }
-          
-          return {
-            pageId: itemPageId,
-            title: itemTitle,
-            imageUrl: icon,
-            extract: null,
-            id: itemPageId,
-            name: itemTitle,
-            current_price: currentPrice,
-            icon: icon
-          };
-        })
-      );
-      
-      // Filter out any null items
-      return items.filter(item => item !== null);
-    } catch (error) {
-      console.error('Error searching items on OSRS Wiki:', error);
-      return [];
-    }
-  },
-
-  getMoneyMakingMethods: async (query?: string): Promise<MoneyMakingGuide[]> => {
-    return osrsApi.fetchMoneyMakingMethods(query);
-  },
-
-  searchMoneyMakers: async (query: string): Promise<MoneyMakingGuide[]> => {
-    return osrsApi.getMoneyMakingMethods(query);
   },
 
   getDefaultMoneyMakers: (): MoneyMakingGuide[] => {
@@ -538,8 +518,88 @@ export const osrsApi = {
     ];
   },
 
+  getEstimatedItemValue: async (itemName: string): Promise<number | null> => {
+    try {
+      const itemId = await osrsApi.getItemIdByName(itemName);
+      if (itemId) {
+        return await osrsApi.fetchSingleItemPrice(itemId);
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting estimated item value:', error);
+      return null;
+    }
+  },
+
+  getItemDetails: async (itemName: string): Promise<OSRSItem> => {
+    const params = new URLSearchParams({
+      action: 'query',
+      format: 'json',
+      titles: itemName,
+      prop: 'pageimages|extracts',
+      piprop: 'original',
+      exintro: 'true',
+      explaintext: 'true',
+    });
+
+    const url = `${WIKI_API_BASE_URL}?${params.toString()}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const pageId = Object.keys(data.query?.pages || {})[0];
+      const page = data.query?.pages?.[pageId];
+
+      if (!page || page.missing !== undefined) {
+        throw new Error(`Item "${itemName}" not found on the OSRS Wiki.`);
+      }
+
+      const pageIdValue = (page && typeof page.pageid === 'number') ? page.pageid : 0;
+      let currentPrice = 0;
+      let iconUrl = null;
+      
+      if (pageIdValue > 0) {
+        currentPrice = (await osrsApi.fetchSingleItemPrice(pageIdValue)) || 0;
+        iconUrl = (await osrsApi.getItemIcon(pageIdValue)) || null;
+      }
+
+      return {
+        pageId: pageIdValue,
+        title: (page && typeof page.title === 'string') ? page.title : itemName,
+        imageUrl: (page && page.original && typeof page.original.source === 'string') ? page.original.source : null,
+        extract: (page && typeof page.extract === 'string') ? page.extract : null,
+        id: pageIdValue,
+        name: (page && typeof page.title === 'string') ? page.title : itemName,
+        current_price: currentPrice,
+        icon: (page && page.original && typeof page.original.source === 'string') ? page.original.source : iconUrl
+      };
+    } catch (error) {
+      console.error('Error fetching item details from OSRS Wiki:', error);
+      throw error;
+    }
+  },
+
+  searchItems: async (query: string): Promise<OSRSItem[]> => {
+    try {
+      return await osrsApi.searchOSRSItems(query);
+    } catch (error) {
+      console.error('Error searching items:', error);
+      return [];
+    }
+  },
+
+  getMoneyMakingMethods: async (query?: string): Promise<MoneyMakingGuide[]> => {
+    return osrsApi.fetchMoneyMakingMethods(query);
+  },
+
+  searchMoneyMakers: async (query: string): Promise<MoneyMakingGuide[]> => {
+    return osrsApi.getMoneyMakingMethods(query);
+  },
+
   fetchPopularItems: async (): Promise<OSRSItem[]> => {
-    // Return some popular OSRS items
     const popularItems = [
       'Twisted bow', 'Scythe of vitur', 'Dragon claws', 'Abyssal whip',
       'Bandos chestplate', 'Armadyl crossbow', 'Primordial boots', 'Dragon hunter lance'

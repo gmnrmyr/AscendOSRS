@@ -7,20 +7,64 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Strict category validation function
-const validateBankCategory = (category: string): 'stackable' | 'gear' | 'materials' | 'other' => {
+// First let's check what categories are actually allowed in the database
+const getValidBankCategories = async (supabaseClient: any) => {
+  try {
+    // Try to get the enum values from the database
+    const { data, error } = await supabaseClient
+      .rpc('get_enum_values', { enum_name: 'bank_category' })
+    
+    if (error) {
+      console.log('Could not get enum values, using defaults')
+      return ['gear', 'consumables', 'materials', 'other']
+    }
+    
+    return data || ['gear', 'consumables', 'materials', 'other']
+  } catch (error) {
+    console.log('Error getting enum values:', error)
+    return ['gear', 'consumables', 'materials', 'other']
+  }
+}
+
+// Safe category mapping function
+const validateBankCategory = (category: string, validCategories: string[] = ['gear', 'consumables', 'materials', 'other']): string => {
   if (!category || typeof category !== 'string') return 'other'
   
   const normalized = category.toLowerCase().trim()
   
-  // Only allow exact matches to database enum values
-  if (normalized === 'stackable') return 'stackable'
-  if (normalized === 'gear') return 'gear'  
-  if (normalized === 'materials') return 'materials'
-  if (normalized === 'other') return 'other'
+  // Direct matches first
+  if (validCategories.includes(normalized)) return normalized
   
-  // For any other value, default to 'other'
-  console.log(`Unknown bank category "${category}", defaulting to "other"`)
+  // Map common variations to valid categories
+  const categoryMappings: Record<string, string> = {
+    'stackable': 'consumables',
+    'food': 'consumables',
+    'potion': 'consumables',
+    'potions': 'consumables',
+    'consumable': 'consumables',
+    'weapon': 'gear',
+    'weapons': 'gear',
+    'armor': 'gear',
+    'armour': 'gear',
+    'equipment': 'gear',
+    'resource': 'materials',
+    'resources': 'materials',
+    'material': 'materials',
+    'log': 'materials',
+    'logs': 'materials',
+    'ore': 'materials',
+    'ores': 'materials',
+    'bar': 'materials',
+    'bars': 'materials'
+  }
+  
+  // Check if we have a mapping for this category
+  if (categoryMappings[normalized]) {
+    const mapped = categoryMappings[normalized]
+    return validCategories.includes(mapped) ? mapped : 'other'
+  }
+  
+  // If no mapping found, default to 'other'
   return 'other'
 }
 
@@ -62,6 +106,10 @@ serve(async (req) => {
       const { characters, moneyMethods, purchaseGoals, bankData, hoursPerDay } = body
 
       console.log('Starting cloud save for user:', user.id)
+
+      // Get valid categories from the database
+      const validBankCategories = await getValidBankCategories(supabaseClient)
+      console.log('Valid bank categories:', validBankCategories)
 
       // Validation helper functions
       const validateCharacterType = (type: string) => 
@@ -166,7 +214,7 @@ serve(async (req) => {
         console.log('Purchase goals saved successfully')
       }
 
-      // Save bank items with strict validation
+      // Save bank items with proper category validation
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -178,7 +226,7 @@ serve(async (req) => {
           const bankItemsToInsert = allBankItems
             .filter((item: any) => item && typeof item === 'object' && item.name && String(item.name).trim())
             .map((item: any) => {
-              const validatedCategory = validateBankCategory(item.category);
+              const validatedCategory = validateBankCategory(item.category, validBankCategories);
               console.log(`Processing bank item: ${item.name}, category: ${item.category} -> ${validatedCategory}`);
               
               return {
@@ -186,7 +234,7 @@ serve(async (req) => {
                 name: String(item.name || 'Unknown Item').trim().substring(0, 100),
                 quantity: Math.max(0, parseInt(String(item.quantity)) || 0),
                 estimated_price: Math.max(0, parseInt(String(item.estimatedPrice)) || 0),
-                category: validatedCategory, // This will now always be a valid enum value
+                category: validatedCategory,
                 character: String(item.characterName || item.character || 'Unknown').substring(0, 100)
               };
             })

@@ -46,25 +46,40 @@ interface BankItem {
   character: string;
 }
 
-// Strict category mapping to database enum values
-const mapBankItemCategory = (category: string): 'stackable' | 'gear' | 'materials' | 'other' => {
+// Map frontend categories to database-safe categories
+const mapBankItemCategory = (category: string): string => {
   if (!category || typeof category !== 'string') return 'other';
   
   const normalized = category.toLowerCase().trim();
   
-  // Direct matches first
-  if (normalized === 'stackable') return 'stackable';
-  if (normalized === 'gear') return 'gear';
-  if (normalized === 'materials') return 'materials';
-  if (normalized === 'other') return 'other';
+  // Direct mapping to what the database expects
+  const categoryMappings: Record<string, string> = {
+    'stackable': 'consumables',
+    'consumable': 'consumables',
+    'consumables': 'consumables',
+    'food': 'consumables',
+    'potion': 'consumables',
+    'potions': 'consumables',
+    'gear': 'gear',
+    'weapon': 'gear',
+    'weapons': 'gear',
+    'armor': 'gear',
+    'armour': 'gear',
+    'equipment': 'gear',
+    'materials': 'materials',
+    'material': 'materials',
+    'resource': 'materials',
+    'resources': 'materials',
+    'log': 'materials',
+    'logs': 'materials',
+    'ore': 'materials',
+    'ores': 'materials',
+    'bar': 'materials',
+    'bars': 'materials',
+    'other': 'other'
+  };
   
-  // Common variations mapping
-  if (normalized.includes('consumable') || normalized.includes('food') || normalized.includes('potion')) return 'stackable';
-  if (normalized.includes('weapon') || normalized.includes('armor') || normalized.includes('armour') || normalized.includes('equipment')) return 'gear';
-  if (normalized.includes('resource') || normalized.includes('material') || normalized.includes('log') || normalized.includes('ore')) return 'materials';
-  
-  // Default to other for unknown categories
-  return 'other';
+  return categoryMappings[normalized] || 'other';
 };
 
 export class CloudDataService {
@@ -78,7 +93,7 @@ export class CloudDataService {
     try {
       console.log('Starting cloud save via edge function...');
       
-      // Validate and normalize bank data with strict category mapping
+      // Validate and normalize bank data with proper category mapping
       const normalizedBankData: Record<string, BankItem[]> = {};
       
       Object.entries(bankData).forEach(([character, items]) => {

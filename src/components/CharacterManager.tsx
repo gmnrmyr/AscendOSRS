@@ -241,7 +241,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                 </Badge>
                 <CharacterRefreshButton 
                   character={character} 
-                  onRefresh={refreshCharacter}
+                  onUpdate={refreshCharacter}
                 />
               </div>
             </CardHeader>

@@ -1,161 +1,94 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
-import { osrsApi } from "@/services/osrsApi";
-
-interface PurchaseGoal {
-  id: string;
-  name: string;
-  currentPrice: number;
-  targetPrice?: number;
-  quantity: number;
-  priority: 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-';
-  category: 'gear' | 'consumables' | 'materials' | 'other';
-  notes: string;
-  imageUrl?: string;
-  itemId?: number;
-}
+import { Badge } from "@/components/ui/badge";
+import { Trash2, DollarSign, Target, Hash, Star } from "lucide-react";
 
 interface GoalCardProps {
-  goal: PurchaseGoal;
-  onRemove: (id: string) => void;
-  onUpdate: (id: string, field: keyof PurchaseGoal, value: any) => void;
-  formatGP: (amount: number) => string;
-  getTotalCost: (goal: PurchaseGoal) => number;
-  cyclePriority: (priority: PurchaseGoal['priority']) => PurchaseGoal['priority'];
-  getPriorityColor: (priority: string) => string;
-  getCategoryColor: (category: string) => string;
+  goal: any;
+  onDelete: (id: string) => void;
 }
 
-export function GoalCard({
-  goal,
-  onRemove,
-  onUpdate,
-  formatGP,
-  getTotalCost,
-  cyclePriority,
-  getPriorityColor,
-  getCategoryColor
-}: GoalCardProps) {
-  const handleImageError = async (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.target as HTMLImageElement;
-    if (goal.itemId) {
-      try {
-        const fallbackUrl = await osrsApi.getItemIcon(goal.itemId);
-        if (fallbackUrl && target.src !== fallbackUrl) {
-          target.src = fallbackUrl;
-        } else {
-          target.style.display = 'none';
-        }
-      } catch (error) {
-        target.style.display = 'none';
-      }
-    } else {
-      target.style.display = 'none';
+export function GoalCard({ goal, onDelete }: GoalCardProps) {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'S+': case 'S': case 'S-': return "bg-red-100 text-red-800";
+      case 'A+': case 'A': case 'A-': return "bg-orange-100 text-orange-800";
+      case 'B+': case 'B': case 'B-': return "bg-green-100 text-green-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'gear': return "bg-purple-100 text-purple-800";
+      case 'consumables': return "bg-blue-100 text-blue-800";
+      case 'materials': return "bg-green-100 text-green-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const totalCost = goal.currentPrice * goal.quantity;
+  const targetTotal = goal.targetPrice ? goal.targetPrice * goal.quantity : null;
+
   return (
-    <Card className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
+    <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex justify-between items-start">
+          <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
             {goal.imageUrl && (
-              <div className="w-10 h-10 flex-shrink-0 bg-gray-100 dark:bg-gray-800 rounded border p-1">
-                <img 
-                  src={goal.imageUrl} 
-                  alt={goal.name}
-                  className="w-full h-full object-contain"
-                  onError={handleImageError}
-                />
-              </div>
+              <img 
+                src={goal.imageUrl} 
+                alt={goal.name} 
+                className="w-8 h-8 object-cover rounded"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
             )}
-            <CardTitle className="text-lg text-amber-800 dark:text-amber-200">
-              {goal.name}
-            </CardTitle>
-          </div>
+            {goal.name}
+          </CardTitle>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onRemove(goal.id)}
-            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+            onClick={() => onDelete(goal.id)}
+            className="text-red-600 hover:text-red-800 hover:bg-red-50"
           >
-            <X className="h-4 w-4" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-        
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Badge className={getPriorityColor(goal.priority)}>
+            <Star className="h-3 w-3 mr-1" />
+            {goal.priority}
+          </Badge>
           <Badge className={getCategoryColor(goal.category)}>
             {goal.category}
           </Badge>
-          <Badge 
-            className={`cursor-pointer border ${getPriorityColor(goal.priority)} hover:opacity-80 transition-opacity`}
-            onClick={() => onUpdate(goal.id, 'priority', cyclePriority(goal.priority))}
-            title="Click to change priority"
-          >
-            {goal.priority} priority
-          </Badge>
-          <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20">
-            {formatGP(getTotalCost(goal))} GP
-          </Badge>
         </div>
       </CardHeader>
-      
       <CardContent className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-xs text-gray-500">Current Price (Wiki)</Label>
-            <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm">
-              {formatGP(goal.currentPrice)} GP
-            </div>
-          </div>
-          
-          <div>
-            <Label className="text-xs text-gray-500">Target Price (Optional)</Label>
-            <Input
-              type="number"
-              value={goal.targetPrice || ''}
-              onChange={(e) => onUpdate(goal.id, 'targetPrice', Number(e.target.value) || undefined)}
-              className="h-8 text-sm"
-              placeholder="Use current"
-            />
-          </div>
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <Hash className="h-4 w-4" />
+          <span>Quantity: {goal.quantity}</span>
+        </div>
+        
+        <div className="flex items-center gap-2 text-lg font-semibold text-green-600">
+          <DollarSign className="h-5 w-5" />
+          <span>{totalCost.toLocaleString()} GP</span>
         </div>
 
-        <div>
-          <Label className="text-xs text-gray-500">Quantity</Label>
-          <Input
-            type="number"
-            value={goal.quantity}
-            onChange={(e) => onUpdate(goal.id, 'quantity', Number(e.target.value))}
-            className="h-8 text-sm"
-            min="1"
-          />
-        </div>
-
-        {goal.notes && (
-          <div>
-            <Label className="text-xs text-gray-500">Notes</Label>
-            <Input
-              value={goal.notes}
-              onChange={(e) => onUpdate(goal.id, 'notes', e.target.value)}
-              className="h-8 text-sm"
-            />
+        {targetTotal && (
+          <div className="flex items-center gap-2 text-sm text-blue-600">
+            <Target className="h-4 w-4" />
+            <span>Target: {targetTotal.toLocaleString()} GP</span>
           </div>
         )}
 
-        <div className="pt-2 border-t">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Total Cost:</span>
-            <span className="font-medium text-amber-700 dark:text-amber-300">
-              {formatGP(getTotalCost(goal))} GP
-            </span>
+        {goal.notes && (
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-1">Notes:</p>
+            <p className="text-sm text-gray-600">{goal.notes}</p>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

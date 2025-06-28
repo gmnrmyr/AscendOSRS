@@ -1,88 +1,71 @@
 
-import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, Wallet } from "lucide-react";
-import { Character, BankItem } from "@/hooks/useAppData";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Coins, Package, TrendingUp, Users } from "lucide-react";
 
 interface BankSummaryProps {
-  characters: Character[];
-  bankData: Record<string, BankItem[]>;
+  bankData: Record<string, any[]>;
 }
 
-export function BankSummary({ characters, bankData }: BankSummaryProps) {
-  const formatGP = (amount: number) => {
-    const safeAmount = Number(amount) || 0;
-    
-    if (safeAmount >= 1000000000) {
-      return `${(safeAmount / 1000000000).toFixed(1)}B`;
-    } else if (safeAmount >= 1000000) {
-      return `${(safeAmount / 1000000).toFixed(1)}M`;
-    } else if (safeAmount >= 1000) {
-      return `${(safeAmount / 1000).toFixed(0)}K`;
-    }
-    return safeAmount.toLocaleString();
-  };
-
-  const getTotalBankValue = () => {
-    const total = Object.keys(bankData).reduce((sum, character) => {
-      const items = bankData[character] || [];
-      return sum + items.reduce((itemSum, item) => {
-        const quantity = Number(item.quantity) || 0;
-        const price = Number(item.estimatedPrice) || 0;
-        return itemSum + (quantity * price);
-      }, 0);
-    }, 0);
-    return Number(total) || 0;
-  };
-
-  const getTotalGoldValue = () => {
-    const total = Object.keys(bankData).reduce((sum, character) => {
-      const items = bankData[character] || [];
-      const coins = items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
-      const platTokens = items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
-      return sum + Number(coins) + (Number(platTokens) * 1000);
-    }, 0);
-    return Number(total) || 0;
-  };
-
-  const totalBankValue = getTotalBankValue();
-  const totalGoldValue = getTotalGoldValue();
-  const charactersCount = characters.length;
+export function BankSummary({ bankData }: BankSummaryProps) {
+  const totalItems = Object.values(bankData).reduce((sum, items) => sum + items.length, 0);
+  const totalValue = Object.values(bankData).reduce((sum, items) => {
+    return sum + items.reduce((itemSum, item) => itemSum + (item.quantity * item.estimatedPrice), 0);
+  }, 0);
+  const totalCharacters = Object.keys(bankData).length;
+  
+  const categoryBreakdown = Object.values(bankData).flat().reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
-    <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200 dark:border-amber-800">
-      <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200">
-                Total Bank Value
-              </h3>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
-                {formatGP(totalBankValue)} GP
-              </p>
-              <p className="text-amber-600 dark:text-amber-300">
-                Across {charactersCount} characters
-              </p>
-            </div>
-            <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Package className="h-5 w-5 text-blue-600" />
+            <span className="text-sm font-medium text-gray-600">Total Items</span>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200">
-                Total Gold Value
-              </h3>
-              <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-2">
-                {formatGP(totalGoldValue)} GP
-              </p>
-              <p className="text-amber-600 dark:text-amber-300">
-                Coins + Plat Tokens
-              </p>
-            </div>
-            <Wallet className="h-12 w-12 text-yellow-600 dark:text-yellow-400" />
+          <div className="text-2xl font-bold text-gray-900">{totalItems.toLocaleString()}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Coins className="h-5 w-5 text-green-600" />
+            <span className="text-sm font-medium text-gray-600">Total Value</span>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+          <div className="text-2xl font-bold text-green-600">{totalValue.toLocaleString()} GP</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="h-5 w-5 text-purple-600" />
+            <span className="text-sm font-medium text-gray-600">Characters</span>
+          </div>
+          <div className="text-2xl font-bold text-gray-900">{totalCharacters}</div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="h-5 w-5 text-orange-600" />
+            <span className="text-sm font-medium text-gray-600">Categories</span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {Object.entries(categoryBreakdown).map(([category, count]) => (
+              <Badge key={category} variant="secondary" className="text-xs">
+                {category}: {count}
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

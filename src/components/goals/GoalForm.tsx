@@ -2,189 +2,166 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
-import { GoalFormFields } from "./GoalFormFields";
-import { osrsApi } from "@/services/osrsApi";
-
-interface PurchaseGoal {
-  id: string;
-  name: string;
-  currentPrice: number;
-  targetPrice?: number;
-  quantity: number;
-  priority: 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-';
-  category: 'gear' | 'consumables' | 'materials' | 'other';
-  notes: string;
-  imageUrl?: string;
-  itemId?: number;
-}
 
 interface GoalFormProps {
-  goals: PurchaseGoal[];
-  setGoals: (goals: PurchaseGoal[]) => void;
-  onAddDefaultGoals: () => void;
+  goals: any[];
+  setGoals: (goals: any[]) => void;
 }
 
-export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) {
-  const [newGoal, setNewGoal] = useState<Partial<PurchaseGoal>>({
+export function GoalForm({ goals, setGoals }: GoalFormProps) {
+  const [newGoal, setNewGoal] = useState({
     name: '',
     currentPrice: 0,
     targetPrice: 0,
     quantity: 1,
-    priority: 'A',
-    category: 'gear',
+    priority: 'A' as 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-',
+    category: 'gear' as 'gear' | 'consumables' | 'materials' | 'other',
     notes: '',
-    imageUrl: '',
-    itemId: undefined
+    imageUrl: ''
   });
 
-  const handleItemSelect = async (option: any) => {
-    console.log('Item selected:', option);
-    
-    let currentPrice = 0;
-    let itemIcon = option.icon;
-    let itemId = option.id;
-
-    if (option.category === 'method') {
-      // For money making methods, use the profit as price
-      currentPrice = option.value;
-      itemIcon = '';
-    } else {
-      // For items, get the current price and proper icon
-      try {
-        currentPrice = option.value || 0;
-        
-        // If we don't have a price, try to fetch it
-        if (currentPrice === 0 && itemId) {
-          console.log('Fetching price for item ID:', itemId);
-          const fetchedPrice = await osrsApi.fetchSingleItemPrice(itemId);
-          currentPrice = fetchedPrice || 0;
-          console.log('Fetched price:', currentPrice);
-        }
-        
-        // Ensure we have an icon
-        if (!itemIcon && itemId) {
-          itemIcon = await osrsApi.getItemIcon(itemId);
-        }
-      } catch (error) {
-        console.error('Error fetching item details:', error);
-        currentPrice = option.value || 0;
-      }
+  const addGoal = () => {
+    if (newGoal.name) {
+      const goal = {
+        ...newGoal,
+        id: crypto.randomUUID()
+      };
+      setGoals([...goals, goal]);
+      setNewGoal({
+        name: '',
+        currentPrice: 0,
+        targetPrice: 0,
+        quantity: 1,
+        priority: 'A' as 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-',
+        category: 'gear' as 'gear' | 'consumables' | 'materials' | 'other',
+        notes: '',
+        imageUrl: ''
+      });
     }
-
-    setNewGoal({
-      ...newGoal,
-      name: option.name,
-      currentPrice: currentPrice,
-      imageUrl: itemIcon || '',
-      itemId: itemId
-    });
-    
-    console.log('Updated goal state:', {
-      name: option.name,
-      currentPrice,
-      imageUrl: itemIcon,
-      itemId
-    });
-  };
-
-  const addGoal = async () => {
-    if (!newGoal.name?.trim()) {
-      console.log('No goal name provided');
-      return;
-    }
-
-    console.log('Adding goal:', newGoal);
-
-    let finalItemId = newGoal.itemId;
-    let finalCurrentPrice = newGoal.currentPrice || 0;
-    let finalImageUrl = newGoal.imageUrl;
-
-    // If we don't have proper item data, try to fetch it
-    if (!finalItemId || finalCurrentPrice === 0) {
-      console.log('Missing item data, searching for item:', newGoal.name);
-      
-      try {
-        const searchResults = await osrsApi.searchOSRSItems(newGoal.name);
-        if (searchResults.length > 0) {
-          const item = searchResults[0];
-          finalItemId = item.id;
-          finalImageUrl = item.icon;
-          finalCurrentPrice = item.value || 0;
-          
-          console.log('Found item data:', { finalItemId, finalCurrentPrice, finalImageUrl });
-        }
-      } catch (error) {
-        console.error('Error searching for item data:', error);
-      }
-    }
-
-    // Ensure we have an icon
-    if (!finalImageUrl && finalItemId) {
-      try {
-        finalImageUrl = await osrsApi.getItemIcon(finalItemId) || '';
-      } catch (error) {
-        console.error('Error getting item icon:', error);
-      }
-    }
-
-    const goal: PurchaseGoal = {
-      id: Date.now().toString(),
-      name: newGoal.name,
-      currentPrice: finalCurrentPrice,
-      targetPrice: newGoal.targetPrice,
-      quantity: newGoal.quantity || 1,
-      priority: newGoal.priority || 'A',
-      category: newGoal.category || 'gear',
-      notes: newGoal.notes || '',
-      imageUrl: finalImageUrl || '',
-      itemId: finalItemId
-    };
-
-    console.log('Final goal to add:', goal);
-    setGoals([...goals, goal]);
-    
-    // Reset form
-    setNewGoal({
-      name: '',
-      currentPrice: 0,
-      targetPrice: 0,
-      quantity: 1,
-      priority: 'A',
-      category: 'gear',
-      notes: '',
-      imageUrl: '',
-      itemId: undefined
-    });
   };
 
   return (
-    <Card className="bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
+    <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-          <Plus className="h-5 w-5" />
-          Add Purchase Goal
-        </CardTitle>
+        <CardTitle className="text-purple-800">Add New Purchase Goal</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <GoalFormFields
-          newGoal={newGoal}
-          setNewGoal={setNewGoal}
-          onItemSelect={handleItemSelect}
-        />
-
-        <div className="flex gap-2">
-          <Button onClick={addGoal} className="bg-amber-600 hover:bg-amber-700 text-white">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Goal
-          </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="goal-name">Item Name</Label>
+            <Input
+              id="goal-name"
+              value={newGoal.name}
+              onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+              placeholder="e.g., Dragon Claws"
+            />
+          </div>
           
-          {goals.length === 0 && (
-            <Button onClick={onAddDefaultGoals} variant="outline">
-              Add Popular OSRS Goals
-            </Button>
-          )}
+          <div>
+            <Label htmlFor="current-price">Current Price (GP)</Label>
+            <Input
+              id="current-price"
+              type="number"
+              value={newGoal.currentPrice}
+              onChange={(e) => setNewGoal({ ...newGoal, currentPrice: parseInt(e.target.value) || 0 })}
+              placeholder="0"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="target-price">Target Price (GP)</Label>
+            <Input
+              id="target-price"
+              type="number"
+              value={newGoal.targetPrice}
+              onChange={(e) => setNewGoal({ ...newGoal, targetPrice: parseInt(e.target.value) || 0 })}
+              placeholder="0"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="quantity">Quantity</Label>
+            <Input
+              id="quantity"
+              type="number"
+              value={newGoal.quantity}
+              onChange={(e) => setNewGoal({ ...newGoal, quantity: parseInt(e.target.value) || 1 })}
+              placeholder="1"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="priority">Priority</Label>
+            <Select 
+              value={newGoal.priority} 
+              onValueChange={(value: 'S+' | 'S' | 'S-' | 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-') => setNewGoal({ ...newGoal, priority: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="S+">S+ - Highest</SelectItem>
+                <SelectItem value="S">S - Very High</SelectItem>
+                <SelectItem value="S-">S- - High+</SelectItem>
+                <SelectItem value="A+">A+ - High</SelectItem>
+                <SelectItem value="A">A - Medium-High</SelectItem>
+                <SelectItem value="A-">A- - Medium</SelectItem>
+                <SelectItem value="B+">B+ - Medium-Low</SelectItem>
+                <SelectItem value="B">B - Low</SelectItem>
+                <SelectItem value="B-">B- - Lowest</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="goal-category">Category</Label>
+            <Select 
+              value={newGoal.category} 
+              onValueChange={(value: 'gear' | 'consumables' | 'materials' | 'other') => setNewGoal({ ...newGoal, category: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="gear">Gear</SelectItem>
+                <SelectItem value="consumables">Consumables</SelectItem>
+                <SelectItem value="materials">Materials</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
+        <div>
+          <Label htmlFor="image-url">Image URL (Optional)</Label>
+          <Input
+            id="image-url"
+            value={newGoal.imageUrl}
+            onChange={(e) => setNewGoal({ ...newGoal, imageUrl: e.target.value })}
+            placeholder="https://example.com/image.png"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="goal-notes">Notes</Label>
+          <Textarea
+            id="goal-notes"
+            value={newGoal.notes}
+            onChange={(e) => setNewGoal({ ...newGoal, notes: e.target.value })}
+            placeholder="Additional notes about this goal..."
+            rows={3}
+          />
+        </div>
+
+        <Button onClick={addGoal} className="w-full bg-purple-600 hover:bg-purple-700">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Goal
+        </Button>
       </CardContent>
     </Card>
   );

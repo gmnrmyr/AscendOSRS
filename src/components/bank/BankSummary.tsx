@@ -4,10 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Coins, Package, TrendingUp, Users } from "lucide-react";
 
 interface BankSummaryProps {
+  characters: any[];
   bankData: Record<string, any[]>;
 }
 
-export function BankSummary({ bankData }: BankSummaryProps) {
+export function BankSummary({ characters, bankData }: BankSummaryProps) {
   const totalItems = Object.values(bankData).reduce((sum, items) => sum + items.length, 0);
   const totalValue = Object.values(bankData).reduce((sum, items) => {
     return sum + items.reduce((itemSum, item) => itemSum + (item.quantity * item.estimatedPrice), 0);
@@ -60,7 +61,7 @@ export function BankSummary({ bankData }: BankSummaryProps) {
           <div className="flex flex-wrap gap-1">
             {Object.entries(categoryBreakdown).map(([category, count]) => (
               <Badge key={category} variant="secondary" className="text-xs">
-                {category}: {count}
+                {String(category)}: {Number(count)}
               </Badge>
             ))}
           </div>

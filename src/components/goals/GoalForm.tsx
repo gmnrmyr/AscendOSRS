@@ -11,9 +11,10 @@ import { Plus } from "lucide-react";
 interface GoalFormProps {
   goals: any[];
   setGoals: (goals: any[]) => void;
+  onAddDefaultGoals?: () => Promise<void>;
 }
 
-export function GoalForm({ goals, setGoals }: GoalFormProps) {
+export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) {
   const [newGoal, setNewGoal] = useState({
     name: '',
     currentPrice: 0,
@@ -48,7 +49,14 @@ export function GoalForm({ goals, setGoals }: GoalFormProps) {
   return (
     <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
       <CardHeader>
-        <CardTitle className="text-purple-800">Add New Purchase Goal</CardTitle>
+        <CardTitle className="text-purple-800 flex items-center justify-between">
+          Add New Purchase Goal
+          {onAddDefaultGoals && (
+            <Button onClick={onAddDefaultGoals} variant="outline" size="sm">
+              Add Popular Goals
+            </Button>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -6,18 +7,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Safe category mapping function - MUST map to valid database categories only
+// CRITICAL: Bulletproof category validation - ONLY these 4 categories are valid
 const validateBankCategory = (category: string): string => {
   if (!category || typeof category !== 'string') return 'other'
   
   const normalized = category.toLowerCase().trim()
   
-  // Based on database constraint, ONLY these categories are valid: stackable, gear, materials, other
-  const categoryMappings: Record<string, string> = {
+  // STRICT mapping - only these 4 categories exist in database: stackable, gear, materials, other
+  const validCategories = ['stackable', 'gear', 'materials', 'other']
+  
+  // Direct match first
+  if (validCategories.includes(normalized)) {
+    return normalized
+  }
+  
+  // Category mappings with GUARANTEED valid output
+  const categoryMap: Record<string, string> = {
     // All consumable-type items -> stackable
     'consumables': 'stackable',
     'consumable': 'stackable',
-    'stackable': 'stackable',
     'food': 'stackable',
     'potion': 'stackable',
     'potions': 'stackable',
@@ -41,7 +49,6 @@ const validateBankCategory = (category: string): string => {
     'armor': 'gear',
     'armour': 'gear',
     'equipment': 'gear',
-    'gear': 'gear',
     'helmet': 'gear',
     'helm': 'gear',
     'shield': 'gear',
@@ -59,7 +66,6 @@ const validateBankCategory = (category: string): string => {
     'resource': 'materials',
     'resources': 'materials',
     'material': 'materials',
-    'materials': 'materials',
     'log': 'materials',
     'logs': 'materials',
     'ore': 'materials',
@@ -75,7 +81,6 @@ const validateBankCategory = (category: string): string => {
     'essence': 'materials',
     
     // Everything else -> other
-    'other': 'other',
     'misc': 'other',
     'miscellaneous': 'other',
     'quest': 'other',
@@ -85,7 +90,13 @@ const validateBankCategory = (category: string): string => {
     'books': 'other'
   }
   
-  return categoryMappings[normalized] || 'other'
+  const mapped = categoryMap[normalized]
+  if (mapped && validCategories.includes(mapped)) {
+    return mapped
+  }
+  
+  // Ultimate fallback - guarantee valid category
+  return 'other'
 }
 
 // Safe number conversion that handles NaN and invalid values
@@ -230,7 +241,7 @@ serve(async (req) => {
         console.log('Purchase goals saved successfully')
       }
 
-      // Save bank items with STRICT validation and safe number conversion
+      // Save bank items with BULLETPROOF validation
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -248,18 +259,26 @@ serve(async (req) => {
               return hasValidName;
             })
             .map((item: any) => {
-              const validatedCategory = validateBankCategory(item.category);
+              // TRIPLE validation to ensure category is bulletproof
+              let validatedCategory = validateBankCategory(item.category);
+              
+              // Final safety check - if somehow it's still invalid, force to 'other'
+              if (!['stackable', 'gear', 'materials', 'other'].includes(validatedCategory)) {
+                console.warn(`Category ${validatedCategory} is not valid, forcing to 'other'`);
+                validatedCategory = 'other';
+              }
+              
               const quantity = Math.max(0, safeNumber(item.quantity, 0));
               const estimatedPrice = Math.max(0, safeNumber(item.estimatedPrice, 0));
               
-              console.log(`Processing: ${item.name}, original category: ${item.category} -> mapped: ${validatedCategory}, qty: ${quantity}, price: ${estimatedPrice}`);
+              console.log(`Processing: ${item.name}, original: ${item.category} -> final: ${validatedCategory}, qty: ${quantity}, price: ${estimatedPrice}`);
               
               return {
                 user_id: user.id,
                 name: safeString(item.name, 100).trim(),
                 quantity: quantity,
                 estimated_price: estimatedPrice,
-                category: validatedCategory, // This is now guaranteed to be valid
+                category: validatedCategory, // GUARANTEED to be valid
                 character: safeString(item.characterName || item.character || 'Unknown', 100)
               };
             })
@@ -268,16 +287,23 @@ serve(async (req) => {
           
           if (bankItemsToInsert.length > 0) {
             // Insert in smaller batches to avoid timeout
-            const batchSize = 20
+            const batchSize = 15 // Smaller batches for safety
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize)
               console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)} with ${batch.length} items`)
               
-              // Double-check each item in the batch before inserting
-              const safeBatch = batch.map(item => ({
-                ...item,
-                category: validateBankCategory(item.category) // Final validation
-              }))
+              // Final validation before insert
+              const safeBatch = batch.map(item => {
+                // Last line of defense - ensure category is absolutely valid
+                const finalCategory = ['stackable', 'gear', 'materials', 'other'].includes(item.category) 
+                  ? item.category 
+                  : 'other';
+                
+                return {
+                  ...item,
+                  category: finalCategory
+                };
+              });
               
               const { error: bankError } = await supabaseClient
                 .from('bank_items')
@@ -285,7 +311,7 @@ serve(async (req) => {
               
               if (bankError) {
                 console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
-                console.error('Failed batch sample:', safeBatch.slice(0, 2))
+                console.error('Failed batch details:', safeBatch.map(item => ({ name: item.name, category: item.category })))
                 throw new Error(`Failed to save bank items: ${bankError.message}`)
               }
             }

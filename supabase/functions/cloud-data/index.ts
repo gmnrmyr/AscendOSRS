@@ -7,13 +7,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// CRITICAL: Bulletproof category validation - ONLY these 4 categories are valid
+// Simplified category validation - only these 4 categories are valid
 const validateBankCategory = (category: string): string => {
   if (!category || typeof category !== 'string') return 'other'
   
   const normalized = category.toLowerCase().trim()
-  
-  // STRICT mapping - only these 4 categories exist in database: stackable, gear, materials, other
   const validCategories = ['stackable', 'gear', 'materials', 'other']
   
   // Direct match first
@@ -21,85 +19,28 @@ const validateBankCategory = (category: string): string => {
     return normalized
   }
   
-  // Category mappings with GUARANTEED valid output
+  // Simple category mappings
   const categoryMap: Record<string, string> = {
-    // All consumable-type items -> stackable
     'consumables': 'stackable',
     'consumable': 'stackable',
     'food': 'stackable',
     'potion': 'stackable',
     'potions': 'stackable',
-    'coins': 'stackable',
-    'coin': 'stackable',
-    'token': 'stackable',
-    'tokens': 'stackable',
-    'rune': 'stackable',
-    'runes': 'stackable',
-    'bolt': 'stackable',
-    'bolts': 'stackable',
-    'arrow': 'stackable',
-    'arrows': 'stackable',
-    'teleport': 'stackable',
-    'scroll': 'stackable',
-    'scrolls': 'stackable',
-    
-    // All equipment-type items -> gear
     'weapon': 'gear',
     'weapons': 'gear',
     'armor': 'gear',
-    'armour': 'gear',
     'equipment': 'gear',
-    'helmet': 'gear',
-    'helm': 'gear',
-    'shield': 'gear',
-    'gloves': 'gear',
-    'boots': 'gear',
-    'ring': 'gear',
-    'rings': 'gear',
-    'amulet': 'gear',
-    'necklace': 'gear',
-    'bracelet': 'gear',
-    'cape': 'gear',
-    'cloak': 'gear',
-    
-    // All raw materials -> materials
-    'resource': 'materials',
-    'resources': 'materials',
     'material': 'materials',
+    'resources': 'materials',
     'log': 'materials',
-    'logs': 'materials',
     'ore': 'materials',
-    'ores': 'materials',
-    'bar': 'materials',
-    'bars': 'materials',
-    'gem': 'materials',
-    'gems': 'materials',
-    'herb': 'materials',
-    'herbs': 'materials',
-    'seed': 'materials',
-    'seeds': 'materials',
-    'essence': 'materials',
-    
-    // Everything else -> other
-    'misc': 'other',
-    'miscellaneous': 'other',
-    'quest': 'other',
-    'key': 'other',
-    'keys': 'other',
-    'book': 'other',
-    'books': 'other'
+    'bar': 'materials'
   }
   
-  const mapped = categoryMap[normalized]
-  if (mapped && validCategories.includes(mapped)) {
-    return mapped
-  }
-  
-  // Ultimate fallback - guarantee valid category
-  return 'other'
+  return categoryMap[normalized] || 'other'
 }
 
-// Safe number conversion that handles NaN and invalid values
+// Safe number conversion
 const safeNumber = (value: any, defaultValue: number = 0): number => {
   if (value === null || value === undefined || value === '') return defaultValue
   const num = Number(value)
@@ -150,6 +91,19 @@ serve(async (req) => {
       const { characters, moneyMethods, purchaseGoals, bankData, hoursPerDay } = body
 
       console.log('Starting cloud save for user:', user.id)
+      console.log('Data counts:', {
+        characters: characters?.length || 0,
+        moneyMethods: moneyMethods?.length || 0,
+        purchaseGoals: purchaseGoals?.length || 0,
+        bankItems: Object.values(bankData || {}).flat().length
+      })
+
+      let saveResults = {
+        characters: 0,
+        moneyMethods: 0,
+        purchaseGoals: 0,
+        bankItems: 0
+      }
 
       // Clear existing data first
       console.log('Clearing existing user data...')
@@ -165,7 +119,7 @@ serve(async (req) => {
         console.warn('Some delete operations failed, continuing anyway:', deleteError)
       }
 
-      // Save characters with safe number conversion
+      // Save characters
       if (Array.isArray(characters) && characters.length > 0) {
         console.log(`Saving ${characters.length} characters...`)
         const charactersToInsert = characters.map((char: any) => ({
@@ -179,18 +133,20 @@ serve(async (req) => {
           plat_tokens: Math.max(0, safeNumber(char.platTokens, 0))
         }))
 
-        const { error: charactersError } = await supabaseClient
+        const { data: charData, error: charactersError } = await supabaseClient
           .from('characters')
           .insert(charactersToInsert)
+          .select()
         
         if (charactersError) {
           console.error('Error saving characters:', charactersError)
           throw new Error(`Failed to save characters: ${charactersError.message}`)
         }
-        console.log('Characters saved successfully')
+        saveResults.characters = charData?.length || 0
+        console.log(`${saveResults.characters} characters saved successfully`)
       }
 
-      // Save money methods with safe number conversion
+      // Save money methods
       if (Array.isArray(moneyMethods) && moneyMethods.length > 0) {
         console.log(`Saving ${moneyMethods.length} money methods...`)
         const methodsToInsert = moneyMethods.map((method: any) => ({
@@ -204,18 +160,20 @@ serve(async (req) => {
           category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
         }))
 
-        const { error: methodsError } = await supabaseClient
+        const { data: methodData, error: methodsError } = await supabaseClient
           .from('money_methods')
           .insert(methodsToInsert)
+          .select()
         
         if (methodsError) {
           console.error('Error saving money methods:', methodsError)
           throw new Error(`Failed to save money methods: ${methodsError.message}`)
         }
-        console.log('Money methods saved successfully')
+        saveResults.moneyMethods = methodData?.length || 0
+        console.log(`${saveResults.moneyMethods} money methods saved successfully`)
       }
 
-      // Save purchase goals with safe number conversion
+      // Save purchase goals
       if (Array.isArray(purchaseGoals) && purchaseGoals.length > 0) {
         console.log(`Saving ${purchaseGoals.length} purchase goals...`)
         const goalsToInsert = purchaseGoals.map((goal: any) => ({
@@ -230,18 +188,20 @@ serve(async (req) => {
           image_url: safeString(goal.imageUrl, 500)
         }))
 
-        const { error: goalsError } = await supabaseClient
+        const { data: goalData, error: goalsError } = await supabaseClient
           .from('purchase_goals')
           .insert(goalsToInsert)
+          .select()
         
         if (goalsError) {
           console.error('Error saving purchase goals:', goalsError)
           throw new Error(`Failed to save purchase goals: ${goalsError.message}`)
         }
-        console.log('Purchase goals saved successfully')
+        saveResults.purchaseGoals = goalData?.length || 0
+        console.log(`${saveResults.purchaseGoals} purchase goals saved successfully`)
       }
 
-      // Save bank items with BULLETPROOF validation
+      // Save bank items with proper validation
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -259,72 +219,59 @@ serve(async (req) => {
               return hasValidName;
             })
             .map((item: any) => {
-              // TRIPLE validation to ensure category is bulletproof
-              let validatedCategory = validateBankCategory(item.category);
-              
-              // Final safety check - if somehow it's still invalid, force to 'other'
-              if (!['stackable', 'gear', 'materials', 'other'].includes(validatedCategory)) {
-                console.warn(`Category ${validatedCategory} is not valid, forcing to 'other'`);
-                validatedCategory = 'other';
-              }
-              
+              const validatedCategory = validateBankCategory(item.category);
               const quantity = Math.max(0, safeNumber(item.quantity, 0));
               const estimatedPrice = Math.max(0, safeNumber(item.estimatedPrice, 0));
-              
-              console.log(`Processing: ${item.name}, original: ${item.category} -> final: ${validatedCategory}, qty: ${quantity}, price: ${estimatedPrice}`);
               
               return {
                 user_id: user.id,
                 name: safeString(item.name, 100).trim(),
                 quantity: quantity,
                 estimated_price: estimatedPrice,
-                category: validatedCategory, // GUARANTEED to be valid
+                category: validatedCategory,
                 character: safeString(item.characterName || item.character || 'Unknown', 100)
               };
             })
 
-          console.log(`Inserting ${bankItemsToInsert.length} validated bank items...`)
+          console.log(`Attempting to insert ${bankItemsToInsert.length} validated bank items...`)
           
           if (bankItemsToInsert.length > 0) {
-            // Insert in smaller batches to avoid timeout
-            const batchSize = 15 // Smaller batches for safety
+            // Insert in batches to avoid timeout
+            const batchSize = 50
+            let totalInserted = 0
+            
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize)
               console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)} with ${batch.length} items`)
               
-              // Final validation before insert
-              const safeBatch = batch.map(item => {
-                // Last line of defense - ensure category is absolutely valid
-                const finalCategory = ['stackable', 'gear', 'materials', 'other'].includes(item.category) 
-                  ? item.category 
-                  : 'other';
-                
-                return {
-                  ...item,
-                  category: finalCategory
-                };
-              });
-              
-              const { error: bankError } = await supabaseClient
+              const { data: bankData, error: bankError } = await supabaseClient
                 .from('bank_items')
-                .insert(safeBatch)
+                .insert(batch)
+                .select()
               
               if (bankError) {
                 console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
-                console.error('Failed batch details:', safeBatch.map(item => ({ name: item.name, category: item.category })))
                 throw new Error(`Failed to save bank items: ${bankError.message}`)
               }
+              
+              totalInserted += bankData?.length || 0
             }
+            
+            saveResults.bankItems = totalInserted
+            console.log(`${saveResults.bankItems} bank items saved successfully`)
           }
-          
-          console.log('All bank items saved successfully')
         }
       }
 
       console.log('Cloud save completed successfully for user:', user.id)
+      console.log('Final save results:', saveResults)
       
       return new Response(
-        JSON.stringify({ success: true, message: 'Data saved successfully' }),
+        JSON.stringify({ 
+          success: true, 
+          message: 'Data saved successfully',
+          saved: saveResults
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
 
@@ -344,7 +291,7 @@ serve(async (req) => {
       if (goalsResult.error) throw new Error(`Failed to load goals: ${goalsResult.error.message}`)
       if (bankResult.error) throw new Error(`Failed to load bank items: ${bankResult.error.message}`)
 
-      // Transform data back to frontend format with safe number conversion
+      // Transform data back to frontend format
       const characters = (charactersResult.data || []).map(char => ({
         id: char.id,
         name: char.name,
@@ -380,14 +327,14 @@ serve(async (req) => {
         imageUrl: goal.image_url || ''
       }))
 
-      // Group bank items by character with safe number conversion
+      // Group bank items by character
       const bankData: Record<string, any[]> = {}
       const bankItems = (bankResult.data || []).map(item => ({
         id: item.id,
         name: item.name,
         quantity: safeNumber(item.quantity, 0),
         estimatedPrice: safeNumber(item.estimated_price, 0),
-        category: item.category, // Keep the database category as-is
+        category: item.category,
         character: item.character
       }))
 
@@ -399,6 +346,12 @@ serve(async (req) => {
       })
 
       console.log('Cloud data loaded successfully for user:', user.id)
+      console.log('Loaded counts:', {
+        characters: characters.length,
+        moneyMethods: moneyMethods.length,
+        purchaseGoals: purchaseGoals.length,
+        bankItems: bankItems.length
+      })
       
       return new Response(
         JSON.stringify({

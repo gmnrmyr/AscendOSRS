@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -7,50 +6,115 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Simplified category validation - only these 4 categories are valid
+// CRITICAL: Only these 4 categories are valid in database
+const VALID_BANK_CATEGORIES = ['stackable', 'gear', 'materials', 'other'] as const;
+
+// Bulletproof category validation - ensures ONLY valid categories
 const validateBankCategory = (category: string): string => {
-  if (!category || typeof category !== 'string') return 'other'
-  
-  const normalized = category.toLowerCase().trim()
-  const validCategories = ['stackable', 'gear', 'materials', 'other']
-  
-  // Direct match first
-  if (validCategories.includes(normalized)) {
-    return normalized
+  if (!category || typeof category !== 'string') {
+    console.log(`Invalid category type: ${typeof category}, value: ${category} -> defaulting to 'other'`);
+    return 'other';
   }
   
-  // Simple category mappings
+  const normalized = category.toLowerCase().trim();
+  
+  // Direct match first
+  if (VALID_BANK_CATEGORIES.includes(normalized as any)) {
+    return normalized;
+  }
+  
+  // Comprehensive category mappings
   const categoryMap: Record<string, string> = {
+    // Stackable items
     'consumables': 'stackable',
     'consumable': 'stackable',
     'food': 'stackable',
     'potion': 'stackable',
     'potions': 'stackable',
+    'coins': 'stackable',
+    'coin': 'stackable',
+    'token': 'stackable',
+    'tokens': 'stackable',
+    'rune': 'stackable',
+    'runes': 'stackable',
+    'bolt': 'stackable',
+    'bolts': 'stackable',
+    'arrow': 'stackable',
+    'arrows': 'stackable',
+    'ammunition': 'stackable',
+    'ammo': 'stackable',
+    
+    // Gear items
     'weapon': 'gear',
     'weapons': 'gear',
     'armor': 'gear',
+    'armour': 'gear',
     'equipment': 'gear',
+    'helmet': 'gear',
+    'helm': 'gear',
+    'shield': 'gear',
+    'gloves': 'gear',
+    'boots': 'gear',
+    'ring': 'gear',
+    'rings': 'gear',
+    'amulet': 'gear',
+    'necklace': 'gear',
+    'bracelet': 'gear',
+    'cape': 'gear',
+    'cloak': 'gear',
+    
+    // Materials
     'material': 'materials',
+    'resource': 'materials',
     'resources': 'materials',
     'log': 'materials',
+    'logs': 'materials',
     'ore': 'materials',
-    'bar': 'materials'
+    'ores': 'materials',
+    'bar': 'materials',
+    'bars': 'materials',
+    'gem': 'materials',
+    'gems': 'materials',
+    'herb': 'materials',
+    'herbs': 'materials',
+    'seed': 'materials',
+    'seeds': 'materials',
+    'essence': 'materials',
+    'raw': 'materials',
+    
+    // Other items
+    'misc': 'other',
+    'miscellaneous': 'other',
+    'quest': 'other',
+    'key': 'other',
+    'keys': 'other',
+    'book': 'other',
+    'books': 'other',
+    'tool': 'other',
+    'tools': 'other'
+  };
+  
+  const mappedCategory = categoryMap[normalized];
+  if (mappedCategory) {
+    console.log(`Mapped category: ${category} -> ${mappedCategory}`);
+    return mappedCategory;
   }
   
-  return categoryMap[normalized] || 'other'
+  console.log(`Unknown category: ${category} -> defaulting to 'other'`);
+  return 'other';
 }
 
 // Safe number conversion
 const safeNumber = (value: any, defaultValue: number = 0): number => {
-  if (value === null || value === undefined || value === '') return defaultValue
-  const num = Number(value)
-  return isNaN(num) || !isFinite(num) ? defaultValue : num
+  if (value === null || value === undefined || value === '') return defaultValue;
+  const num = Number(value);
+  return isNaN(num) || !isFinite(num) ? defaultValue : num;
 }
 
 // Safe string conversion
 const safeString = (value: any, maxLength: number = 1000): string => {
-  if (value === null || value === undefined) return ''
-  return String(value).substring(0, maxLength)
+  if (value === null || value === undefined) return '';
+  return String(value).substring(0, maxLength);
 }
 
 serve(async (req) => {
@@ -201,7 +265,7 @@ serve(async (req) => {
         console.log(`${saveResults.purchaseGoals} purchase goals saved successfully`)
       }
 
-      // Save bank items with proper validation
+      // Save bank items with bulletproof validation
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -223,6 +287,12 @@ serve(async (req) => {
               const quantity = Math.max(0, safeNumber(item.quantity, 0));
               const estimatedPrice = Math.max(0, safeNumber(item.estimatedPrice, 0));
               
+              // Double-check the category is valid
+              if (!VALID_BANK_CATEGORIES.includes(validatedCategory as any)) {
+                console.error(`CRITICAL: Invalid category after validation: ${validatedCategory}`);
+                return null;
+              }
+              
               return {
                 user_id: user.id,
                 name: safeString(item.name, 100).trim(),
@@ -232,39 +302,72 @@ serve(async (req) => {
                 character: safeString(item.characterName || item.character || 'Unknown', 100)
               };
             })
+            .filter(item => item !== null);
 
           console.log(`Attempting to insert ${bankItemsToInsert.length} validated bank items...`)
           
           if (bankItemsToInsert.length > 0) {
-            // Insert in batches to avoid timeout
-            const batchSize = 50
-            let totalInserted = 0
+            // Insert in smaller batches to avoid timeout and better error handling
+            const batchSize = 15;
+            let totalInserted = 0;
             
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
-              const batch = bankItemsToInsert.slice(i, i + batchSize)
-              console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)} with ${batch.length} items`)
+              const batch = bankItemsToInsert.slice(i, i + batchSize);
+              console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)} with ${batch.length} items`);
+              
+              // Log each item in the batch for debugging
+              batch.forEach((item, index) => {
+                console.log(`  Item ${index + 1}: ${item.name} (${item.category})`);
+              });
               
               const { data: bankData, error: bankError } = await supabaseClient
                 .from('bank_items')
                 .insert(batch)
-                .select()
+                .select();
               
               if (bankError) {
-                console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError)
-                throw new Error(`Failed to save bank items: ${bankError.message}`)
+                console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError);
+                console.error('Failed batch contents:', JSON.stringify(batch, null, 2));
+                throw new Error(`Failed to save bank items: ${bankError.message}`);
               }
               
-              totalInserted += bankData?.length || 0
+              const batchInserted = bankData?.length || 0;
+              totalInserted += batchInserted;
+              console.log(`Batch ${Math.floor(i/batchSize) + 1} inserted ${batchInserted} items successfully`);
             }
             
-            saveResults.bankItems = totalInserted
-            console.log(`${saveResults.bankItems} bank items saved successfully`)
+            saveResults.bankItems = totalInserted;
+            console.log(`${saveResults.bankItems} bank items saved successfully`);
           }
         }
       }
 
-      console.log('Cloud save completed successfully for user:', user.id)
-      console.log('Final save results:', saveResults)
+      // Verify the save actually worked by checking the database
+      const [charCheck, methodCheck, goalCheck, bankCheck] = await Promise.all([
+        supabaseClient.from('characters').select('id').eq('user_id', user.id),
+        supabaseClient.from('money_methods').select('id').eq('user_id', user.id),
+        supabaseClient.from('purchase_goals').select('id').eq('user_id', user.id),
+        supabaseClient.from('bank_items').select('id').eq('user_id', user.id)
+      ]);
+
+      const actualCounts = {
+        characters: charCheck.data?.length || 0,
+        moneyMethods: methodCheck.data?.length || 0,
+        purchaseGoals: goalCheck.data?.length || 0,
+        bankItems: bankCheck.data?.length || 0
+      };
+
+      console.log('Verification - Expected vs Actual counts:');
+      console.log('Characters:', saveResults.characters, 'vs', actualCounts.characters);
+      console.log('Money Methods:', saveResults.moneyMethods, 'vs', actualCounts.moneyMethods);
+      console.log('Purchase Goals:', saveResults.purchaseGoals, 'vs', actualCounts.purchaseGoals);
+      console.log('Bank Items:', saveResults.bankItems, 'vs', actualCounts.bankItems);
+
+      // Update save results with actual counts
+      saveResults = actualCounts;
+
+      console.log('Cloud save completed successfully for user:', user.id);
+      console.log('Final save results:', saveResults);
       
       return new Response(
         JSON.stringify({ 
@@ -273,7 +376,7 @@ serve(async (req) => {
           saved: saveResults
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
 
     } else if (action === 'load') {
       // Load user data

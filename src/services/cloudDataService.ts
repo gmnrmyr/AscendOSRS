@@ -22,6 +22,7 @@ interface MoneyMethod {
   requirements: string;
   notes: string;
   category: 'combat' | 'skilling' | 'bossing' | 'other';
+  isActive?: boolean;
 }
 
 interface PurchaseGoal {
@@ -145,36 +146,44 @@ export class CloudDataService {
   ) {
     try {
       console.log('Starting cloud save via edge function...');
-      
-      // Robust data cleaning with safe number conversion and STRICT category validation
+      // Save ALL fields for every entity, preserving all user data
       const cleanedData = {
         characters: characters.map(char => ({
           ...char,
-          combatLevel: Math.max(3, Math.min(126, safeNumber(char.combatLevel) || 3)),
-          totalLevel: Math.max(32, Math.min(2277, safeNumber(char.totalLevel) || 32)),
-          bank: Math.max(0, safeNumber(char.bank) || 0),
-          platTokens: Math.max(0, safeNumber(char.platTokens) || 0),
-          type: ['main', 'alt', 'ironman', 'hardcore', 'ultimate'].includes(char.type) ? char.type : 'main',
+          combatLevel: typeof char.combatLevel === 'number' ? char.combatLevel : 3,
+          totalLevel: typeof char.totalLevel === 'number' ? char.totalLevel : 32,
+          bank: typeof char.bank === 'number' ? char.bank : 0,
+          platTokens: typeof char.platTokens === 'number' ? char.platTokens : 0,
+          type: char.type || 'main',
           name: String(char.name || 'Unnamed Character'),
-          notes: String(char.notes || '')
+          notes: String(char.notes || ''),
+          isActive: typeof char.isActive === 'boolean' ? char.isActive : true
         })),
-        moneyMethods: moneyMethods.map(method => ({
-          ...method,
-          gpHour: Math.max(0, safeNumber(method.gpHour) || 0),
-          clickIntensity: Math.max(1, Math.min(5, safeNumber(method.clickIntensity) || 1)) as 1 | 2 | 3 | 4 | 5,
-          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other',
-          name: String(method.name || 'Unnamed Method'),
-          character: String(method.character || 'Unknown'),
-          requirements: String(method.requirements || ''),
-          notes: String(method.notes || '')
-        })),
+        moneyMethods: moneyMethods.map(method => {
+          // Always include isActive, even if false
+          const isActive = typeof method.isActive === 'boolean' ? method.isActive : true;
+          const methodForSave = {
+            ...method,
+            gpHour: typeof method.gpHour === 'number' ? method.gpHour : 0,
+            clickIntensity: typeof method.clickIntensity === 'number' ? method.clickIntensity : 1,
+            category: method.category || 'other',
+            name: String(method.name || 'Unnamed Method'),
+            character: String(method.character || 'Unknown'),
+            requirements: String(method.requirements || ''),
+            notes: String(method.notes || ''),
+            isActive: isActive // always present
+          };
+          // Debug log for troubleshooting
+          console.log('[Cloud Save] Method for save:', JSON.stringify(methodForSave));
+          return methodForSave;
+        }),
         purchaseGoals: purchaseGoals.map(goal => ({
           ...goal,
-          currentPrice: Math.max(0, safeNumber(goal.currentPrice) || 0),
-          targetPrice: goal.targetPrice ? Math.max(0, safeNumber(goal.targetPrice)) : undefined,
-          quantity: Math.max(1, safeNumber(goal.quantity) || 1),
-          priority: ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'].includes(goal.priority) ? goal.priority : 'A',
-          category: ['gear', 'consumables', 'materials', 'other'].includes(goal.category) ? goal.category : 'other',
+          currentPrice: typeof goal.currentPrice === 'number' ? goal.currentPrice : 0,
+          targetPrice: typeof goal.targetPrice === 'number' ? goal.targetPrice : undefined,
+          quantity: typeof goal.quantity === 'number' ? goal.quantity : 1,
+          priority: goal.priority || 'A',
+          category: goal.category || 'other',
           name: String(goal.name || 'Unnamed Goal'),
           notes: String(goal.notes || ''),
           imageUrl: String(goal.imageUrl || '')
@@ -184,24 +193,16 @@ export class CloudDataService {
             character,
             items
               .filter(item => item && typeof item === 'object' && item.name && String(item.name).trim())
-              .map(item => {
-                const mappedCategory = mapBankItemCategory(item.category);
-                const quantity = Math.max(0, safeNumber(item.quantity, 0));
-                const estimatedPrice = Math.max(0, safeNumber(item.estimatedPrice, 0));
-                
-                console.log(`Bank item: ${item.name}, Original: ${item.category}, Mapped: ${mappedCategory}, Qty: ${quantity}, Price: ${estimatedPrice}`);
-                
-                return {
-                  ...item,
-                  category: mappedCategory, // This is now guaranteed to be valid
-                  quantity: quantity,
-                  estimatedPrice: estimatedPrice,
-                  name: String(item.name).trim()
-                };
-              })
+              .map(item => ({
+                ...item,
+                category: item.category || 'other',
+                quantity: typeof item.quantity === 'number' ? item.quantity : 0,
+                estimatedPrice: typeof item.estimatedPrice === 'number' ? item.estimatedPrice : 0,
+                name: String(item.name).trim()
+              }))
           ])
         ),
-        hoursPerDay: Math.max(1, Math.min(24, safeNumber(hoursPerDay) || 10))
+        hoursPerDay: typeof hoursPerDay === 'number' ? hoursPerDay : 10
       };
 
       console.log('Sending cleaned data to edge function:', {
@@ -234,7 +235,6 @@ export class CloudDataService {
   static async loadUserData() {
     try {
       console.log('Loading cloud data via edge function...');
-      
       const { data, error } = await supabase.functions.invoke('cloud-data', {
         body: { action: 'load' }
       });
@@ -244,14 +244,47 @@ export class CloudDataService {
         throw new Error(`Cloud load failed: ${error.message || 'Unknown error'}`);
       }
 
-      console.log('Cloud data loaded successfully:', data);
-      return data || {
-        characters: [],
-        moneyMethods: [],
-        purchaseGoals: [],
-        bankData: {},
-        hoursPerDay: 10
+      // Defensive: always return all fields, with correct types and defaults only if truly missing
+      const safeData = {
+        characters: (data?.characters || []).map((char: any) => ({
+          ...char,
+          combatLevel: typeof char.combatLevel === 'number' ? char.combatLevel : 3,
+          totalLevel: typeof char.totalLevel === 'number' ? char.totalLevel : 32,
+          bank: typeof char.bank === 'number' ? char.bank : 0,
+          platTokens: typeof char.platTokens === 'number' ? char.platTokens : 0,
+          type: char.type || 'main',
+          name: String(char.name || 'Unnamed Character'),
+          notes: String(char.notes || ''),
+          isActive: typeof char.isActive === 'boolean' ? char.isActive : true
+        })),
+        moneyMethods: (data?.moneyMethods || []).map((method: any) => ({
+          ...method,
+          gpHour: typeof method.gpHour === 'number' ? method.gpHour : 0,
+          clickIntensity: typeof method.clickIntensity === 'number' ? method.clickIntensity : 1,
+          category: method.category || 'other',
+          name: String(method.name || 'Unnamed Method'),
+          character: String(method.character || 'Unknown'),
+          requirements: String(method.requirements || ''),
+          notes: String(method.notes || ''),
+          isActive: typeof method.isActive === 'boolean' ? method.isActive : true
+        })),
+        purchaseGoals: (data?.purchaseGoals || []).map((goal: any) => ({
+          ...goal,
+          currentPrice: typeof goal.currentPrice === 'number' ? goal.currentPrice : 0,
+          targetPrice: typeof goal.targetPrice === 'number' ? goal.targetPrice : undefined,
+          quantity: typeof goal.quantity === 'number' ? goal.quantity : 1,
+          priority: goal.priority || 'A',
+          category: goal.category || 'other',
+          name: String(goal.name || 'Unnamed Goal'),
+          notes: String(goal.notes || ''),
+          imageUrl: String(goal.imageUrl || '')
+        })),
+        bankData: data?.bankData && typeof data.bankData === 'object' ? data.bankData : {},
+        hoursPerDay: typeof data?.hoursPerDay === 'number' ? data.hoursPerDay : 10
       };
+
+      console.log('Cloud data loaded and validated:', safeData);
+      return safeData;
     } catch (error) {
       console.error('Error loading from cloud:', error);
       throw error;

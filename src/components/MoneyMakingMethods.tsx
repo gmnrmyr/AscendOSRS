@@ -43,13 +43,20 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
   const { toast } = useToast();
 
+  // Enhanced: Show all methods from OSRS Wiki, with F2P/P2P distinction and all categories
   const searchMoneyMakers = async (query: string) => {
-    const methods = await osrsApi.searchMoneyMakers(query);
-    return methods.map(method => ({
+    // Use the API to get all methods, not just filtered
+    const allMethods = await osrsApi.getDefaultMoneyMakers();
+    // Filter by query (if any)
+    const filtered = query
+      ? allMethods.filter(method => method.name.toLowerCase().includes(query.toLowerCase()))
+      : allMethods;
+    return filtered.map(method => ({
       id: method.name,
       name: method.name,
-      subtitle: `${method.profit?.toLocaleString() || method.gpHour?.toLocaleString()} GP/hr - ${typeof method.membership === 'string' ? method.membership.toUpperCase() : (method.membership ? 'P2P' : 'F2P')} - Intensity ${method.clickIntensity}/5`,
-      category: method.category
+      subtitle: `${method.profit?.toLocaleString()} GP/hr - ${typeof method.membership === 'string' ? method.membership.toUpperCase() : (method.membership ? 'P2P' : 'F2P')} - Intensity ${method.difficulty}/5 - ${method.category}`,
+      category: method.category,
+      membership: method.membership
     }));
   };
 

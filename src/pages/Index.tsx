@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { AuthGuard } from "@/components/AuthGuard";
 import { ModernNavbar } from "@/components/ModernNavbar";
@@ -8,6 +7,8 @@ import { AdBanner } from "@/components/AdBanner";
 import { AppStateProvider } from "@/components/AppStateProvider";
 import { HoursPerDayInput } from "@/components/HoursPerDayInput";
 import { MainDashboard } from "@/components/MainDashboard";
+import { useAuth } from '@/hooks/useAuth';
+import { LandingPage } from './LandingPage';
 
 const IndexContent = () => {
   const [activeTab, setActiveTab] = useState("summary");
@@ -48,11 +49,10 @@ const IndexContent = () => {
 };
 
 const Index = () => {
-  return (
-    <AuthGuard>
-      <IndexContent />
-    </AuthGuard>
-  );
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <LandingPage />;
+  return <IndexContent />;
 };
 
 export default Index;

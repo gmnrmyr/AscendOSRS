@@ -1,4 +1,6 @@
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// @ts-ignore
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -125,7 +127,9 @@ serve(async (req) => {
 
   try {
     const supabaseClient = createClient(
+      // @ts-ignore
       Deno.env.get('SUPABASE_URL') ?? '',
+      // @ts-ignore
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
@@ -221,7 +225,8 @@ serve(async (req) => {
           click_intensity: Math.min(Math.max(safeNumber(method.clickIntensity, 1), 1), 5),
           requirements: safeString(method.requirements, 500),
           notes: safeString(method.notes, 1000),
-          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
+          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other',
+          is_active: method.isActive === true ? true : false
         }))
 
         const { data: methodData, error: methodsError } = await supabaseClient
@@ -235,6 +240,16 @@ serve(async (req) => {
         }
         saveResults.moneyMethods = methodData?.length || 0
         console.log(`${saveResults.moneyMethods} money methods saved successfully`)
+      }
+
+      // Save hoursPerDay to user_settings table (best practice)
+      if (typeof hoursPerDay === 'number') {
+        const { error: upsertError } = await supabaseClient
+          .from('user_settings')
+          .upsert({ user_id: user.id, hours_per_day: hoursPerDay }, { onConflict: ['user_id'] });
+        if (upsertError) {
+          console.error('Error saving hoursPerDay to user_settings:', upsertError);
+        }
       }
 
       // Save purchase goals
@@ -403,7 +418,7 @@ serve(async (req) => {
         totalLevel: safeNumber(char.total_level, 0),
         bank: safeNumber(char.bank, 0),
         notes: char.notes || '',
-        isActive: true,
+        isActive: char.is_active === true,
         platTokens: safeNumber(char.plat_tokens, 0)
       }))
 
@@ -415,7 +430,8 @@ serve(async (req) => {
         clickIntensity: method.click_intensity,
         requirements: method.requirements || '',
         notes: method.notes || '',
-        category: method.category
+        category: method.category,
+        isActive: method.is_active === true
       }))
 
       const purchaseGoals = (goalsResult.data || []).map(goal => ({
@@ -456,13 +472,23 @@ serve(async (req) => {
         bankItems: bankItems.length
       })
       
+      // Load hoursPerDay from user_settings table (best practice)
+      let hoursPerDay = 10;
+      const { data: settingsData, error: settingsError } = await supabaseClient
+        .from('user_settings')
+        .select('hours_per_day')
+        .eq('user_id', user.id)
+        .single();
+      if (!settingsError && settingsData && typeof settingsData.hours_per_day === 'number') {
+        hoursPerDay = settingsData.hours_per_day;
+      }
       return new Response(
         JSON.stringify({
           characters,
           moneyMethods,
           purchaseGoals,
           bankData,
-          hoursPerDay: 10
+          hoursPerDay
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )

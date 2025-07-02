@@ -1,3 +1,9 @@
+// @ts-ignore
+import cheerio from 'cheerio';
+  // ...existing code...
+
+  // ...existing code...
+
 // OSRS Wiki API integration for real-time prices and item data
 export interface OSRSWikiItem {
   id: number;
@@ -20,6 +26,37 @@ export interface MoneyMakingMethod {
 }
 
 class OSRSWikiAPI {
+  // Fetch all money making methods from OSRS Wiki (dynamic, open source, Node compatible)
+  async fetchWikiMoneyMakingMethods(): Promise<MoneyMakingMethod[]> {
+    try {
+      const response = await fetch('https://oldschool.runescape.wiki/api.php?action=parse&page=Money_making_guide&format=json&prop=text');
+      const data = await response.json();
+      const html = data.parse?.text['*'];
+      if (!html) throw new Error('No HTML from wiki');
+
+      const $ = cheerio.load(html);
+      const methods: MoneyMakingMethod[] = [];
+      $('table.wikitable').each((_, table) => {
+        $(table).find('tr').slice(1).each((_, row) => {
+          const cells = $(row).find('td');
+          if (cells.length < 5) return;
+          const name = $(cells[0]).text().trim();
+          const hourlyProfit = Number($(cells[1]).text().replace(/[^\d]/g, ''));
+          const requirements = $(cells[2]).text().split(',').map(s => s.trim()).filter(Boolean);
+          const category = $(cells[3]).text().toLowerCase().includes('kill') ? 'combat' :
+            $(cells[3]).text().toLowerCase().includes('skill') ? 'skilling' : 'other';
+          const intensity = 3; // Default, as wiki doesn't always provide
+          const members = $(cells[4]).text().toLowerCase().includes('members');
+          methods.push({ name, hourlyProfit, requirements, category, intensity, members });
+        });
+      });
+      return methods;
+    } catch (error) {
+      console.error('Error fetching wiki money making methods:', error);
+      return this.MONEY_MAKING_METHODS;
+    }
+  }
+
   private readonly BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs';
   private readonly MAPPING_URL = 'https://prices.runescape.wiki/api/v1/osrs/mapping';
   
@@ -305,17 +342,21 @@ class OSRSWikiAPI {
     }
   }
 
-  getMoneyMakingMethods(): MoneyMakingMethod[] {
-    return this.MONEY_MAKING_METHODS;
+  async getMoneyMakingMethods(): Promise<MoneyMakingMethod[]> {
+    // Try to fetch from wiki, fallback to hardcoded
+    const wikiMethods = await this.fetchWikiMoneyMakingMethods();
+    return wikiMethods.length > 0 ? wikiMethods : this.MONEY_MAKING_METHODS;
   }
 
-  getMoneyMakingMethodsByCategory(category: string): MoneyMakingMethod[] {
-    return this.MONEY_MAKING_METHODS.filter(method => method.category === category);
+  async getMoneyMakingMethodsByCategory(category: string): Promise<MoneyMakingMethod[]> {
+    const methods = await this.getMoneyMakingMethods();
+    return methods.filter(method => method.category === category);
   }
 
-  searchMoneyMakingMethods(query: string): MoneyMakingMethod[] {
+  async searchMoneyMakingMethods(query: string): Promise<MoneyMakingMethod[]> {
     const searchTerm = query.toLowerCase();
-    return this.MONEY_MAKING_METHODS.filter(method =>
+    const methods = await this.getMoneyMakingMethods();
+    return methods.filter(method =>
       method.name.toLowerCase().includes(searchTerm) ||
       method.requirements.some(req => req.toLowerCase().includes(searchTerm)) ||
       method.description?.toLowerCase().includes(searchTerm)

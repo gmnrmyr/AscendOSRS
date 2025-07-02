@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { AutocompleteInput } from "../AutocompleteInput";
 import { OSRSItemsAPI } from "@/services/osrsItemsApi";
+import { osrsWikiApi } from "@/services/osrsWikiApi";
 
 interface ItemSearchInputProps {
   value: string;
@@ -13,17 +14,12 @@ interface ItemSearchInputProps {
 export function ItemSearchInput({ value, onChange, onItemSelect, placeholder }: ItemSearchInputProps) {
   const [isSearching, setIsSearching] = useState(false);
 
+  // Show all OSRS items (not just popular) with price and icon, using OSRSItemsAPI for all queries
   const searchItems = async (query: string) => {
-    console.log('Searching for OSRS items:', query);
     setIsSearching(true);
-    
     try {
-      if (!query || query.length < 2) return [];
-
-      // Search for OSRS items with proper prices
-      const osrsItems = await OSRSItemsAPI.searchOSRSItems(query);
-      console.log('Found OSRS items with prices:', osrsItems);
-      
+      // Always use the full item search, even for empty query (show all items people might add as a goal)
+      const osrsItems = await OSRSItemsAPI.searchOSRSItems(query || '');
       return osrsItems;
     } catch (error) {
       console.error('Error searching OSRS items:', error);

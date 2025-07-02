@@ -29,6 +29,7 @@ interface MoneyMethod {
   requirements: string;
   notes: string;
   category: 'combat' | 'skilling' | 'bossing' | 'other';
+  isActive?: boolean;
 }
 
 interface PurchaseGoal {
@@ -86,26 +87,20 @@ export function useAppData() {
           console.log('Auto-loading cloud data for authenticated user...');
           const { CloudDataService } = await import('@/services/cloudDataService');
           const cloudData = await CloudDataService.loadUserData();
-          
-          // Only update if cloud has data (not empty defaults)
-          if (cloudData.characters.length > 0 || cloudData.moneyMethods.length > 0 || cloudData.purchaseGoals.length > 0) {
-            setCharacters(cloudData.characters);
-            setMoneyMethods(cloudData.moneyMethods);
-            setPurchaseGoals(cloudData.purchaseGoals);
-            setBankData(cloudData.bankData);
-            setHoursPerDay(cloudData.hoursPerDay);
-            console.log('Cloud data loaded successfully');
-          } else {
-            console.log('No cloud data found, keeping current data');
-          }
-          
+
+          // Strictly REPLACE all state with cloud data (no merging, no patching, no duplication)
+          setCharacters(Array.isArray(cloudData.characters) ? cloudData.characters : []);
+          setMoneyMethods(Array.isArray(cloudData.moneyMethods) ? cloudData.moneyMethods : []);
+          setPurchaseGoals(Array.isArray(cloudData.purchaseGoals) ? cloudData.purchaseGoals : []);
+          setBankData(cloudData.bankData && typeof cloudData.bankData === 'object' ? cloudData.bankData : {});
+          setHoursPerDay(typeof cloudData.hoursPerDay === 'number' ? cloudData.hoursPerDay : 10);
+          console.log('Cloud data loaded and state replaced.');
           setHasLoadedCloudData(true);
         } catch (error) {
           console.error('Auto-load from cloud failed:', error);
           setHasLoadedCloudData(true); // Still mark as attempted to avoid infinite retries
         }
       };
-      
       loadCloudData();
     }
   }, [user, hasLoadedCloudData]);
@@ -126,11 +121,12 @@ export function useAppData() {
     bankData: Record<string, BankItem[]>;
     hoursPerDay: number;
   }) => {
-    setCharacters(data.characters);
-    setMoneyMethods(data.moneyMethods);
-    setPurchaseGoals(data.purchaseGoals);
-    setBankData(data.bankData);
-    setHoursPerDay(data.hoursPerDay);
+    // Strictly replace all state with provided data (no merging, no patching)
+    setCharacters(Array.isArray(data.characters) ? data.characters : []);
+    setMoneyMethods(Array.isArray(data.moneyMethods) ? data.moneyMethods : []);
+    setPurchaseGoals(Array.isArray(data.purchaseGoals) ? data.purchaseGoals : []);
+    setBankData(data.bankData && typeof data.bankData === 'object' ? data.bankData : {});
+    setHoursPerDay(typeof data.hoursPerDay === 'number' ? data.hoursPerDay : 10);
   };
 
   return {

@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDataPersistence } from './useDataPersistence';
+import { useAuth } from './useAuth';
 import { 
   getDefaultCharacters, 
   getDefaultMoneyMethods, 
@@ -52,11 +53,13 @@ interface BankItem {
 }
 
 export function useAppData() {
+  const { user } = useAuth();
   const [characters, setCharacters] = useState<Character[]>(getDefaultCharacters());
   const [moneyMethods, setMoneyMethods] = useState<MoneyMethod[]>(getDefaultMoneyMethods());
   const [purchaseGoals, setPurchaseGoals] = useState<PurchaseGoal[]>(getDefaultPurchaseGoals());
   const [bankData, setBankData] = useState<Record<string, BankItem[]>>(getDefaultBankData());
   const [hoursPerDay, setHoursPerDay] = useState(10);
+  const [hasLoadedCloudData, setHasLoadedCloudData] = useState(false);
 
   // Load data from localStorage on component mount
   useEffect(() => {
@@ -74,6 +77,38 @@ export function useAppData() {
       }
     }
   }, []);
+
+  // Auto-load from cloud when user logs in
+  useEffect(() => {
+    if (user && !hasLoadedCloudData) {
+      const loadCloudData = async () => {
+        try {
+          console.log('Auto-loading cloud data for authenticated user...');
+          const { CloudDataService } = await import('@/services/cloudDataService');
+          const cloudData = await CloudDataService.loadUserData();
+          
+          // Only update if cloud has data (not empty defaults)
+          if (cloudData.characters.length > 0 || cloudData.moneyMethods.length > 0 || cloudData.purchaseGoals.length > 0) {
+            setCharacters(cloudData.characters);
+            setMoneyMethods(cloudData.moneyMethods);
+            setPurchaseGoals(cloudData.purchaseGoals);
+            setBankData(cloudData.bankData);
+            setHoursPerDay(cloudData.hoursPerDay);
+            console.log('Cloud data loaded successfully');
+          } else {
+            console.log('No cloud data found, keeping current data');
+          }
+          
+          setHasLoadedCloudData(true);
+        } catch (error) {
+          console.error('Auto-load from cloud failed:', error);
+          setHasLoadedCloudData(true); // Still mark as attempted to avoid infinite retries
+        }
+      };
+      
+      loadCloudData();
+    }
+  }, [user, hasLoadedCloudData]);
 
   // Use persistence hook for auto-saving
   useDataPersistence({

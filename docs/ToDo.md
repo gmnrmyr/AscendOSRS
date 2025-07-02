@@ -24,6 +24,7 @@ ToDo & Fixes.
 - ✅ Fixed database constraint issues
 - ✅ All data types now save/load correctly
 - ✅ Enhanced validation and error handling
+- ✅ Auto-load from cloud when user logs in (works in anonymous tabs)
 
 ## Characters
 - Some characters may still not fetch combat level and total level correctly on reload or import. This is a known, low-priority issue under review.

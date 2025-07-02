@@ -2,12 +2,28 @@ ToDo & Fixes.
 
 ---
 
-## Methods (Money Making)
-- Methods should no longer fetch or autocomplete live from the wiki or any open source.
-- Methods should autofill based on a static list of OSRS Wiki money making methods.
-- Loading full OSRS Wiki guides is unnecessary; only method names/details are imported if needed.
-- If autofill fails, fallback to fetching/importing from the wiki is possible.
+## Methods (Money Making) ✅ UPDATED
+- ✅ Integrate real OSRS Wiki money making methods
+- ✅ Use OSRS Wiki API for realistic profit rates
+- ✅ Add comprehensive money makers (Theatre of Blood, Nex, TOA, etc.)
+- ✅ Support both high-level PvM and skilling methods
 - MPH (methods per hour) and all existing method data are kept and updated as before.
+
+## Goals (Items) ✅ UPDATED  
+- ✅ Integrate OSRS Wiki real-time prices API
+- ✅ Add more popular goal items (high-value PvM drops, expensive gear)
+- ✅ Add manual price editing for users
+- ✅ Add item thumbnails from OSRS Wiki
+
+## Characters ✅ UPDATED
+- ✅ Integrate real OSRS hiscores API 
+- ✅ Use TempleOSRS for more accurate data
+- ✅ Improve refresh functionality with real player stats
+
+## Cloud Save/Load ✅ FIXED
+- ✅ Fixed database constraint issues
+- ✅ All data types now save/load correctly
+- ✅ Enhanced validation and error handling
 
 ## Characters
 - Some characters may still not fetch combat level and total level correctly on reload or import. This is a known, low-priority issue under review.

@@ -1,40 +1,35 @@
 
 import { MoneyMakingGuide } from './types';
-
-const MONEY_MAKERS: MoneyMakingGuide[] = [
-  {
-    id: "fishing-sharks",
-    name: "Fishing Sharks",
-    profit: 180000,
-    skill: "Fishing",
-    requirements: ["75 Fishing"],
-    description: "Fish sharks at fishing guild",
-    category: "skilling",
-    difficulty: 2,
-    membership: "p2p"
-  },
-  {
-    id: "runecrafting-nature",
-    name: "Nature Rune Crafting",
-    profit: 500000,
-    skill: "Runecrafting",
-    requirements: ["44 Runecrafting"],
-    description: "Craft nature runes through abyss",
-    category: "skilling",
-    difficulty: 4,
-    membership: "p2p"
-  }
-];
+import { osrsWikiApi } from '../osrsWikiApi';
 
 export const moneyMakingApi = {
   async searchMoneyMakers(query: string): Promise<MoneyMakingGuide[]> {
-    return MONEY_MAKERS.filter(method =>
-      method.name.toLowerCase().includes(query.toLowerCase()) ||
-      method.skill.toLowerCase().includes(query.toLowerCase())
-    );
+    const methods = osrsWikiApi.searchMoneyMakingMethods(query);
+    return methods.map(method => ({
+      id: method.name.toLowerCase().replace(/\s+/g, '-'),
+      name: method.name,
+      profit: method.hourlyProfit,
+      skill: method.category === 'skilling' ? 'Various' : 'Combat',
+      requirements: method.requirements,
+      description: method.description || '',
+      category: method.category,
+      difficulty: method.intensity,
+      membership: method.members ? "p2p" : "f2p"
+    }));
   },
 
   async getDefaultMoneyMakers(): Promise<MoneyMakingGuide[]> {
-    return MONEY_MAKERS;
+    const methods = osrsWikiApi.getMoneyMakingMethods();
+    return methods.map(method => ({
+      id: method.name.toLowerCase().replace(/\s+/g, '-'),
+      name: method.name,
+      profit: method.hourlyProfit,
+      skill: method.category === 'skilling' ? 'Various' : 'Combat',
+      requirements: method.requirements,
+      description: method.description || '',
+      category: method.category,
+      difficulty: method.intensity,
+      membership: method.members ? "p2p" : "f2p"
+    }));
   }
 };

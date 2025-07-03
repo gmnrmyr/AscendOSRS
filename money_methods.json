@@ -1,374 +1,339 @@
-[
-  {
-    "id": "method_1",
-    "name": "Brutal Black Dragons",
-    "character": "Unknown",
-    "gpHour": 1000000,
-    "clickIntensity": 3,
-    "requirements": "70 Ranged, 70 Defence, good ranged gear",
-    "notes": "Very consistent money maker, requires attention",
-    "category": "combat",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_2",
-    "name": "Rune Dragons",
-    "character": "Unknown",
-    "gpHour": 1200000,
-    "clickIntensity": 4,
-    "requirements": "Dragon Slayer II, high stats, good gear",
-    "notes": "Higher intensity but better gp/hr than brutal blacks",
-    "category": "combat",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_3",
-    "name": "Vorkath",
-    "character": "Unknown",
-    "gpHour": 1500000,
-    "clickIntensity": 5,
-    "requirements": "Dragon Slayer II, high stats, good gear",
-    "notes": "High intensity boss, very profitable",
-    "category": "combat",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_4",
-    "name": "Zulrah",
-    "character": "Unknown",
-    "gpHour": 1200000,
-    "clickIntensity": 5,
-    "requirements": "Regicide quest, high stats, good gear",
-    "notes": "High intensity boss, consistent profit",
-    "category": "combat",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_5",
-    "name": "Gargoyles",
-    "character": "Unknown",
-    "gpHour": 567000,
-    "clickIntensity": 3,
-    "requirements": "75 Slayer, good melee gear",
-    "notes": "Good slayer task money maker",
-    "category": "combat",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_6",
-    "name": "Kurasks",
-    "character": "Unknown",
-    "gpHour": 450000,
-    "clickIntensity": 3,
-    "requirements": "70 Slayer, leaf-bladed weapons",
-    "notes": "Good slayer task money maker",
-    "category": "combat",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_7",
-    "name": "Abyssal Demons",
-    "character": "Unknown",
-    "gpHour": 400000,
-    "clickIntensity": 3,
-    "requirements": "85 Slayer, good melee gear",
-    "notes": "Good slayer task money maker",
-    "category": "combat",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_8",
-    "name": "Green Dragons",
-    "character": "Unknown",
-    "gpHour": 300000,
-    "clickIntensity": 2,
-    "requirements": "Anti-dragon shield, good melee gear",
-    "notes": "Consistent money maker, can be crowded",
-    "category": "combat",
-    "membership": "f2p",
-    "isActive": false
-  },
-  {
-    "id": "method_9",
-    "name": "Blue Dragons",
-    "character": "Unknown",
-    "gpHour": 350000,
-    "clickIntensity": 2,
-    "requirements": "Anti-dragon shield, good melee gear",
-    "notes": "Good money maker, less crowded than greens",
-    "category": "combat",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_10",
-    "name": "Hill Giants",
-    "character": "Unknown",
-    "gpHour": 150000,
-    "clickIntensity": 2,
-    "requirements": "Low combat stats, basic gear",
-    "notes": "Good for low-level accounts",
-    "category": "combat",
-    "membership": "f2p",
-    "isActive": false
-  },
-  {
-    "id": "method_11",
-    "name": "Mining Amethyst",
-    "character": "Unknown",
-    "gpHour": 800000,
-    "clickIntensity": 2,
-    "requirements": "92 Mining, amethyst pickaxe",
-    "notes": "Very AFK, consistent profit",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_12",
-    "name": "Smithing Rune Items",
-    "character": "Unknown",
-    "gpHour": 200000,
-    "clickIntensity": 1,
-    "requirements": "99 Smithing, rune bars",
-    "notes": "Very AFK, good for F2P",
-    "category": "skilling",
-    "membership": "f2p",
-    "isActive": false
-  },
-  {
-    "id": "method_13",
-    "name": "Crafting Blood Runes",
-    "character": "Unknown",
-    "gpHour": 1200000,
-    "clickIntensity": 3,
-    "requirements": "77 Runecrafting, Sins of the Father quest",
-    "notes": "High profit but requires attention",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_14",
-    "name": "Crafting Nature Runes",
-    "character": "Unknown",
-    "gpHour": 800000,
-    "clickIntensity": 2,
-    "requirements": "44 Runecrafting, Abyss access",
-    "notes": "Good profit, moderate attention required",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_15",
-    "name": "Farming Ranarr",
-    "character": "Unknown",
-    "gpHour": 2000000,
-    "clickIntensity": 1,
-    "requirements": "32 Farming, herb patches",
-    "notes": "Hourly runs, very profitable over time",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_16",
-    "name": "Farming Snapdragon",
-    "character": "Unknown",
-    "gpHour": 1800000,
-    "clickIntensity": 1,
-    "requirements": "62 Farming, herb patches",
-    "notes": "Hourly runs, very profitable over time",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_17",
-    "name": "Farming Toadflax",
-    "character": "Unknown",
-    "gpHour": 1600000,
-    "clickIntensity": 1,
-    "requirements": "38 Farming, herb patches",
-    "notes": "Hourly runs, very profitable over time",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_18",
-    "name": "Cooking Sharks",
-    "character": "Unknown",
-    "gpHour": 300000,
-    "clickIntensity": 1,
-    "requirements": "80 Cooking, raw sharks",
-    "notes": "Very AFK, consistent profit",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_19",
-    "name": "Fletching Magic Longbows",
-    "character": "Unknown",
-    "gpHour": 400000,
-    "clickIntensity": 1,
-    "requirements": "85 Fletching, magic logs",
-    "notes": "Very AFK, consistent profit",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_20",
-    "name": "Crafting Dragonhide Bodies",
-    "character": "Unknown",
-    "gpHour": 500000,
-    "clickIntensity": 1,
-    "requirements": "84 Crafting, dragon leather",
-    "notes": "Very AFK, consistent profit",
-    "category": "skilling",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_21",
-    "name": "Chambers of Xeric",
-    "character": "Unknown",
-    "gpHour": 3000000,
-    "clickIntensity": 5,
-    "requirements": "High stats, good gear, team",
-    "notes": "High intensity raid, very profitable",
-    "category": "bossing",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_22",
-    "name": "Theatre of Blood",
-    "character": "Unknown",
-    "gpHour": 4000000,
-    "clickIntensity": 5,
-    "requirements": "High stats, good gear, team",
-    "notes": "High intensity raid, very profitable",
-    "category": "bossing",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_23",
-    "name": "Tombs of Amascut",
-    "character": "Unknown",
-    "gpHour": 2500000,
-    "clickIntensity": 5,
-    "requirements": "High stats, good gear",
-    "notes": "High intensity raid, very profitable",
-    "category": "bossing",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_24",
-    "name": "God Wars Dungeon",
-    "character": "Unknown",
-    "gpHour": 800000,
-    "clickIntensity": 4,
-    "requirements": "High stats, good gear",
-    "notes": "Good boss money maker",
-    "category": "bossing",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_25",
-    "name": "Kraken",
-    "character": "Unknown",
-    "gpHour": 600000,
-    "clickIntensity": 3,
-    "requirements": "87 Slayer, good magic gear",
-    "notes": "AFK boss, consistent profit",
-    "category": "bossing",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_26",
-    "name": "Cerberus",
-    "character": "Unknown",
-    "gpHour": 700000,
-    "clickIntensity": 4,
-    "requirements": "91 Slayer, good melee gear",
-    "notes": "Good boss money maker",
-    "category": "bossing",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_27",
-    "name": "High Alchemy",
-    "character": "Unknown",
-    "gpHour": 200000,
-    "clickIntensity": 2,
-    "requirements": "55 Magic, items to alch",
-    "notes": "Consistent profit, moderate attention",
-    "category": "other",
-    "membership": "f2p",
-    "isActive": false
-  },
-  {
-    "id": "method_28",
-    "name": "Flipping Items",
-    "character": "Unknown",
-    "gpHour": 500000,
-    "clickIntensity": 1,
-    "requirements": "Understanding of market",
-    "notes": "Very AFK, requires market knowledge",
-    "category": "other",
-    "membership": "f2p",
-    "isActive": false
-  },
-  {
-    "id": "method_29",
-    "name": "Clue Scrolls",
-    "character": "Unknown",
-    "gpHour": 800000,
-    "clickIntensity": 3,
-    "requirements": "Various skill requirements",
-    "notes": "RNG based, can be very profitable",
-    "category": "other",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_30",
-    "name": "Slayer Tasks",
-    "character": "Unknown",
-    "gpHour": 400000,
-    "clickIntensity": 3,
-    "requirements": "Slayer level, good gear",
-    "notes": "Good money while training slayer",
-    "category": "other",
-    "membership": "p2p",
-    "isActive": false
-  },
-  {
-    "id": "method_31",
-    "name": "Wintertodt",
-    "character": "Unknown",
-    "gpHour": 300000,
-    "clickIntensity": 2,
-    "requirements": "50 Firemaking",
-    "notes": "Good for ironmen, moderate profit",
-    "category": "other",
-    "membership": "p2p",
-    "isActive": false
-  }
-]
+{
+  "lastUpdated": "2024-12-30T00:00:00.000Z",
+  "source": "OSRS Wiki - Money making guide",
+  "methods": [
+    {
+      "name": "Brutal Black Dragons",
+      "gpHour": 1000000,
+      "requirements": "70 Ranged, 70 Defence, good ranged gear",
+      "category": "combat",
+      "membership": "p2p",
+      "notes": "Very consistent money maker, requires attention",
+      "clickIntensity": 3
+    },
+    {
+      "name": "Rune Dragons",
+      "gpHour": 1200000,
+      "requirements": "Dragon Slayer II, high stats, good gear",
+      "category": "combat",
+      "membership": "p2p",
+      "notes": "Higher intensity but better gp/hr than brutal blacks",
+      "clickIntensity": 4
+    },
+    {
+      "name": "Vorkath",
+      "gpHour": 1500000,
+      "requirements": "Dragon Slayer II, high stats, good gear",
+      "category": "combat",
+      "membership": "p2p",
+      "notes": "High intensity boss, very profitable",
+      "clickIntensity": 5
+    },
+    {
+      "name": "Zulrah",
+      "gpHour": 1200000,
+      "requirements": "Regicide quest, high stats, good gear",
+      "category": "combat",
+      "membership": "p2p",
+      "notes": "High intensity boss, consistent profit",
+      "clickIntensity": 5
+    },
+    {
+      "name": "Gargoyles",
+      "gpHour": 567000,
+      "requirements": "75 Slayer, good melee gear",
+      "category": "combat",
+      "membership": "p2p",
+      "notes": "Good slayer task money maker",
+      "clickIntensity": 3
+    },
+    {
+      "name": "Kurasks",
+      "gpHour": 450000,
+      "requirements": "70 Slayer, leaf-bladed weapons",
+      "category": "combat",
+      "membership": "p2p",
+      "notes": "Good slayer task money maker",
+      "clickIntensity": 3
+    },
+    {
+      "name": "Abyssal Demons",
+      "gpHour": 400000,
+      "requirements": "85 Slayer, good melee gear",
+      "category": "combat",
+      "membership": "p2p",
+      "notes": "Good slayer task money maker",
+      "clickIntensity": 3
+    },
+    {
+      "name": "Green Dragons",
+      "gpHour": 300000,
+      "requirements": "Anti-dragon shield, good melee gear",
+      "category": "combat",
+      "membership": "f2p",
+      "notes": "Consistent money maker, can be crowded",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Blue Dragons",
+      "gpHour": 350000,
+      "requirements": "Anti-dragon shield, good melee gear",
+      "category": "combat",
+      "membership": "p2p",
+      "notes": "Good money maker, less crowded than greens",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Hill Giants",
+      "gpHour": 150000,
+      "requirements": "Low combat stats, basic gear",
+      "category": "combat",
+      "membership": "f2p",
+      "notes": "Good for low-level accounts",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Mining Amethyst",
+      "gpHour": 800000,
+      "requirements": "92 Mining, amethyst pickaxe",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "Very AFK, consistent profit",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Smithing Rune Items",
+      "gpHour": 200000,
+      "requirements": "99 Smithing, rune bars",
+      "category": "skilling",
+      "membership": "f2p",
+      "notes": "Very AFK, good for F2P",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Crafting Blood Runes",
+      "gpHour": 1200000,
+      "requirements": "77 Runecrafting, Sins of the Father quest",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "High profit but requires attention",
+      "clickIntensity": 3
+    },
+    {
+      "name": "Crafting Nature Runes",
+      "gpHour": 800000,
+      "requirements": "44 Runecrafting, Abyss access",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "Good profit, moderate attention required",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Farming Ranarr",
+      "gpHour": 2000000,
+      "requirements": "32 Farming, herb patches",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "Hourly runs, very profitable over time",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Farming Snapdragon",
+      "gpHour": 1800000,
+      "requirements": "62 Farming, herb patches",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "Hourly runs, very profitable over time",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Farming Toadflax",
+      "gpHour": 1600000,
+      "requirements": "38 Farming, herb patches",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "Hourly runs, very profitable over time",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Cooking Sharks",
+      "gpHour": 300000,
+      "requirements": "80 Cooking, raw sharks",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "Very AFK, consistent profit",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Fletching Magic Longbows",
+      "gpHour": 400000,
+      "requirements": "85 Fletching, magic logs",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "Very AFK, consistent profit",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Crafting Dragonhide Bodies",
+      "gpHour": 500000,
+      "requirements": "84 Crafting, dragon leather",
+      "category": "skilling",
+      "membership": "p2p",
+      "notes": "Very AFK, consistent profit",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Chambers of Xeric",
+      "gpHour": 3000000,
+      "requirements": "High stats, good gear, team",
+      "category": "bossing",
+      "membership": "p2p",
+      "notes": "High intensity raid, very profitable",
+      "clickIntensity": 5
+    },
+    {
+      "name": "Theatre of Blood",
+      "gpHour": 4000000,
+      "requirements": "High stats, good gear, team",
+      "category": "bossing",
+      "membership": "p2p",
+      "notes": "High intensity raid, very profitable",
+      "clickIntensity": 5
+    },
+    {
+      "name": "Tombs of Amascut",
+      "gpHour": 2500000,
+      "requirements": "High stats, good gear",
+      "category": "bossing",
+      "membership": "p2p",
+      "notes": "High intensity raid, very profitable",
+      "clickIntensity": 5
+    },
+    {
+      "name": "God Wars Dungeon",
+      "gpHour": 800000,
+      "requirements": "High stats, good gear",
+      "category": "bossing",
+      "membership": "p2p",
+      "notes": "Good boss money maker",
+      "clickIntensity": 4
+    },
+    {
+      "name": "Kraken",
+      "gpHour": 600000,
+      "requirements": "87 Slayer, good magic gear",
+      "category": "bossing",
+      "membership": "p2p",
+      "notes": "AFK boss, consistent profit",
+      "clickIntensity": 3
+    },
+    {
+      "name": "Cerberus",
+      "gpHour": 700000,
+      "requirements": "91 Slayer, good melee gear",
+      "category": "bossing",
+      "membership": "p2p",
+      "notes": "Good boss money maker",
+      "clickIntensity": 4
+    },
+    {
+      "name": "High Alchemy",
+      "gpHour": 200000,
+      "requirements": "55 Magic, items to alch",
+      "category": "other",
+      "membership": "f2p",
+      "notes": "Consistent profit, moderate attention",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Flipping Items",
+      "gpHour": 500000,
+      "requirements": "Understanding of market",
+      "category": "other",
+      "membership": "f2p",
+      "notes": "Very AFK, requires market knowledge",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Clue Scrolls",
+      "gpHour": 800000,
+      "requirements": "Various skill requirements",
+      "category": "other",
+      "membership": "p2p",
+      "notes": "RNG based, can be very profitable",
+      "clickIntensity": 3
+    },
+    {
+      "name": "Slayer Tasks",
+      "gpHour": 400000,
+      "requirements": "Slayer level, good gear",
+      "category": "other",
+      "membership": "p2p",
+      "notes": "Good money while training slayer",
+      "clickIntensity": 3
+    },
+    {
+      "name": "Wintertodt",
+      "gpHour": 300000,
+      "requirements": "50 Firemaking",
+      "category": "other",
+      "membership": "p2p",
+      "notes": "Good for ironmen, moderate profit",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Mining Iron Ore",
+      "gpHour": 250000,
+      "requirements": "15 Mining",
+      "category": "skilling",
+      "membership": "f2p",
+      "notes": "Good for low-level accounts",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Woodcutting Yew Logs",
+      "gpHour": 200000,
+      "requirements": "60 Woodcutting",
+      "category": "skilling",
+      "membership": "f2p",
+      "notes": "AFK method, consistent profit",
+      "clickIntensity": 1
+    },
+    {
+      "name": "Fishing Lobsters",
+      "gpHour": 150000,
+      "requirements": "40 Fishing",
+      "category": "skilling",
+      "membership": "f2p",
+      "notes": "Good for low-level accounts",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Killing Ogress Warriors",
+      "gpHour": 200000,
+      "requirements": "30 Combat",
+      "category": "combat",
+      "membership": "f2p",
+      "notes": "Good for F2P accounts",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Collecting Red Spider Eggs",
+      "gpHour": 180000,
+      "requirements": "None",
+      "category": "collecting",
+      "membership": "f2p",
+      "notes": "Low requirements, consistent profit",
+      "clickIntensity": 2
+    },
+    {
+      "name": "Collecting White Berries",
+      "gpHour": 160000,
+      "requirements": "None",
+      "category": "collecting",
+      "membership": "f2p",
+      "notes": "Low requirements, consistent profit",
+      "clickIntensity": 2
+    }
+  ]
+}

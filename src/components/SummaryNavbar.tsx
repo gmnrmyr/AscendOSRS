@@ -41,13 +41,16 @@ export function SummaryNavbar() {
   // Filter active characters and methods
   const activeCharacters = characters.filter(char => char.isActive);
   
-  // Calculate current GP/hour from methods where isActive is true
+  // Calculate current GP/hour from methods assigned to characters (same logic as dashboard)
   const getCurrentGPPerHour = () => {
-    return moneyMethods
-      .filter(method => 'isActive' in method && method.isActive === true)
-      .reduce((total, method) => {
+    if (!moneyMethods || moneyMethods.length === 0) return 0;
+    
+    return moneyMethods.reduce((total, method) => {
+      if (method?.character && method?.character !== 'none' && method?.character !== '') {
         return total + (method?.gpHour || 0);
-      }, 0);
+      }
+      return total;
+    }, 0);
   };
 
   // Calculate total bank value across all characters
@@ -96,7 +99,7 @@ export function SummaryNavbar() {
   const totalBankValue = getTotalBankValue();
   const totalGoldValue = getTotalGoldValue();
   const totalGoalsValue = getTotalGoalsValue();
-  const activeMethodsCount = moneyMethods.filter(method => 'isActive' in method && method.isActive === true).length;
+  const activeMethodsCount = moneyMethods.filter(method => method?.character && method?.character !== 'none' && method?.character !== '').length;
 
   return (
     <div 
@@ -115,7 +118,7 @@ export function SummaryNavbar() {
                     {formatGP(currentGPHour)}/hr
                   </span>
                   <span className="text-xs text-gray-500">
-                    ({activeMethodsCount} active)
+                    ({activeMethodsCount} assigned)
                   </span>
                 </div>
                 

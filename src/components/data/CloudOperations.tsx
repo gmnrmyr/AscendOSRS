@@ -49,6 +49,15 @@ export function CloudOperations({
     setIsCloudSaving(true);
     try {
       console.log('Starting cloud save...');
+      console.log('User ID:', user.id);
+      console.log('Data being saved:', {
+        characters: characters.length,
+        moneyMethods: moneyMethods.length,
+        purchaseGoals: purchaseGoals.length,
+        bankData: Object.keys(bankData).length,
+        hoursPerDay
+      });
+      
       await CloudDataService.saveUserData(
         characters,
         moneyMethods,
@@ -65,7 +74,7 @@ export function CloudOperations({
       console.error('Cloud save failed:', error);
       toast({
         title: "Cloud Save Failed",
-        description: "Failed to save data to the cloud. Please try again.",
+        description: `Failed to save data to the cloud: ${error.message}`,
         variant: "destructive"
       });
     } finally {
@@ -161,7 +170,17 @@ export function CloudOperations({
     setIsCloudLoading(true);
     try {
       console.log('Starting cloud load...');
+      console.log('User ID:', user.id);
+      
       const cloudData = await CloudDataService.loadUserData();
+      
+      console.log('Cloud data loaded:', {
+        characters: cloudData.characters?.length || 0,
+        moneyMethods: cloudData.moneyMethods?.length || 0,
+        purchaseGoals: cloudData.purchaseGoals?.length || 0,
+        bankData: Object.keys(cloudData.bankData || {}).length,
+        hoursPerDay: cloudData.hoursPerDay
+      });
       
       setAllData(cloudData);
       
@@ -173,7 +192,7 @@ export function CloudOperations({
       console.error('Cloud load failed:', error);
       toast({
         title: "Cloud Load Failed",
-        description: "Failed to load data from the cloud. Please try again.",
+        description: `Failed to load data from the cloud: ${error.message}`,
         variant: "destructive"
       });
     } finally {

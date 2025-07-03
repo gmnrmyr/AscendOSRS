@@ -8,6 +8,7 @@ interface Character {
   bank: number;
   notes: string;
   isActive: boolean;
+  platTokens?: number;
 }
 
 interface MoneyMethod {
@@ -51,7 +52,8 @@ export const getDefaultCharacters = (): Character[] => [
     totalLevel: 2100,
     bank: 500000000,
     notes: "Main account for high-level PvM content",
-    isActive: true
+    isActive: true,
+    platTokens: 0
   },
   {
     id: "2", 
@@ -61,7 +63,8 @@ export const getDefaultCharacters = (): Character[] => [
     totalLevel: 1500,
     bank: 50000000,
     notes: "Alt for money making and skilling",
-    isActive: true
+    isActive: true,
+    platTokens: 0
   }
 ];
 

@@ -198,7 +198,8 @@ serve(async (req) => {
           total_level: Math.max(32, Math.min(2277, safeNumber(char.totalLevel, 32))),
           bank: Math.max(0, safeNumber(char.bank, 0)),
           notes: safeString(char.notes, 1000),
-          plat_tokens: Math.max(0, safeNumber(char.platTokens, 0))
+          plat_tokens: Math.max(0, safeNumber(char.platTokens, 0)),
+          is_active: typeof char.isActive === 'boolean' ? char.isActive : true
         }))
 
         const { data: charData, error: charactersError } = await supabaseClient
@@ -225,10 +226,11 @@ serve(async (req) => {
           click_intensity: Math.min(Math.max(safeNumber(method.clickIntensity, 1), 1), 5),
           requirements: safeString(method.requirements, 500),
           notes: safeString(method.notes, 1000),
-          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other',
-          is_active: method.isActive === true ? true : false
+          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
         }))
 
+        console.log('Attempting to insert money methods:', JSON.stringify(methodsToInsert, null, 2))
+        
         const { data: methodData, error: methodsError } = await supabaseClient
           .from('money_methods')
           .insert(methodsToInsert)
@@ -236,6 +238,7 @@ serve(async (req) => {
         
         if (methodsError) {
           console.error('Error saving money methods:', methodsError)
+          console.error('Methods that failed to insert:', JSON.stringify(methodsToInsert, null, 2))
           throw new Error(`Failed to save money methods: ${methodsError.message}`)
         }
         saveResults.moneyMethods = methodData?.length || 0
@@ -418,7 +421,7 @@ serve(async (req) => {
         totalLevel: safeNumber(char.total_level, 0),
         bank: safeNumber(char.bank, 0),
         notes: char.notes || '',
-        isActive: char.is_active === true,
+        isActive: typeof char.is_active === 'boolean' ? char.is_active : true,
         platTokens: safeNumber(char.plat_tokens, 0)
       }))
 
@@ -431,6 +434,7 @@ serve(async (req) => {
         requirements: method.requirements || '',
         notes: method.notes || '',
         category: method.category,
+        membership: method.is_member === true ? 'p2p' : 'f2p',
         isActive: method.is_active === true
       }))
 
@@ -501,10 +505,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in cloud-data function:', error)
+    console.error('Error stack:', error.stack)
+    console.error('Error details:', JSON.stringify(error, null, 2))
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Internal server error',
-        details: error.toString()
+        details: error.toString(),
+        stack: error.stack
       }),
       { 
         status: 500, 

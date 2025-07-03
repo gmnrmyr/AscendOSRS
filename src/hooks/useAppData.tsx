@@ -18,6 +18,7 @@ interface Character {
   bank: number;
   notes: string;
   isActive: boolean;
+  platTokens?: number;
 }
 
 interface MoneyMethod {

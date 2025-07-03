@@ -209,8 +209,13 @@ export class CloudDataService {
         charactersCount: cleanedData.characters.length,
         methodsCount: cleanedData.moneyMethods.length,
         goalsCount: cleanedData.purchaseGoals.length,
-        bankItemsCount: Object.values(cleanedData.bankData).flat().length
+        bankItemsCount: Object.values(cleanedData.bankData).flat().length,
+        hoursPerDay: cleanedData.hoursPerDay
       });
+      
+      // Debug: Log the actual character data being sent
+      console.log('Character data being sent:', JSON.stringify(cleanedData.characters, null, 2));
+      console.log('Money methods being sent:', JSON.stringify(cleanedData.moneyMethods, null, 2));
 
       const { data, error } = await supabase.functions.invoke('cloud-data', {
         body: {
@@ -284,6 +289,9 @@ export class CloudDataService {
       };
 
       console.log('Cloud data loaded and validated:', safeData);
+      console.log('Loaded characters:', JSON.stringify(safeData.characters, null, 2));
+      console.log('Loaded money methods:', JSON.stringify(safeData.moneyMethods, null, 2));
+      console.log('Loaded hoursPerDay:', safeData.hoursPerDay);
       return safeData;
     } catch (error) {
       console.error('Error loading from cloud:', error);

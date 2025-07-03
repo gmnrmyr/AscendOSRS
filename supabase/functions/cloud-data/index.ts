@@ -218,16 +218,28 @@ serve(async (req) => {
       // Save money methods
       if (Array.isArray(moneyMethods) && moneyMethods.length > 0) {
         console.log(`Saving ${moneyMethods.length} money methods...`)
-        const methodsToInsert = moneyMethods.map((method: any) => ({
-          user_id: user.id,
-          name: safeString(method.name || 'Unnamed Method', 100),
-          character: safeString(method.character || 'Unknown', 100),
-          gp_hour: Math.max(0, safeNumber(method.gpHour, 0)),
-          click_intensity: Math.min(Math.max(safeNumber(method.clickIntensity, 1), 1), 5),
-          requirements: safeString(method.requirements, 500),
-          notes: safeString(method.notes, 1000),
-          category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
-        }))
+        const methodsToInsert = moneyMethods.map((method: any) => {
+          const baseMethod = {
+            user_id: user.id,
+            name: safeString(method.name || 'Unnamed Method', 100),
+            character: safeString(method.character || 'Unknown', 100),
+            gp_hour: Math.max(0, safeNumber(method.gpHour, 0)),
+            click_intensity: Math.min(Math.max(safeNumber(method.clickIntensity, 1), 1), 5),
+            requirements: safeString(method.requirements, 500),
+            notes: safeString(method.notes, 1000),
+            category: ['combat', 'skilling', 'bossing', 'other'].includes(method.category) ? method.category : 'other'
+          };
+          
+          // Only add is_active if the method has the property
+          if (method.hasOwnProperty('isActive')) {
+            return {
+              ...baseMethod,
+              is_active: method.isActive === true
+            };
+          }
+          
+          return baseMethod;
+        })
 
         console.log('Attempting to insert money methods:', JSON.stringify(methodsToInsert, null, 2))
         

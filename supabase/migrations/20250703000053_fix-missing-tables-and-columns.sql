@@ -43,5 +43,9 @@ ALTER TABLE public.money_methods ADD COLUMN IF NOT EXISTS is_member boolean NOT 
 ALTER TABLE public.money_methods ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true;
 
 -- Add dummy_refresh_column to money_methods table
-ALTER TABLE public.money_methods ADD COLUMN dummy_refresh_column boolean;
-ALTER TABLE public.money_methods DROP COLUMN dummy_refresh_column;
+ALTER TABLE public.money_methods ADD COLUMN IF NOT EXISTS schema_refresh_test boolean;
+ALTER TABLE public.money_methods DROP COLUMN IF EXISTS schema_refresh_test;
+
+-- Rename is_active column in money_methods table
+ALTER TABLE public.money_methods RENAME COLUMN is_active TO is_active2;
+ALTER TABLE public.money_methods RENAME COLUMN is_active2 TO is_active;

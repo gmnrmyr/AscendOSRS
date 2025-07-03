@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Upload, RefreshCw, Coins } from 'lucide-react';
+import { Trash2, Plus, Upload, RefreshCw, Coins, Edit, Save, X } from 'lucide-react';
 import { Character, BankItem } from '@/hooks/useAppData';
 import { useCharacterRefresh } from '@/hooks/useCharacterRefresh';
 import { EnhancedBankManager } from './EnhancedBankManager';
@@ -32,6 +32,8 @@ export function IntegratedBankManager({
   const [newItemPrice, setNewItemPrice] = useState('');
   const [newItemCategory, setNewItemCategory] = useState<'stackable' | 'gear' | 'materials' | 'other'>('stackable');
   const [csvData, setCsvData] = useState('');
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editingPrice, setEditingPrice] = useState('');
   
   const { refreshCharacter, isRefreshing } = useCharacterRefresh();
 
@@ -100,40 +102,87 @@ export function IntegratedBankManager({
     setBankData(updatedBankData);
   };
 
+  const startEditPrice = (item: BankItem) => {
+    setEditingItemId(item.id);
+    setEditingPrice(item.estimatedPrice.toString());
+  };
+
+  const saveEditPrice = () => {
+    if (!selectedCharacter || !editingItemId) return;
+    
+    const newPrice = parseInt(editingPrice) || 0;
+    const updatedItems = characterBankItems.map(item => 
+      item.id === editingItemId 
+        ? { ...item, estimatedPrice: newPrice }
+        : item
+    );
+    
+    const updatedBankData = {
+      ...bankData,
+      [selectedCharacter]: updatedItems
+    };
+    
+    setBankData(updatedBankData);
+    setEditingItemId(null);
+    setEditingPrice('');
+  };
+
+  const cancelEditPrice = () => {
+    setEditingItemId(null);
+    setEditingPrice('');
+  };
+
   const handleCSVImport = () => {
     if (!selectedCharacter || !csvData.trim()) return;
 
     try {
-      const lines = csvData.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      // First try to parse as JSON (OSRS bank export format)
+      let newItems: BankItem[] = [];
       
-      const nameIndex = headers.indexOf('name') || headers.indexOf('item');
-      const quantityIndex = headers.indexOf('quantity') || headers.indexOf('qty');
-      const valueIndex = headers.indexOf('value') || headers.indexOf('price');
+      try {
+        const jsonData = JSON.parse(csvData);
+        if (Array.isArray(jsonData)) {
+          // Handle OSRS bank export JSON format
+          newItems = jsonData.map(item => ({
+            id: Date.now().toString() + Math.random(),
+            name: item.name || 'Unknown Item',
+            quantity: parseInt(item.quantity) || 0,
+            estimatedPrice: 0, // Will be looked up later
+            category: 'stackable',
+            character: selectedCharacter
+          })).filter(item => item.name && item.quantity > 0);
+        }
+      } catch (jsonError) {
+        // If JSON parsing fails, try CSV parsing
+        const lines = csvData.trim().split('\n');
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+        
+        const nameIndex = headers.indexOf('name') || headers.indexOf('item');
+        const quantityIndex = headers.indexOf('quantity') || headers.indexOf('qty');
+        const valueIndex = headers.indexOf('value') || headers.indexOf('price');
 
-      if (nameIndex === -1 || quantityIndex === -1) {
-        alert('CSV must have name and quantity columns');
-        return;
-      }
+        if (nameIndex === -1 || quantityIndex === -1) {
+          alert('Data must be valid JSON or CSV with name and quantity columns');
+          return;
+        }
 
-      const newItems: BankItem[] = [];
-      
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
-        if (values.length >= 2) {
-          const name = values[nameIndex] || '';
-          const quantity = parseInt(values[quantityIndex]) || 0;
-          const price = valueIndex !== -1 ? parseInt(values[valueIndex]) || 0 : 0;
-          
-          if (name && quantity > 0) {
-            newItems.push({
-              id: Date.now().toString() + Math.random(),
-              name,
-              quantity,
-              estimatedPrice: price,
-              category: 'stackable',
-              character: selectedCharacter
-            });
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(',').map(v => v.trim());
+          if (values.length >= 2) {
+            const name = values[nameIndex] || '';
+            const quantity = parseInt(values[quantityIndex]) || 0;
+            const price = valueIndex !== -1 ? parseInt(values[valueIndex]) || 0 : 0;
+            
+            if (name && quantity > 0) {
+              newItems.push({
+                id: Date.now().toString() + Math.random(),
+                name,
+                quantity,
+                estimatedPrice: price,
+                category: 'stackable',
+                character: selectedCharacter
+              });
+            }
           }
         }
       }
@@ -145,10 +194,13 @@ export function IntegratedBankManager({
         };
         setBankData(updatedBankData);
         setCsvData('');
+        alert(`Successfully imported ${newItems.length} items!`);
+      } else {
+        alert('No valid items found in the data');
       }
     } catch (error) {
-      console.error('Error parsing CSV:', error);
-      alert('Error parsing CSV data');
+      console.error('Error parsing data:', error);
+      alert('Error parsing data. Please check the format.');
     }
   };
 
@@ -235,15 +287,42 @@ export function IntegratedBankManager({
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="items">Bank Items</TabsTrigger>
               <TabsTrigger value="add">Add Items</TabsTrigger>
-              <TabsTrigger value="import">Import CSV</TabsTrigger>
+              <TabsTrigger value="import">Import Data</TabsTrigger>
             </TabsList>
 
             <TabsContent value="items" className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Bank Items</h3>
-                <Badge variant="outline">
-                  Total Value: {totalBankValue.toLocaleString()} gp
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">
+                    Total Value: {totalBankValue.toLocaleString()} gp
+                  </Badge>
+                  {characterBankItems.length > 0 && (
+                    <Button
+                      onClick={() => {
+                        const newPrice = prompt('Enter default price for all items (0 to skip):');
+                        if (newPrice !== null) {
+                          const price = parseInt(newPrice) || 0;
+                          if (price > 0) {
+                            const updatedItems = characterBankItems.map(item => ({
+                              ...item,
+                              estimatedPrice: price
+                            }));
+                            const updatedBankData = {
+                              ...bankData,
+                              [selectedCharacter]: updatedItems
+                            };
+                            setBankData(updatedBankData);
+                          }
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Set All Prices
+                    </Button>
+                  )}
+                </div>
               </div>
               
               {characterBankItems.length === 0 ? (
@@ -265,18 +344,57 @@ export function IntegratedBankManager({
                           </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          Qty: {item.quantity.toLocaleString()} × {item.estimatedPrice.toLocaleString()} gp
+                          Qty: {item.quantity.toLocaleString()} × 
+                          {editingItemId === item.id ? (
+                            <div className="inline-flex items-center gap-2 ml-1">
+                              <Input
+                                type="number"
+                                value={editingPrice}
+                                onChange={(e) => setEditingPrice(e.target.value)}
+                                className="w-20 h-6 text-xs"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveEditPrice();
+                                  if (e.key === 'Escape') cancelEditPrice();
+                                }}
+                              />
+                              <Button onClick={saveEditPrice} size="sm" variant="outline" className="h-6 px-2">
+                                <Save className="h-3 w-3" />
+                              </Button>
+                              <Button onClick={cancelEditPrice} size="sm" variant="outline" className="h-6 px-2">
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <span 
+                              className="cursor-pointer hover:text-blue-600 ml-1"
+                              onClick={() => startEditPrice(item)}
+                            >
+                              {item.estimatedPrice.toLocaleString()} gp
+                            </span>
+                          )}
                           = {(item.quantity * item.estimatedPrice).toLocaleString()} gp
                         </div>
                       </div>
-                      <Button
-                        onClick={() => handleRemoveItem(item.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        {editingItemId !== item.id && (
+                          <Button
+                            onClick={() => startEditPrice(item)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => handleRemoveItem(item.id)}
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -338,17 +456,17 @@ export function IntegratedBankManager({
             </TabsContent>
 
             <TabsContent value="import" className="space-y-4">
-              <h3 className="text-lg font-semibold">Import Bank Data from CSV</h3>
+              <h3 className="text-lg font-semibold">Import Bank Data</h3>
               <div className="space-y-4">
                 <div>
-                  <Label>CSV Data</Label>
+                  <Label>Bank Data (JSON or CSV)</Label>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Paste CSV data with columns: name, quantity, value (optional)
+                    Paste JSON bank export or CSV data with columns: name, quantity, value (optional)
                   </p>
                   <Textarea
                     value={csvData}
                     onChange={(e) => setCsvData(e.target.value)}
-                    placeholder="name,quantity,value&#10;Coins,1000000,1&#10;Prayer Potions(4),100,12000"
+                    placeholder="Paste your bank export JSON or CSV data here...&#10;&#10;JSON format: [{'id': 995, 'quantity': 1000000, 'name': 'Coins'}]&#10;CSV format: name,quantity,value&#10;Coins,1000000,1"
                     rows={8}
                   />
                 </div>
@@ -358,7 +476,7 @@ export function IntegratedBankManager({
                   className="w-full"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Import CSV Data
+                  Import Bank Data
                 </Button>
               </div>
             </TabsContent>

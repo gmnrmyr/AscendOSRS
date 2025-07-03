@@ -20,15 +20,19 @@ ALTER TABLE public.characters ADD COLUMN IF NOT EXISTS plat_tokens bigint NOT NU
 ALTER TABLE public.user_settings ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for user_settings
+DROP POLICY IF EXISTS "Users can view own settings" ON public.user_settings;
 CREATE POLICY "Users can view own settings" ON public.user_settings 
   FOR SELECT USING ((select auth.uid()) = user_id);
 
+DROP POLICY IF EXISTS "Users can create own settings" ON public.user_settings;
 CREATE POLICY "Users can create own settings" ON public.user_settings 
   FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
+DROP POLICY IF EXISTS "Users can update own settings" ON public.user_settings;
 CREATE POLICY "Users can update own settings" ON public.user_settings 
   FOR UPDATE USING ((select auth.uid()) = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own settings" ON public.user_settings;
 CREATE POLICY "Users can delete own settings" ON public.user_settings 
   FOR DELETE USING ((select auth.uid()) = user_id);
 

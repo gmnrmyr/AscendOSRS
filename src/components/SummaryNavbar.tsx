@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,26 +52,44 @@ export function SummaryNavbar() {
     }, 0);
   };
 
-  // Calculate total bank value across all characters
+  // Calculate total bank value across all characters (including coins and plat tokens as raw GP)
   const getTotalBankValue = () => {
-    return Object.keys(bankData).reduce((total, character) => {
-      const items = bankData[character] || [];
-      return total + items.reduce((sum, item) => {
-        const quantity = item?.quantity || 0;
-        const price = item?.estimatedPrice || 0;
-        return sum + (quantity * price);
-      }, 0);
-    }, 0);
+    // First try to calculate from bank items
+    let totalFromItems = 0;
+    for (const [character, items] of Object.entries(bankData)) {
+      for (const item of items) {
+        if (item.name && item.name.toLowerCase().includes('coin')) {
+          totalFromItems += item.quantity || 0;
+        } else if (item.name && item.name.toLowerCase().includes('platinum')) {
+          totalFromItems += (item.quantity || 0) * 1000;
+        } else {
+          totalFromItems += (item.quantity || 0) * (item.estimatedPrice || 0);
+        }
+      }
+    }
+    
+    // If we have bank items, use that value
+    if (totalFromItems > 0) {
+      return totalFromItems;
+    }
+    
+    // Otherwise, fall back to character bank fields
+    return characters.reduce((total, char) => total + (char.bank || 0), 0);
   };
 
   // Calculate total gold value (coins + plat tokens) across all characters
   const getTotalGoldValue = () => {
-    return Object.keys(bankData).reduce((total, character) => {
-      const items = bankData[character] || [];
-      const coins = items.find(item => item?.name?.toLowerCase().includes('coin'))?.quantity || 0;
-      const platTokens = items.find(item => item?.name?.toLowerCase().includes('platinum'))?.quantity || 0;
-      return total + coins + (platTokens * 1000);
-    }, 0);
+    let total = 0;
+    for (const [character, items] of Object.entries(bankData)) {
+      for (const item of items) {
+        if (item.name && item.name.toLowerCase().includes('coin')) {
+          total += item.quantity || 0;
+        } else if (item.name && item.name.toLowerCase().includes('platinum')) {
+          total += (item.quantity || 0) * 1000;
+        }
+      }
+    }
+    return total;
   };
 
   // Calculate total goals value
@@ -95,6 +112,8 @@ export function SummaryNavbar() {
     return amount.toLocaleString();
   };
 
+
+  
   const currentGPHour = getCurrentGPPerHour();
   const totalBankValue = getTotalBankValue();
   const totalGoldValue = getTotalGoldValue();
@@ -197,3 +216,4 @@ export function SummaryNavbar() {
     </div>
   );
 }
+

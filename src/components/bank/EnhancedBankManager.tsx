@@ -40,11 +40,30 @@ export function EnhancedBankManager({
     const coins = getCoins();
     const platTokens = getPlatTokens();
     const goldValue = coins + (platTokens * 1000);
-    return Math.max(0, character.bank - goldValue);
+    
+    // Calculate from actual bank items first
+    const bankItemsValue = bankItems
+      .filter(item => !item.name.toLowerCase().includes('coin') && !item.name.toLowerCase().includes('platinum'))
+      .reduce((total, item) => total + (item.quantity * item.estimatedPrice), 0);
+    
+    // Always use the bank items value if available
+    return bankItemsValue;
   };
 
   const getTotalBankValue = () => {
-    return getCoins() + (getPlatTokens() * 1000) + getBankValueMinusGold();
+    // Calculate from actual bank items
+    const totalFromItems = bankItems.reduce((total, item) => {
+      if (item.name.toLowerCase().includes('coin')) {
+        return total + item.quantity;
+      } else if (item.name.toLowerCase().includes('platinum')) {
+        return total + (item.quantity * 1000);
+      } else {
+        return total + (item.quantity * item.estimatedPrice);
+      }
+    }, 0);
+    
+    // Always use the bank items value
+    return totalFromItems;
   };
 
   const startEdit = (field: 'coins' | 'plat' | 'bankValue') => {
@@ -120,7 +139,10 @@ export function EnhancedBankManager({
     updateCharacterBank(updatedItems);
   };
 
+
+
   const updateBankValue = (newBankValue: number) => {
+    // Update the character's bank field directly
     const coins = getCoins();
     const platTokens = getPlatTokens();
     const goldValue = coins + (platTokens * 1000);
@@ -264,6 +286,7 @@ export function EnhancedBankManager({
           <p className="text-sm text-green-600 dark:text-green-300 mt-2">
             {formatGP(getCoins())} coins + {formatGP(getPlatTokens() * 1000)} tokens + {formatGP(getBankValueMinusGold())} items
           </p>
+
         </div>
       </CardContent>
     </Card>

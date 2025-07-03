@@ -150,10 +150,10 @@ export class CloudDataService {
       const cleanedData = {
         characters: characters.map(char => ({
           ...char,
-          combatLevel: typeof char.combatLevel === 'number' ? char.combatLevel : 3,
-          totalLevel: typeof char.totalLevel === 'number' ? char.totalLevel : 32,
-          bank: typeof char.bank === 'number' ? char.bank : 0,
-          platTokens: typeof char.platTokens === 'number' ? char.platTokens : 0,
+          combatLevel: Math.min(Math.max(typeof char.combatLevel === 'number' ? char.combatLevel : 3, 3), 126),
+          totalLevel: Math.min(Math.max(typeof char.totalLevel === 'number' ? char.totalLevel : 32, 32), 2277),
+          bank: Math.min(typeof char.bank === 'number' ? char.bank : 0, 999999999999),
+          platTokens: Math.min(typeof char.platTokens === 'number' ? char.platTokens : 0, 999999999999),
           type: char.type || 'main',
           name: String(char.name || 'Unnamed Character'),
           notes: String(char.notes || ''),
@@ -164,8 +164,8 @@ export class CloudDataService {
           const isActive = typeof method.isActive === 'boolean' ? method.isActive : true;
           const methodForSave = {
             ...method,
-            gpHour: typeof method.gpHour === 'number' ? method.gpHour : 0,
-            clickIntensity: typeof method.clickIntensity === 'number' ? method.clickIntensity : 1,
+            gpHour: Math.min(typeof method.gpHour === 'number' ? method.gpHour : 0, 999999999999),
+            clickIntensity: Math.min(Math.max(typeof method.clickIntensity === 'number' ? method.clickIntensity : 1, 1), 5),
             category: method.category || 'other',
             name: String(method.name || 'Unnamed Method'),
             character: String(method.character || 'Unknown'),
@@ -195,9 +195,9 @@ export class CloudDataService {
               .filter(item => item && typeof item === 'object' && item.name && String(item.name).trim())
               .map(item => ({
                 ...item,
-                category: item.category || 'other',
-                quantity: typeof item.quantity === 'number' ? item.quantity : 0,
-                estimatedPrice: typeof item.estimatedPrice === 'number' ? item.estimatedPrice : 0,
+                category: mapBankItemCategory(item.category), // Use the category mapping function
+                quantity: Math.min(typeof item.quantity === 'number' ? item.quantity : 0, 999999999999),
+                estimatedPrice: Math.min(typeof item.estimatedPrice === 'number' ? item.estimatedPrice : 0, 999999999999),
                 name: String(item.name).trim()
               }))
           ])
@@ -216,6 +216,7 @@ export class CloudDataService {
       // Debug: Log the actual character data being sent
       console.log('Character data being sent:', JSON.stringify(cleanedData.characters, null, 2));
       console.log('Money methods being sent:', JSON.stringify(cleanedData.moneyMethods, null, 2));
+      console.log('Bank data being sent:', JSON.stringify(cleanedData.bankData, null, 2));
 
       const { data, error } = await supabase.functions.invoke('cloud-data', {
         body: {
@@ -284,13 +285,27 @@ export class CloudDataService {
           notes: String(goal.notes || ''),
           imageUrl: String(goal.imageUrl || '')
         })),
-        bankData: data?.bankData && typeof data.bankData === 'object' ? data.bankData : {},
+        bankData: data?.bankData && typeof data.bankData === 'object' ? 
+          Object.fromEntries(
+            Object.entries(data.bankData).map(([character, items]) => [
+              character,
+              Array.isArray(items) ? items.map((item: any) => ({
+                id: item.id || Date.now().toString() + Math.random(),
+                name: String(item.name || 'Unknown Item'),
+                quantity: typeof item.quantity === 'number' ? item.quantity : 0,
+                estimatedPrice: typeof item.estimatedPrice === 'number' ? item.estimatedPrice : 0,
+                category: mapBankItemCategory(item.category), // Use the category mapping function
+                character: String(item.character || character)
+              })) : []
+            ])
+          ) : {},
         hoursPerDay: typeof data?.hoursPerDay === 'number' ? data.hoursPerDay : 10
       };
 
       console.log('Cloud data loaded and validated:', safeData);
       console.log('Loaded characters:', JSON.stringify(safeData.characters, null, 2));
       console.log('Loaded money methods:', JSON.stringify(safeData.moneyMethods, null, 2));
+      console.log('Loaded bank data:', JSON.stringify(safeData.bankData, null, 2));
       console.log('Loaded hoursPerDay:', safeData.hoursPerDay);
       return safeData;
     } catch (error) {

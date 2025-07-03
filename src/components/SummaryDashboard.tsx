@@ -1,4 +1,3 @@
-
 import { SummaryCards } from "./summary/SummaryCards";
 import { ProgressCard } from "./summary/ProgressCard";
 import { DollarSign, Users, Target, Star } from "lucide-react";
@@ -19,26 +18,43 @@ export function SummaryDashboard({
   hoursPerDay 
 }: SummaryDashboardProps) {
   
-  // Calculate total bank value across all characters
+  // Calculate total bank value across all characters (including coins and plat tokens as raw GP)
   const getTotalBankValue = () => {
-    return Object.keys(bankData).reduce((total, character) => {
-      const items = bankData[character] || [];
-      return total + items.reduce((sum, item) => {
-        const quantity = item?.quantity || 0;
-        const price = item?.estimatedPrice || 0;
-        return sum + (quantity * price);
-      }, 0);
-    }, 0);
+    let total = 0;
+    for (const items of Object.values(bankData)) {
+      for (const item of items) {
+        if (item.name && item.name.toLowerCase().includes('coin')) {
+          console.log('[BankSum] Coins:', item.name, item.quantity);
+          total += item.quantity || 0;
+        } else if (item.name && item.name.toLowerCase().includes('platinum')) {
+          console.log('[BankSum] Plat:', item.name, item.quantity, '->', (item.quantity || 0) * 1000);
+          total += (item.quantity || 0) * 1000;
+        } else {
+          console.log('[BankSum] Item:', item.name, item.quantity, item.estimatedPrice, '->', (item.quantity || 0) * (item.estimatedPrice || 0));
+          total += (item.quantity || 0) * (item.estimatedPrice || 0);
+        }
+      }
+    }
+    console.log('[BankSum] Total:', total);
+    return total;
   };
 
   // Calculate total gold value (coins + plat tokens) across all characters
   const getTotalGoldValue = () => {
-    return Object.keys(bankData).reduce((total, character) => {
-      const items = bankData[character] || [];
-      const coins = items.find(item => item?.name?.toLowerCase().includes('coin'))?.quantity || 0;
-      const platTokens = items.find(item => item?.name?.toLowerCase().includes('platinum'))?.quantity || 0;
-      return total + coins + (platTokens * 1000);
-    }, 0);
+    let total = 0;
+    for (const items of Object.values(bankData)) {
+      for (const item of items) {
+        if (item.name && item.name.toLowerCase().includes('coin')) {
+          console.log('[GoldSum] Coins:', item.name, item.quantity);
+          total += item.quantity || 0;
+        } else if (item.name && item.name.toLowerCase().includes('platinum')) {
+          console.log('[GoldSum] Plat:', item.name, item.quantity, '->', (item.quantity || 0) * 1000);
+          total += (item.quantity || 0) * 1000;
+        }
+      }
+    }
+    console.log('[GoldSum] Total:', total);
+    return total;
   };
 
   // Calculate total goals value
@@ -281,7 +297,7 @@ export function SummaryDashboard({
           <div className="mb-4">
             <h3 className="text-xl font-bold text-amber-800 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
               <Users className="h-5 w-5" />
-              👥 Character Overview
+              �� Character Overview
             </h3>
           </div>
           {characters && characters.length > 0 ? (

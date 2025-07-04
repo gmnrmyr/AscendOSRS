@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { AutocompleteInput } from "../AutocompleteInput";
 import { OSRSItemsAPI } from "@/services/osrsItemsApi";
-import { osrsWikiApi } from "@/services/osrsWikiApi";
+import { useOsrsItems } from "@/hooks/useOsrsItems";
 
 interface ItemSearchInputProps {
   value: string;
@@ -13,14 +12,25 @@ interface ItemSearchInputProps {
 
 export function ItemSearchInput({ value, onChange, onItemSelect, placeholder }: ItemSearchInputProps) {
   const [isSearching, setIsSearching] = useState(false);
+  const { search: localSearch, loading } = useOsrsItems();
 
-  // Show all OSRS items (not just popular) with price and icon, using OSRSItemsAPI for all queries
+  // Search local items first, then fallback to API if no results
   const searchItems = async (query: string) => {
+    if (loading) return [];
+    const localResults = localSearch(query).map(item => ({
+      id: item.id,
+      name: item.name,
+      subtitle: '',
+      icon: item.image_url,
+      value: 0,
+      category: 'item',
+      source: 'local',
+    }));
+    if (localResults.length > 0) return localResults;
     setIsSearching(true);
     try {
-      // Always use the full item search, even for empty query (show all items people might add as a goal)
       const osrsItems = await OSRSItemsAPI.searchOSRSItems(query || '');
-      return osrsItems;
+      return osrsItems.map(item => ({ ...item, source: 'api' }));
     } catch (error) {
       console.error('Error searching OSRS items:', error);
       return [];
@@ -39,8 +49,8 @@ export function ItemSearchInput({ value, onChange, onItemSelect, placeholder }: 
         searchFunction={searchItems}
         className="bg-white dark:bg-slate-800"
       />
-      {isSearching && (
-        <div className="text-xs text-gray-500 mt-1">Searching OSRS items with prices...</div>
+      {(isSearching || loading) && (
+        <div className="text-xs text-gray-500 mt-1">Searching OSRS items...</div>
       )}
     </div>
   );

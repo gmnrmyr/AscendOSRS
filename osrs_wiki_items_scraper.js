@@ -2,7 +2,7 @@
 // Node.js script to fetch and parse OSRS Wiki item list
 // Usage: node osrs_wiki_items_scraper.js > osrs_items.json
 
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
 const API_URL = 'https://oldschool.runescape.wiki/api.php?action=query&format=json&list=allpages&apnamespace=0&aplimit=5000';
 const ITEM_DETAILS_URL = 'https://oldschool.runescape.wiki/api.php?action=query&format=json&prop=pageprops|pageimages&titles=';

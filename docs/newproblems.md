@@ -19,7 +19,7 @@ Goals(items) -> Not showing lots of items.
 - Still a lot of methods to be added.
 
 @Bank
-Bank items - (when user importcs csv or json) -> It works crystal clear but the values are always 0. I asked you to allow us to change their value, ok. But I want users to also be able to change the SUM of those items (manually, even though its not the best way to do it). But  since we can't fetch those values at the moment, and changing the values manually is a pain, it's best to "hardcode" allowing users to change the SUM of those items. (So we tried "Set All Prices" button but that's not exactly what we need.)
+✅Bank items - (when user importcs csv or json) -> It works crystal clear but the values are always 0. I asked you to allow us to change their value, ok. But I want users to also be able to change the SUM of those items (manually, even though its not the best way to do it). But  since we can't fetch those values at the moment, and changing the values manually is a pain, it's best to "hardcode" allowing users to change the SUM of those items. (So we tried "Set All Prices" button but that's not exactly what we need.)
 
 ✅Also @bank, Imported items should be "toggleable" with a ">" so users dont really have to see ALL of their items cause it can be huge huge list. Of course, would be great if we can display the most valuable items when its toggled off. For example, if user has a lot of items, we only display their most valuable in the "off toggle" like twisted bow and other mega rares. But when they toggle it on, we display all of their items.
 

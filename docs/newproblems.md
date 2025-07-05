@@ -1,12 +1,12 @@
 Context: 
 - App for OSRS players
-- Objective: Track their wealth progress between characters and manage goals (mainly items). Wealth is tracked between characters. Each character has their inventory divided in Gold, Platinum Tokens and Bank Items. Bank items can be imported via CSV or JSON. And only their "gold" value (which is platinum tokens + gold) is used to count against their goals. (Items). The app asks how many time users plays so it can calculate their time to complete their goals.
+- Objective: Be the ultimate gear progression tool for osrs. Track their wealth progress between characters and manage goals (mainly items). Wealth is tracked between characters. Each character has their inventory divided in Gold, Platinum Tokens and Bank Items. Bank items can be imported via CSV or JSON. And only their "gold" value (which is platinum tokens + gold) is used to count against their goals. (Items). The app asks how many time users plays so it can calculate their time to complete their goals.
 
 Most functionality should be fetching from real values and using OSRS APIs... (free) but if that doesnt work, we still have to find the most apropriate way. And while it doenst work with real data, we have to still maintain the functionality by allowing users to manually input the values on most things...
 
 Problems ->
 @Goals
-Goals(items) -> Not really showing all items, items values I'm not sure if they are correct and fetched...
+✅Goals(items) -> Not really showing all items, items values I'm not sure if they are correct and fetched...
 
 Goals(items) -> Not showing lots of items.
 -> Not showing thumbnails of items. (images)
@@ -50,4 +50,7 @@ on bank "main bar"categories are not needed...characters sum are incorrect...tot
 read the additions to accept gold input in M and K for thousands
 
 
-(using osrs dump as a script thing to fetch items to there, and we refresh daily or something.)
+(using osrs dump as a script thing to fetch items to there, and we refresh daily or something.) (updated items prices with bat daily automatically)
+
+---
+

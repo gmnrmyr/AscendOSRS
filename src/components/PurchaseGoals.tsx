@@ -8,6 +8,7 @@ import { osrsApi } from "@/services/osrsApi";
 import { GoalForm } from "./goals/GoalForm";
 import { GoalFilters } from "./goals/GoalFilters";
 import { GoalCard } from "./goals/GoalCard";
+import { useItemsRefresh } from "@/hooks/useItemsRefresh";
 
 interface PurchaseGoal {
   id: string;
@@ -34,9 +35,9 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'priority'>('priority');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showFilters, setShowFilters] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   
   const { toast } = useToast();
+  const { isRefreshing, metadata, refreshItems } = useItemsRefresh();
 
   // Auto-save goals whenever they change
   useEffect(() => {
@@ -176,54 +177,6 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     return (goal.targetPrice || goal.currentPrice) * goal.quantity;
   };
 
-  const refreshPrices = async () => {
-    if (goals.length === 0) {
-      toast({
-        title: "No Goals",
-        description: "Add some goals first to refresh prices"
-      });
-      return;
-    }
-
-    setIsRefreshing(true);
-    
-    const updatedGoals = [];
-    let successCount = 0;
-    
-    for (const goal of goals) {
-      let updatedGoal = { ...goal };
-      
-      if (!goal.itemId || !Number.isInteger(goal.itemId) || goal.itemId <= 0) {
-        const mappedId = await osrsApi.getItemIdByName(goal.name);
-        if (mappedId) {
-          updatedGoal.itemId = mappedId;
-        }
-      }
-      
-      if (updatedGoal.itemId && Number.isInteger(updatedGoal.itemId) && updatedGoal.itemId > 0) {
-        try {
-          const priceData = await osrsApi.fetchSingleItemPrice(updatedGoal.itemId);
-          if (typeof priceData === 'number') {
-            updatedGoal.currentPrice = priceData;
-            successCount++;
-          }
-        } catch (error) {
-          console.error(`Error refreshing price for ${goal.name}:`, error);
-        }
-      }
-      
-      updatedGoals.push(updatedGoal);
-    }
-    
-    setGoals(updatedGoals);
-    setIsRefreshing(false);
-    
-    toast({
-      title: "Prices Updated",
-      description: `Successfully refreshed ${successCount} out of ${goals.length} item prices`
-    });
-  };
-
   // Filtering and sorting logic
   const filteredAndSortedGoals = goals
     .filter(goal => {
@@ -252,98 +205,142 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
 
   const totalGoalValue = goals.reduce((sum, goal) => sum + getTotalCost(goal), 0);
 
+  // Format the timestamp nicely
+  const formatLastUpdate = (timestamp: string | null) => {
+    if (!timestamp) return 'Unknown';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    
+    // If less than 24 hours ago, show relative time
+    if (diff < 24 * 60 * 60 * 1000) {
+      const hours = Math.floor(diff / (60 * 60 * 1000));
+      if (hours === 0) {
+        const minutes = Math.floor(diff / (60 * 1000));
+        return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+      }
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    }
+    
+    // Otherwise show the date
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Summary */}
-      <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200 dark:border-amber-800">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-bold text-amber-800 dark:text-amber-200">
-                Total Goal Value
-              </h3>
-              <p className="text-amber-600 dark:text-amber-300">
-                {goals.length} goals • {formatGP(totalGoalValue)} GP total
-              </p>
-            </div>
-            <TrendingUp className="h-12 w-12 text-amber-600 dark:text-amber-400" />
+    <div className="space-y-4">
+      <div className="flex flex-col space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <h2 className="text-2xl font-bold">Purchase Goals</h2>
+            <Badge variant="outline" className="text-xs">
+              Prices updated: {formatLastUpdate(metadata?.last_updated || null)}
+            </Badge>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-4 w-4 mr-1" />
+              Filters
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshItems}
+              disabled={isRefreshing}
+            >
+              <TrendingUp className="h-4 w-4 mr-1" />
+              {isRefreshing ? 'Updating...' : 'Update Prices'}
+            </Button>
+            {goals.length === 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={addDefaultGoals}
+              >
+                <Target className="h-4 w-4 mr-1" />
+                Add Default Goals
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Filters */}
+        <GoalFilters
+          filterPriority={filterPriority}
+          setFilterPriority={setFilterPriority}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          sortOrder={sortOrder}
+          setSortOrder={setSortOrder}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          onRefreshPrices={refreshItems}
+          isRefreshing={isRefreshing}
+          goalsCount={goals.length}
+        />
 
-      {/* Filters */}
-      <GoalFilters
-        filterPriority={filterPriority}
-        setFilterPriority={setFilterPriority}
-        filterCategory={filterCategory}
-        setFilterCategory={setFilterCategory}
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        sortOrder={sortOrder}
-        setSortOrder={setSortOrder}
-        showFilters={showFilters}
-        setShowFilters={setShowFilters}
-        onRefreshPrices={refreshPrices}
-        isRefreshing={isRefreshing}
-        goalsCount={goals.length}
-      />
+        {/* Add New Goal */}
+        <GoalForm 
+          goals={goals}
+          setGoals={setGoals}
+          onAddDefaultGoals={addDefaultGoals}
+        />
 
-      {/* Add New Goal */}
-      <GoalForm 
-        goals={goals}
-        setGoals={setGoals}
-        onAddDefaultGoals={addDefaultGoals}
-      />
+        {/* Goals List */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredAndSortedGoals.map((goal) => (
+            <GoalCard
+              key={goal.id}
+              goal={goal}
+              onRemove={removeGoal}
+              onUpdate={updateGoal}
+              formatGP={formatGP}
+              getTotalCost={getTotalCost}
+              cyclePriority={cyclePriority}
+              getPriorityColor={getPriorityColor}
+              getCategoryColor={getCategoryColor}
+            />
+          ))}
+        </div>
 
-      {/* Goals List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filteredAndSortedGoals.map((goal) => (
-          <GoalCard
-            key={goal.id}
-            goal={goal}
-            onRemove={removeGoal}
-            onUpdate={updateGoal}
-            formatGP={formatGP}
-            getTotalCost={getTotalCost}
-            cyclePriority={cyclePriority}
-            getPriorityColor={getPriorityColor}
-            getCategoryColor={getCategoryColor}
-          />
-        ))}
+        {goals.length === 0 && (
+          <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Target className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-500 mb-2">No purchase goals yet</h3>
+              <p className="text-gray-400 text-center mb-4">
+                Add items you want to purchase to track your progress
+              </p>
+              <Button onClick={addDefaultGoals} variant="outline">
+                Add Popular OSRS Goals
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {filteredAndSortedGoals.length === 0 && goals.length > 0 && (
+          <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Filter className="h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-500 mb-2">No goals match your filters</h3>
+              <p className="text-gray-400 text-center mb-4">
+                Try adjusting your filter settings
+              </p>
+              <Button onClick={() => {
+                setFilterPriority('all');
+                setFilterCategory('all');
+              }} variant="outline">
+                Clear All Filters
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
-
-      {goals.length === 0 && (
-        <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Target className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-500 mb-2">No purchase goals yet</h3>
-            <p className="text-gray-400 text-center mb-4">
-              Add items you want to purchase to track your progress
-            </p>
-            <Button onClick={addDefaultGoals} variant="outline">
-              Add Popular OSRS Goals
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {filteredAndSortedGoals.length === 0 && goals.length > 0 && (
-        <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Filter className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-500 mb-2">No goals match your filters</h3>
-            <p className="text-gray-400 text-center mb-4">
-              Try adjusting your filter settings
-            </p>
-            <Button onClick={() => {
-              setFilterPriority('all');
-              setFilterCategory('all');
-            }} variant="outline">
-              Clear All Filters
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

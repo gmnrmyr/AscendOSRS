@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 const DUMP_URL = 'https://prices.runescape.wiki/api/v1/osrs/mapping';  // Changed to mapping endpoint
 const PRICES_URL = 'https://prices.runescape.wiki/api/v1/osrs/latest';
 const OUTPUT_FILE = path.join(__dirname, 'public', 'osrs_items.json');
+const METADATA_FILE = path.join(__dirname, 'public', 'osrs_items_metadata.json');
 
 // Your app name and contact - PLEASE REPLACE THESE
 const APP_NAME = 'GE Alt Tracker';
@@ -128,14 +129,23 @@ async function main() {
     // Ensure output directory exists
     await fs.mkdir(path.dirname(OUTPUT_FILE), { recursive: true });
 
-    console.log('Writing output file...');
-    // Write to file
-    await fs.writeFile(
-      OUTPUT_FILE,
-      JSON.stringify(mapped, null, 2)
-    );
+    // Create metadata
+    const metadata = {
+      last_updated: new Date().toISOString(),
+      total_items: mapped.length,
+      items_with_prices: Object.keys(priceData).length,
+      next_update: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours from now
+    };
+
+    console.log('Writing output files...');
+    // Write items and metadata
+    await Promise.all([
+      fs.writeFile(OUTPUT_FILE, JSON.stringify(mapped, null, 2)),
+      fs.writeFile(METADATA_FILE, JSON.stringify(metadata, null, 2))
+    ]);
 
     console.log(`Successfully wrote ${mapped.length} items to ${OUTPUT_FILE}`);
+    console.log('Metadata written to', METADATA_FILE);
   } catch (err) {
     console.error('Failed to process items:', err);
     console.error('Error details:', err.stack);

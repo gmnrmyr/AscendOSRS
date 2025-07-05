@@ -6,7 +6,8 @@ Most functionality should be fetching from real values and using OSRS APIs... (f
 
 Problems ->
 @Goals
-Goals(items) -> Ireal
+Goals(items) -> Not really showing all items, items values I'm not sure if they are correct and fetched...
+
 Goals(items) -> Not showing lots of items.
 -> Not showing thumbnails of items. (images)
 

@@ -48,3 +48,6 @@ on bank "main bar"categories are not needed...characters sum are incorrect...tot
 
 ✅also 
 read the additions to accept gold input in M and K for thousands
+
+
+(using osrs dump as a script thing to fetch items to there, and we refresh daily or something.)

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,10 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Upload, RefreshCw, Coins, Edit, Save, X } from 'lucide-react';
+import { Trash2, Plus, Upload, RefreshCw, Coins, Edit, Save, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { Character, BankItem } from '@/hooks/useAppData';
 import { useCharacterRefresh } from '@/hooks/useCharacterRefresh';
 import { EnhancedBankManager } from './EnhancedBankManager';
+import { formatGoldValue } from '@/lib/utils';
+
+const VALUABLE_ITEMS_THRESHOLD = 10; // Show top 10 most valuable items when collapsed
 
 interface IntegratedBankManagerProps {
   characters: Character[];
@@ -34,11 +36,21 @@ export function IntegratedBankManager({
   const [csvData, setCsvData] = useState('');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const { refreshCharacter, isRefreshing } = useCharacterRefresh();
 
   const selectedCharacterData = characters.find(c => c.name === selectedCharacter);
   const characterBankItems = selectedCharacter ? (bankData[selectedCharacter] || []) : [];
+
+  // Sort items by value (quantity * price)
+  const sortedItems = [...characterBankItems].sort((a, b) => 
+    (b.quantity * b.estimatedPrice) - (a.quantity * a.estimatedPrice)
+  );
+
+  // Get items to display based on expanded state
+  const displayedItems = isExpanded ? sortedItems : sortedItems.slice(0, VALUABLE_ITEMS_THRESHOLD);
+  const hiddenItemsCount = sortedItems.length - displayedItems.length;
 
   const formatGP = (amount: number) => {
     const safeAmount = Number(amount) || 0;
@@ -222,265 +234,197 @@ export function IntegratedBankManager({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Character Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Coins className="h-5 w-5" />
-            Bank Management
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label>Select Character</Label>
-            <div className="flex gap-2">
-              <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Choose a character..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {characters.map(character => (
-                    <SelectItem key={character.id} value={character.name}>
-                      {character.name} (CB: {character.combatLevel}, Total: {character.totalLevel})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedCharacterData && (
-                <Button 
-                  onClick={handleCharacterRefresh} 
-                  disabled={isRefreshing}
-                  variant="outline"
-                  size="icon"
-                >
-                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      {/* Character selection */}
+      <div className="flex gap-4 items-center">
+        <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select character" />
+          </SelectTrigger>
+          <SelectContent>
+            {characters.map(char => (
+              <SelectItem key={char.name} value={char.name}>
+                {char.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {selectedCharacterData && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCharacterRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        )}
+      </div>
 
       {selectedCharacterData && (
         <>
-          {/* Enhanced Bank Manager with editable gold/plat/bank value */}
+          {/* Bank Management Section */}
           <EnhancedBankManager
             character={selectedCharacterData}
             bankItems={characterBankItems}
-            onUpdateCharacter={(updatedCharacter) => {
+            onUpdateCharacter={(char) => {
               setCharacters(characters.map(c => 
-                c.name === selectedCharacter ? updatedCharacter : c
+                c.name === char.name ? char : c
               ));
             }}
-            onUpdateBankItems={(updatedItems) => {
+            onUpdateBankItems={(items) => {
               setBankData({
                 ...bankData,
-                [selectedCharacter]: updatedItems
+                [selectedCharacter]: items
               });
             }}
-            formatGP={formatGP}
           />
 
-          {/* Bank Management Tabs */}
-          <Tabs defaultValue="items" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="items">Bank Items</TabsTrigger>
-              <TabsTrigger value="add">Add Items</TabsTrigger>
-              <TabsTrigger value="import">Import Data</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="items" className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Bank Items</h3>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">
-                    Total Value: {totalBankValue.toLocaleString()} gp
-                  </Badge>
-                  {characterBankItems.length > 0 && (
-                    <Button
-                      onClick={() => {
-                        const newPrice = prompt('Enter default price for all items (0 to skip):');
-                        if (newPrice !== null) {
-                          const price = parseInt(newPrice) || 0;
-                          if (price > 0) {
-                            const updatedItems = characterBankItems.map(item => ({
-                              ...item,
-                              estimatedPrice: price
-                            }));
-                            const updatedBankData = {
-                              ...bankData,
-                              [selectedCharacter]: updatedItems
-                            };
-                            setBankData(updatedBankData);
-                          }
-                        }
-                      }}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Set All Prices
-                    </Button>
+          {/* Bank Items Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                <span>Bank Items</span>
+                <span className="text-lg text-green-600 font-bold">
+                  {formatGoldValue(displayedItems.reduce((sum, item) => sum + (item.quantity * item.estimatedPrice), 0))}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Toggle for items visibility */}
+              {sortedItems.length > VALUABLE_ITEMS_THRESHOLD && (
+                <Button
+                  variant="outline"
+                  className="w-full mb-4"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  {isExpanded ? (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-2" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronRight className="h-4 w-4 mr-2" />
+                      Show {hiddenItemsCount} More Items
+                    </>
                   )}
-                </div>
-              </div>
-              
-              {characterBankItems.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  No items in bank. Add items using the "Add Items" or "Import CSV" tabs.
-                </p>
+                </Button>
+              )}
+
+              {/* Items list */}
+              {displayedItems.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No items in bank</p>
               ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {characterBankItems.map(item => (
-                    <div 
-                      key={item.id} 
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{item.name}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {item.category}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Qty: {item.quantity.toLocaleString()} × 
-                          {editingItemId === item.id ? (
-                            <div className="inline-flex items-center gap-2 ml-1">
-                              <Input
-                                type="number"
-                                value={editingPrice}
-                                onChange={(e) => setEditingPrice(e.target.value)}
-                                className="w-20 h-6 text-xs"
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') saveEditPrice();
-                                  if (e.key === 'Escape') cancelEditPrice();
-                                }}
-                              />
-                              <Button onClick={saveEditPrice} size="sm" variant="outline" className="h-6 px-2">
-                                <Save className="h-3 w-3" />
-                              </Button>
-                              <Button onClick={cancelEditPrice} size="sm" variant="outline" className="h-6 px-2">
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <span 
-                              className="cursor-pointer hover:text-blue-600 ml-1"
-                              onClick={() => startEditPrice(item)}
+                <div className="space-y-4">
+                  <div className="grid gap-4">
+                    {displayedItems.map((item) => (
+                      <Card key={item.id}>
+                        <CardContent className="flex items-center justify-between p-4">
+                          <div>
+                            <h4 className="font-semibold">{item.name}</h4>
+                            <p className="text-sm text-gray-500">
+                              Quantity: {item.quantity.toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            {editingItemId === item.id ? (
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="text"
+                                  value={editingPrice}
+                                  onChange={(e) => setEditingPrice(e.target.value)}
+                                  className="w-32"
+                                  placeholder="1m, 1b, etc"
+                                />
+                                <Button onClick={saveEditPrice} size="sm" variant="outline">
+                                  <Save className="h-4 w-4" />
+                                </Button>
+                                <Button onClick={cancelEditPrice} size="sm" variant="outline">
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                <span className="font-mono">
+                                  {formatGoldValue(item.estimatedPrice)} GP
+                                </span>
+                                <Button
+                                  onClick={() => startEditPrice(item)}
+                                  size="sm"
+                                  variant="outline"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              onClick={() => handleRemoveItem(item.id)}
+                              size="sm"
+                              variant="destructive"
                             >
-                              {item.estimatedPrice.toLocaleString()} gp
-                            </span>
-                          )}
-                          = {(item.quantity * item.estimatedPrice).toLocaleString()} gp
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {editingItemId !== item.id && (
-                          <Button
-                            onClick={() => startEditPrice(item)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-500 hover:text-blue-700"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button
-                          onClick={() => handleRemoveItem(item.id)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               )}
-            </TabsContent>
 
-            <TabsContent value="add" className="space-y-4">
-              <h3 className="text-lg font-semibold">Add New Item</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Item Name</Label>
+              {/* Add item form */}
+              <div className="mt-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
+                <h3 className="font-semibold mb-4">Add New Item</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Input
+                    placeholder="Item name"
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
-                    placeholder="Enter item name..."
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Quantity</Label>
                   <Input
-                    type="number"
+                    type="text"
+                    placeholder="Quantity"
                     value={newItemQuantity}
                     onChange={(e) => setNewItemQuantity(e.target.value)}
-                    placeholder="0"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Estimated Price (per item)</Label>
                   <Input
-                    type="number"
+                    type="text"
+                    placeholder="Price (1m, 1b, etc)"
                     value={newItemPrice}
                     onChange={(e) => setNewItemPrice(e.target.value)}
-                    placeholder="0"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select value={newItemCategory} onValueChange={(value: any) => setNewItemCategory(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="stackable">Stackable</SelectItem>
-                      <SelectItem value="gear">Gear</SelectItem>
-                      <SelectItem value="materials">Materials</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Button onClick={handleAddItem} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Item
+                  </Button>
                 </div>
               </div>
-              <Button 
-                onClick={handleAddItem}
-                disabled={!newItemName || !newItemQuantity}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Item
-              </Button>
-            </TabsContent>
+            </CardContent>
+          </Card>
 
-            <TabsContent value="import" className="space-y-4">
-              <h3 className="text-lg font-semibold">Import Bank Data</h3>
+          {/* Import Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Import Items</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-4">
-                <div>
-                  <Label>Bank Data (JSON or CSV)</Label>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Paste JSON bank export or CSV data with columns: name, quantity, value (optional)
-                  </p>
-                  <Textarea
-                    value={csvData}
-                    onChange={(e) => setCsvData(e.target.value)}
-                    placeholder="Paste your bank export JSON or CSV data here...&#10;&#10;JSON format: [{'id': 995, 'quantity': 1000000, 'name': 'Coins'}]&#10;CSV format: name,quantity,value&#10;Coins,1000000,1"
-                    rows={8}
-                  />
-                </div>
-                <Button 
-                  onClick={handleCSVImport}
-                  disabled={!csvData.trim()}
-                  className="w-full"
-                >
+                <Textarea
+                  placeholder="Paste CSV or JSON data here..."
+                  value={csvData}
+                  onChange={(e) => setCsvData(e.target.value)}
+                  rows={10}
+                />
+                <Button onClick={handleCSVImport} className="w-full">
                   <Upload className="h-4 w-4 mr-2" />
-                  Import Bank Data
+                  Import Items
                 </Button>
               </div>
-            </TabsContent>
-          </Tabs>
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

@@ -31,3 +31,19 @@ Works well ->
 
 @Save to cloud
 Working well, mostly.
+
+-----
+
+
+Additions:
+The way we input and display gold.
+USers shoould also be able to input in numner+m(millions) or number+b(billions) for example. Users go to bank and set his gold value to 1000m. then (it would display as 1b) So it accept inputs as M as well.... and counts properly. (should also accept input in K for thousands)
+
+toggle should be on top instead... bank management tab should be even abover... (Bank Management)
+
+on bank "main bar"categories are not needed...characters sum are incorrect...total items are not necessary too... we only need total value and total gold value which we also hav in navbar (all plat tokens +allgold from all chars..)
+
+If users edit Bank Value (Items) manually.... it should aywas overwrite the sum of value of all their bank items if that make sense... and continue all the calculations. but when myself as user try to edit Bank Value (Items) and save, it doesnt save.
+
+also 
+read the additions to accept gold input in M and K for thousands

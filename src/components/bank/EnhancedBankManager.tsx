@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,13 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Coins, DollarSign, Edit, Save, X } from 'lucide-react';
 import { Character, BankItem } from '@/hooks/useAppData';
+import { parseGoldInput, formatGoldValue } from '@/lib/utils';
 
 interface EnhancedBankManagerProps {
   character: Character;
   bankItems: BankItem[];
   onUpdateCharacter: (character: Character) => void;
   onUpdateBankItems: (items: BankItem[]) => void;
-  formatGP: (amount: number) => string;
 }
 
 export function EnhancedBankManager({
@@ -21,7 +20,6 @@ export function EnhancedBankManager({
   bankItems,
   onUpdateCharacter,
   onUpdateBankItems,
-  formatGP
 }: EnhancedBankManagerProps) {
   const [editingField, setEditingField] = useState<'none' | 'coins' | 'plat' | 'bankValue'>('none');
   const [editValue, setEditValue] = useState('');
@@ -46,39 +44,26 @@ export function EnhancedBankManager({
       .filter(item => !item.name.toLowerCase().includes('coin') && !item.name.toLowerCase().includes('platinum'))
       .reduce((total, item) => total + (item.quantity * item.estimatedPrice), 0);
     
-    // Always use the bank items value if available
     return bankItemsValue;
   };
 
   const getTotalBankValue = () => {
-    // Calculate from actual bank items
-    const totalFromItems = bankItems.reduce((total, item) => {
-      if (item.name.toLowerCase().includes('coin')) {
-        return total + item.quantity;
-      } else if (item.name.toLowerCase().includes('platinum')) {
-        return total + (item.quantity * 1000);
-      } else {
-        return total + (item.quantity * item.estimatedPrice);
-      }
-    }, 0);
-    
-    // Always use the bank items value
-    return totalFromItems;
+    return getBankValueMinusGold() + getCoins() + (getPlatTokens() * 1000);
   };
 
   const startEdit = (field: 'coins' | 'plat' | 'bankValue') => {
     setEditingField(field);
     if (field === 'coins') {
-      setEditValue(getCoins().toString());
+      setEditValue(formatGoldValue(getCoins()));
     } else if (field === 'plat') {
-      setEditValue(getPlatTokens().toString());
+      setEditValue(formatGoldValue(getPlatTokens()));
     } else if (field === 'bankValue') {
-      setEditValue(getBankValueMinusGold().toString());
+      setEditValue(formatGoldValue(getBankValueMinusGold()));
     }
   };
 
   const saveEdit = () => {
-    const value = parseInt(editValue) || 0;
+    const value = parseGoldInput(editValue);
     
     if (editingField === 'coins') {
       updateCoins(value);
@@ -139,25 +124,37 @@ export function EnhancedBankManager({
     updateCharacterBank(updatedItems);
   };
 
-
-
   const updateBankValue = (newBankValue: number) => {
-    // Update the character's bank field directly
-    const coins = getCoins();
-    const platTokens = getPlatTokens();
-    const goldValue = coins + (platTokens * 1000);
-    const totalBank = newBankValue + goldValue;
+    // Get non-gold items
+    const nonGoldItems = bankItems.filter(
+      item => !item.name.toLowerCase().includes('coin') && !item.name.toLowerCase().includes('platinum')
+    );
+
+    if (nonGoldItems.length === 0) return;
+
+    // Calculate current total value of non-gold items
+    const currentTotalValue = nonGoldItems.reduce((sum, item) => sum + (item.quantity * item.estimatedPrice), 0);
     
-    onUpdateCharacter({ ...character, bank: totalBank });
+    // Calculate the ratio to adjust all items
+    const ratio = newBankValue / currentTotalValue;
+    
+    // Update all non-gold items with the new ratio
+    const updatedItems = bankItems.map(item => {
+      if (item.name.toLowerCase().includes('coin') || item.name.toLowerCase().includes('platinum')) {
+        return item;
+      }
+      return {
+        ...item,
+        estimatedPrice: Math.round(item.estimatedPrice * ratio)
+      };
+    });
+
+    onUpdateBankItems(updatedItems);
+    updateCharacterBank(updatedItems);
   };
 
   const updateCharacterBank = (items: BankItem[]) => {
-    const coins = items.find(item => item.name.toLowerCase().includes('coin'))?.quantity || 0;
-    const platTokens = items.find(item => item.name.toLowerCase().includes('platinum'))?.quantity || 0;
-    const goldValue = coins + (platTokens * 1000);
-    const bankValue = getBankValueMinusGold();
-    const totalBank = goldValue + bankValue;
-    
+    const totalBank = getTotalBankValue();
     onUpdateCharacter({ ...character, bank: totalBank });
   };
 
@@ -166,8 +163,7 @@ export function EnhancedBankManager({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Coins className="h-5 w-5 text-yellow-600" />
-          {character.name} - Bank Management
-          <Badge variant="secondary">{character.type}</Badge>
+          Bank Management
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -181,10 +177,11 @@ export function EnhancedBankManager({
             {editingField === 'coins' ? (
               <div className="flex items-center gap-2">
                 <Input
-                  type="number"
+                  type="text"
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   className="w-32"
+                  placeholder="1m, 1b, etc"
                 />
                 <Button onClick={saveEdit} size="sm" variant="outline">
                   <Save className="h-4 w-4" />
@@ -195,7 +192,7 @@ export function EnhancedBankManager({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="font-mono text-lg">{formatGP(getCoins())}</span>
+                <span className="font-mono text-lg">{formatGoldValue(getCoins())}</span>
                 <Button onClick={() => startEdit('coins')} size="sm" variant="outline">
                   <Edit className="h-4 w-4" />
                 </Button>
@@ -214,10 +211,11 @@ export function EnhancedBankManager({
             {editingField === 'plat' ? (
               <div className="flex items-center gap-2">
                 <Input
-                  type="number"
+                  type="text"
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   className="w-32"
+                  placeholder="1k, 1m, etc"
                 />
                 <Button onClick={saveEdit} size="sm" variant="outline">
                   <Save className="h-4 w-4" />
@@ -228,7 +226,7 @@ export function EnhancedBankManager({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="font-mono text-lg">{formatGP(getPlatTokens())}</span>
+                <span className="font-mono text-lg">{formatGoldValue(getPlatTokens())}</span>
                 <Button onClick={() => startEdit('plat')} size="sm" variant="outline">
                   <Edit className="h-4 w-4" />
                 </Button>
@@ -237,20 +235,21 @@ export function EnhancedBankManager({
           </div>
         </div>
 
-        {/* Bank Value (minus gold) Row */}
+        {/* Bank Value Row */}
         <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border">
           <div className="flex-1">
             <Label className="text-base font-semibold">Bank Value (Items)</Label>
-            <p className="text-sm text-muted-foreground">Excluding coins & tokens</p>
+            <p className="text-sm text-muted-foreground">Total value of all items excluding gold</p>
           </div>
           <div className="flex items-center gap-2">
             {editingField === 'bankValue' ? (
               <div className="flex items-center gap-2">
                 <Input
-                  type="number"
+                  type="text"
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   className="w-32"
+                  placeholder="1m, 1b, etc"
                 />
                 <Button onClick={saveEdit} size="sm" variant="outline">
                   <Save className="h-4 w-4" />
@@ -261,7 +260,7 @@ export function EnhancedBankManager({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="font-mono text-lg">{formatGP(getBankValueMinusGold())}</span>
+                <span className="font-mono text-lg">{formatGoldValue(getBankValueMinusGold())}</span>
                 <Button onClick={() => startEdit('bankValue')} size="sm" variant="outline">
                   <Edit className="h-4 w-4" />
                 </Button>
@@ -271,22 +270,12 @@ export function EnhancedBankManager({
         </div>
 
         {/* Total Bank Value */}
-        <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" />
-              <span className="text-lg font-bold text-green-800 dark:text-green-200">
-                Total Bank Value
-              </span>
-            </div>
-            <span className="text-2xl font-bold text-green-900 dark:text-green-100">
-              {formatGP(getTotalBankValue())} GP
-            </span>
+        <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border">
+          <div className="flex-1">
+            <Label className="text-base font-semibold">Total Bank Value</Label>
+            <p className="text-sm text-muted-foreground">Including gold and items</p>
           </div>
-          <p className="text-sm text-green-600 dark:text-green-300 mt-2">
-            {formatGP(getCoins())} coins + {formatGP(getPlatTokens() * 1000)} tokens + {formatGP(getBankValueMinusGold())} items
-          </p>
-
+          <span className="font-mono text-lg text-green-600">{formatGoldValue(getTotalBankValue())}</span>
         </div>
       </CardContent>
     </Card>

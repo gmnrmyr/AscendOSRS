@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, ChevronDown, ChevronRight } from "lucide-react";
 import { BankItemCard } from "./BankItemCard";
+import { Button } from "@/components/ui/button";
 
 interface BankCharacterTabProps {
   character: string;
@@ -12,17 +12,31 @@ interface BankCharacterTabProps {
   onDeleteItem: (itemId: string) => void;
 }
 
+const VALUABLE_ITEMS_THRESHOLD = 5; // Show top 5 most valuable items when collapsed
+
 export function BankCharacterTab({ character, items, onDeleteItem }: BankCharacterTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const filteredItems = items.filter(item => {
+  // Sort items by value (quantity * price)
+  const sortedItems = [...items].sort((a, b) => 
+    (b.quantity * b.estimatedPrice) - (a.quantity * a.estimatedPrice)
+  );
+
+  const filteredItems = sortedItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
+  // Get items to display based on expanded state
+  const displayedItems = isExpanded 
+    ? filteredItems 
+    : filteredItems.slice(0, VALUABLE_ITEMS_THRESHOLD);
+
   const totalValue = items.reduce((sum, item) => sum + (item.quantity * item.estimatedPrice), 0);
+  const hiddenItemsCount = filteredItems.length - displayedItems.length;
 
   return (
     <Card>
@@ -69,15 +83,37 @@ export function BankCharacterTab({ character, items, onDeleteItem }: BankCharact
             }
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredItems.map((item) => (
-              <BankItemCard
-                key={item.id}
-                item={item}
-                onDelete={onDeleteItem}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {displayedItems.map((item) => (
+                <BankItemCard
+                  key={item.id}
+                  item={item}
+                  onDelete={onDeleteItem}
+                />
+              ))}
+            </div>
+            
+            {filteredItems.length > VALUABLE_ITEMS_THRESHOLD && (
+              <Button
+                variant="ghost"
+                className="w-full mt-4 flex items-center justify-center gap-2"
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronDown className="h-4 w-4" />
+                    Show Less
+                  </>
+                ) : (
+                  <>
+                    <ChevronRight className="h-4 w-4" />
+                    Show {hiddenItemsCount} More Items
+                  </>
+                )}
+              </Button>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

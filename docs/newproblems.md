@@ -21,7 +21,7 @@ Goals(items) -> Not showing lots of items.
 @Bank
 Bank items - (when user importcs csv or json) -> It works crystal clear but the values are always 0. I asked you to allow us to change their value, ok. But I want users to also be able to change the SUM of those items (manually, even though its not the best way to do it). But  since we can't fetch those values at the moment, and changing the values manually is a pain, it's best to "hardcode" allowing users to change the SUM of those items. (So we tried "Set All Prices" button but that's not exactly what we need.)
 
-Also @bank, Imported items should be "toggleable" with a ">" so users dont really have to see ALL of their items cause it can be huge huge list. Of course, would be great if we can display the most valuable items when its toggled off. For example, if user has a lot of items, we only display their most valuable in the "off toggle" like twisted bow and other mega rares. But when they toggle it on, we display all of their items.
+✅Also @bank, Imported items should be "toggleable" with a ">" so users dont really have to see ALL of their items cause it can be huge huge list. Of course, would be great if we can display the most valuable items when its toggled off. For example, if user has a lot of items, we only display their most valuable in the "off toggle" like twisted bow and other mega rares. But when they toggle it on, we display all of their items.
 
 
 
@@ -36,14 +36,14 @@ Working well, mostly.
 
 
 Additions:
-The way we input and display gold.
+✅The way we input and display gold.
 USers shoould also be able to input in numner+m(millions) or number+b(billions) for example. Users go to bank and set his gold value to 1000m. then (it would display as 1b) So it accept inputs as M as well.... and counts properly. (should also accept input in K for thousands)
 
-toggle should be on top instead... bank management tab should be even abover... (Bank Management)
+✅toggle should be on top instead... bank management tab should be even abover... (Bank Management)
 
 on bank "main bar"categories are not needed...characters sum are incorrect...total items are not necessary too... we only need total value and total gold value which we also hav in navbar (all plat tokens +allgold from all chars..)
 
-If users edit Bank Value (Items) manually.... it should aywas overwrite the sum of value of all their bank items if that make sense... and continue all the calculations. but when myself as user try to edit Bank Value (Items) and save, it doesnt save.
+✅ If users edit Bank Value (Items) manually.... it should aywas overwrite the sum of value of all their bank items if that make sense... and continue all the calculations. but when myself as user try to edit Bank Value (Items) and save, it doesnt save.
 
-also 
+✅also 
 read the additions to accept gold input in M and K for thousands

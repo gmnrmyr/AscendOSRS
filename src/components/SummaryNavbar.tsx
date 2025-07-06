@@ -45,7 +45,7 @@ export function SummaryNavbar() {
     if (!moneyMethods || moneyMethods.length === 0) return 0;
     
     return moneyMethods.reduce((total, method) => {
-      if (method?.character && method?.character !== 'none' && method?.character !== '') {
+      if (method?.isActive && method?.character && method?.character !== 'none' && method?.character !== '') {
         return total + (method?.gpHour || 0);
       }
       return total;
@@ -118,7 +118,7 @@ export function SummaryNavbar() {
   const totalBankValue = getTotalBankValue();
   const totalGoldValue = getTotalGoldValue();
   const totalGoalsValue = getTotalGoalsValue();
-  const activeMethodsCount = moneyMethods.filter(method => method?.character && method?.character !== 'none' && method?.character !== '').length;
+  const activeMethodsCount = moneyMethods.filter(method => method?.isActive === true).length;
 
   return (
     <div 

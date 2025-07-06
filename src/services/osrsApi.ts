@@ -83,35 +83,47 @@ export const osrsApi = {
           accountType = 'ultimate';
         }
 
+        // Validate and clamp all values to reasonable OSRS ranges
+        const combatLevel = Math.max(3, Math.min(126, parseInt(data.data.Combat_level || data.data.combat_level) || 3));
+        const totalLevel = Math.max(32, Math.min(2277, parseInt(data.data.Overall || data.data.total_level) || 32));
+
+        // Additional validation
+        if (combatLevel < 3 || combatLevel > 126 || totalLevel < 32 || totalLevel > 2277) {
+          console.warn(`Invalid levels from TempleOSRS: CB ${combatLevel}, Total ${totalLevel}`);
+          return null;
+        }
+
+        console.log(`TempleOSRS validated stats: CB ${combatLevel}, Total ${totalLevel}`);
+
         return {
-          combat_level: data.data.Combat_level || data.data.combat_level || 3,
-          total_level: data.data.Overall || data.data.total_level || 32,
+          combat_level: combatLevel,
+          total_level: totalLevel,
           account_type: accountType,
           username: playerName,
-          // Additional stats if available
-          attack: data.data.Attack || 1,
-          defence: data.data.Defence || 1,
-          strength: data.data.Strength || 1,
-          hitpoints: data.data.Hitpoints || 10,
-          ranged: data.data.Ranged || 1,
-          prayer: data.data.Prayer || 1,
-          magic: data.data.Magic || 1,
-          cooking: data.data.Cooking || 1,
-          woodcutting: data.data.Woodcutting || 1,
-          fletching: data.data.Fletching || 1,
-          fishing: data.data.Fishing || 1,
-          firemaking: data.data.Firemaking || 1,
-          crafting: data.data.Crafting || 1,
-          smithing: data.data.Smithing || 1,
-          mining: data.data.Mining || 1,
-          herblore: data.data.Herblore || 1,
-          agility: data.data.Agility || 1,
-          thieving: data.data.Thieving || 1,
-          slayer: data.data.Slayer || 1,
-          farming: data.data.Farming || 1,
-          runecraft: data.data.Runecraft || 1,
-          hunter: data.data.Hunter || 1,
-          construction: data.data.Construction || 1
+          // Additional stats if available with validation
+          attack: Math.max(1, Math.min(99, parseInt(data.data.Attack) || 1)),
+          defence: Math.max(1, Math.min(99, parseInt(data.data.Defence) || 1)),
+          strength: Math.max(1, Math.min(99, parseInt(data.data.Strength) || 1)),
+          hitpoints: Math.max(10, Math.min(99, parseInt(data.data.Hitpoints) || 10)),
+          ranged: Math.max(1, Math.min(99, parseInt(data.data.Ranged) || 1)),
+          prayer: Math.max(1, Math.min(99, parseInt(data.data.Prayer) || 1)),
+          magic: Math.max(1, Math.min(99, parseInt(data.data.Magic) || 1)),
+          cooking: Math.max(1, Math.min(99, parseInt(data.data.Cooking) || 1)),
+          woodcutting: Math.max(1, Math.min(99, parseInt(data.data.Woodcutting) || 1)),
+          fletching: Math.max(1, Math.min(99, parseInt(data.data.Fletching) || 1)),
+          fishing: Math.max(1, Math.min(99, parseInt(data.data.Fishing) || 1)),
+          firemaking: Math.max(1, Math.min(99, parseInt(data.data.Firemaking) || 1)),
+          crafting: Math.max(1, Math.min(99, parseInt(data.data.Crafting) || 1)),
+          smithing: Math.max(1, Math.min(99, parseInt(data.data.Smithing) || 1)),
+          mining: Math.max(1, Math.min(99, parseInt(data.data.Mining) || 1)),
+          herblore: Math.max(1, Math.min(99, parseInt(data.data.Herblore) || 1)),
+          agility: Math.max(1, Math.min(99, parseInt(data.data.Agility) || 1)),
+          thieving: Math.max(1, Math.min(99, parseInt(data.data.Thieving) || 1)),
+          slayer: Math.max(1, Math.min(99, parseInt(data.data.Slayer) || 1)),
+          farming: Math.max(1, Math.min(99, parseInt(data.data.Farming) || 1)),
+          runecraft: Math.max(1, Math.min(99, parseInt(data.data.Runecraft) || 1)),
+          hunter: Math.max(1, Math.min(99, parseInt(data.data.Hunter) || 1)),
+          construction: Math.max(1, Math.min(99, parseInt(data.data.Construction) || 1))
         };
       }
 
@@ -154,34 +166,46 @@ export const osrsApi = {
           accountType = 'ultimate';
         }
 
+        // Validate and clamp values
+        const combatLevel = Math.max(3, Math.min(126, parseInt(data.combatLevel) || 3));
+        const totalLevel = Math.max(32, Math.min(2277, parseInt(stats.overall?.level) || 32));
+
+        // Additional validation
+        if (combatLevel < 3 || combatLevel > 126 || totalLevel < 32 || totalLevel > 2277) {
+          console.warn(`Invalid levels from WiseOldMan: CB ${combatLevel}, Total ${totalLevel}`);
+          return null;
+        }
+
+        console.log(`WiseOldMan validated stats: CB ${combatLevel}, Total ${totalLevel}`);
+
         return {
-          combat_level: data.combatLevel || 3,
-          total_level: stats.overall?.level || 32,
+          combat_level: combatLevel,
+          total_level: totalLevel,
           account_type: accountType,
           username: playerName,
-          attack: stats.attack?.level || 1,
-          defence: stats.defence?.level || 1,
-          strength: stats.strength?.level || 1,
-          hitpoints: stats.hitpoints?.level || 10,
-          ranged: stats.ranged?.level || 1,
-          prayer: stats.prayer?.level || 1,
-          magic: stats.magic?.level || 1,
-          cooking: stats.cooking?.level || 1,
-          woodcutting: stats.woodcutting?.level || 1,
-          fletching: stats.fletching?.level || 1,
-          fishing: stats.fishing?.level || 1,
-          firemaking: stats.firemaking?.level || 1,
-          crafting: stats.crafting?.level || 1,
-          smithing: stats.smithing?.level || 1,
-          mining: stats.mining?.level || 1,
-          herblore: stats.herblore?.level || 1,
-          agility: stats.agility?.level || 1,
-          thieving: stats.thieving?.level || 1,
-          slayer: stats.slayer?.level || 1,
-          farming: stats.farming?.level || 1,
-          runecraft: stats.runecraft?.level || 1,
-          hunter: stats.hunter?.level || 1,
-          construction: stats.construction?.level || 1
+          attack: Math.max(1, Math.min(99, parseInt(stats.attack?.level) || 1)),
+          defence: Math.max(1, Math.min(99, parseInt(stats.defence?.level) || 1)),
+          strength: Math.max(1, Math.min(99, parseInt(stats.strength?.level) || 1)),
+          hitpoints: Math.max(10, Math.min(99, parseInt(stats.hitpoints?.level) || 10)),
+          ranged: Math.max(1, Math.min(99, parseInt(stats.ranged?.level) || 1)),
+          prayer: Math.max(1, Math.min(99, parseInt(stats.prayer?.level) || 1)),
+          magic: Math.max(1, Math.min(99, parseInt(stats.magic?.level) || 1)),
+          cooking: Math.max(1, Math.min(99, parseInt(stats.cooking?.level) || 1)),
+          woodcutting: Math.max(1, Math.min(99, parseInt(stats.woodcutting?.level) || 1)),
+          fletching: Math.max(1, Math.min(99, parseInt(stats.fletching?.level) || 1)),
+          fishing: Math.max(1, Math.min(99, parseInt(stats.fishing?.level) || 1)),
+          firemaking: Math.max(1, Math.min(99, parseInt(stats.firemaking?.level) || 1)),
+          crafting: Math.max(1, Math.min(99, parseInt(stats.crafting?.level) || 1)),
+          smithing: Math.max(1, Math.min(99, parseInt(stats.smithing?.level) || 1)),
+          mining: Math.max(1, Math.min(99, parseInt(stats.mining?.level) || 1)),
+          herblore: Math.max(1, Math.min(99, parseInt(stats.herblore?.level) || 1)),
+          agility: Math.max(1, Math.min(99, parseInt(stats.agility?.level) || 1)),
+          thieving: Math.max(1, Math.min(99, parseInt(stats.thieving?.level) || 1)),
+          slayer: Math.max(1, Math.min(99, parseInt(stats.slayer?.level) || 1)),
+          farming: Math.max(1, Math.min(99, parseInt(stats.farming?.level) || 1)),
+          runecraft: Math.max(1, Math.min(99, parseInt(stats.runecraft?.level) || 1)),
+          hunter: Math.max(1, Math.min(99, parseInt(stats.hunter?.level) || 1)),
+          construction: Math.max(1, Math.min(99, parseInt(stats.construction?.level) || 1))
         };
       }
 
@@ -226,29 +250,42 @@ export const osrsApi = {
           const lines = text.split('\n').filter(line => line.trim());
           
           if (lines.length < 24) { // Need at least 24 lines for all skills
-            console.log(`Invalid hiscore format for ${accountType} account`);
+            console.log(`Invalid hiscore format for ${accountType} account - only ${lines.length} lines`);
             continue;
           }
 
-          // Parse all skill levels
-          const skillLevels = lines.slice(0, 24).map(line => {
+          // Parse all skill levels with better validation
+          const skillLevels = lines.slice(0, 24).map((line, index) => {
             const parts = line.split(',');
-            return {
-              rank: parseInt(parts[0]) || -1,
-              level: parseInt(parts[1]) || 1,
-              experience: parseInt(parts[2]) || 0
-            };
+            if (parts.length < 3) {
+              console.warn(`Invalid skill line ${index}: ${line}`);
+              return { rank: -1, level: 1, experience: 0 };
+            }
+            
+            const rank = parseInt(parts[0]) || -1;
+            const level = Math.max(1, Math.min(99, parseInt(parts[1]) || 1));
+            const experience = Math.max(0, parseInt(parts[2]) || 0);
+            
+            return { rank, level, experience };
           });
 
-          // Calculate combat level using accurate OSRS formula
-          const attack = skillLevels[1].level;
-          const defence = skillLevels[2].level;
-          const strength = skillLevels[3].level;
-          const hitpoints = skillLevels[4].level;
-          const ranged = skillLevels[5].level;
-          const prayer = skillLevels[6].level;
-          const magic = skillLevels[7].level;
+          // Validate skill levels make sense
+          const totalLevel = skillLevels[0].level;
+          if (totalLevel < 32 || totalLevel > 2277) {
+            console.warn(`Invalid total level: ${totalLevel}, skipping ${accountType} hiscores`);
+            continue;
+          }
 
+          // Get individual combat stats with validation
+          const attack = Math.max(1, Math.min(99, skillLevels[1].level));
+          const defence = Math.max(1, Math.min(99, skillLevels[2].level));
+          const strength = Math.max(1, Math.min(99, skillLevels[3].level));
+          const hitpoints = Math.max(10, Math.min(99, skillLevels[4].level));
+          const ranged = Math.max(1, Math.min(99, skillLevels[5].level));
+          const prayer = Math.max(1, Math.min(99, skillLevels[6].level));
+          const magic = Math.max(1, Math.min(99, skillLevels[7].level));
+
+          // Calculate combat level using accurate OSRS formula with validation
           const baseCombat = (attack + strength) * 0.325;
           const defenceCombat = defence * 0.325;
           const hitpointsCombat = hitpoints * 0.25;
@@ -260,36 +297,49 @@ export const osrsApi = {
           const rangedCombatTotal = rangedCombat + defenceCombat + hitpointsCombat + prayerCombat;
           const magicCombatTotal = magicCombat + defenceCombat + hitpointsCombat + prayerCombat;
           
-          const combatLevel = Math.floor(Math.max(meleeCombat, rangedCombatTotal, magicCombatTotal)) + 1;
+          const rawCombatLevel = Math.max(meleeCombat, rangedCombatTotal, magicCombatTotal);
+          const combatLevel = Math.max(3, Math.min(126, Math.floor(rawCombatLevel) + 1));
+
+          // Final validation of calculated values
+          if (combatLevel < 3 || combatLevel > 126) {
+            console.warn(`Invalid combat level calculated: ${combatLevel}, skipping`);
+            continue;
+          }
+
+          console.log(`Successfully parsed ${accountType} hiscores:`, {
+            combatLevel,
+            totalLevel,
+            attack, defence, strength, hitpoints, ranged, prayer, magic
+          });
 
           return {
-            combat_level: Math.min(126, Math.max(3, combatLevel)),
-            total_level: skillLevels[0].level,
+            combat_level: combatLevel,
+            total_level: totalLevel,
             account_type: accountType,
             username: playerName,
-            attack: skillLevels[1].level,
-            defence: skillLevels[2].level,
-            strength: skillLevels[3].level,
-            hitpoints: skillLevels[4].level,
-            ranged: skillLevels[5].level,
-            prayer: skillLevels[6].level,
-            magic: skillLevels[7].level,
-            cooking: skillLevels[8].level,
-            woodcutting: skillLevels[9].level,
-            fletching: skillLevels[10].level,
-            fishing: skillLevels[11].level,
-            firemaking: skillLevels[12].level,
-            crafting: skillLevels[13].level,
-            smithing: skillLevels[14].level,
-            mining: skillLevels[15].level,
-            herblore: skillLevels[16].level,
-            agility: skillLevels[17].level,
-            thieving: skillLevels[18].level,
-            slayer: skillLevels[19].level,
-            farming: skillLevels[20].level,
-            runecraft: skillLevels[21].level,
-            hunter: skillLevels[22].level,
-            construction: skillLevels[23].level
+            attack: attack,
+            defence: defence,
+            strength: strength,
+            hitpoints: hitpoints,
+            ranged: ranged,
+            prayer: prayer,
+            magic: magic,
+            cooking: Math.max(1, Math.min(99, skillLevels[8].level)),
+            woodcutting: Math.max(1, Math.min(99, skillLevels[9].level)),
+            fletching: Math.max(1, Math.min(99, skillLevels[10].level)),
+            fishing: Math.max(1, Math.min(99, skillLevels[11].level)),
+            firemaking: Math.max(1, Math.min(99, skillLevels[12].level)),
+            crafting: Math.max(1, Math.min(99, skillLevels[13].level)),
+            smithing: Math.max(1, Math.min(99, skillLevels[14].level)),
+            mining: Math.max(1, Math.min(99, skillLevels[15].level)),
+            herblore: Math.max(1, Math.min(99, skillLevels[16].level)),
+            agility: Math.max(1, Math.min(99, skillLevels[17].level)),
+            thieving: Math.max(1, Math.min(99, skillLevels[18].level)),
+            slayer: Math.max(1, Math.min(99, skillLevels[19].level)),
+            farming: Math.max(1, Math.min(99, skillLevels[20].level)),
+            runecraft: Math.max(1, Math.min(99, skillLevels[21].level)),
+            hunter: Math.max(1, Math.min(99, skillLevels[22].level)),
+            construction: Math.max(1, Math.min(99, skillLevels[23].level))
           };
         } catch (error) {
           console.log(`Error fetching from ${accountType} hiscores:`, error);

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -141,7 +140,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
               <Label>Account Type</Label>
               <Select 
                 value={newCharacter.type} 
-                onValueChange={(value) => setNewCharacter({...newCharacter, type: value as Character['type']})}
+                onValueChange={(value: 'main' | 'alt' | 'ironman' | 'hardcore' | 'ultimate') => setNewCharacter({...newCharacter, type: value})}
               >
                 <SelectTrigger className="bg-white dark:bg-slate-800">
                   <SelectValue />
@@ -157,7 +156,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Combat Level</Label>
               <Input
@@ -180,17 +179,6 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                 placeholder="32"
                 min="32"
                 max="2277"
-                className="bg-white dark:bg-slate-800"
-              />
-            </div>
-
-            <div>
-              <Label>Bank Value (GP)</Label>
-              <Input
-                type="number"
-                value={newCharacter.bank || ''}
-                onChange={(e) => setNewCharacter({...newCharacter, bank: Number(e.target.value)})}
-                placeholder="0"
                 className="bg-white dark:bg-slate-800"
               />
             </div>
@@ -273,16 +261,6 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                 </div>
               </div>
 
-              <div>
-                <Label className="text-xs text-gray-500">Bank Value (GP)</Label>
-                <Input
-                  type="number"
-                  value={character.bank}
-                  onChange={(e) => updateCharacter(character.id, 'bank', Number(e.target.value))}
-                  className="h-8 text-sm"
-                />
-              </div>
-
               {character.notes && (
                 <div>
                   <Label className="text-xs text-gray-500">Notes</Label>
@@ -293,15 +271,6 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                   />
                 </div>
               )}
-
-              <div className="pt-2 border-t">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Bank Value:</span>
-                  <span className="font-medium text-amber-700 dark:text-amber-300">
-                    {formatGP(character.bank)} GP
-                  </span>
-                </div>
-              </div>
             </CardContent>
           </Card>
         ))}

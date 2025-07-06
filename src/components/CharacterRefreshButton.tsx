@@ -37,9 +37,33 @@ export function CharacterRefreshButton({ character, onUpdate }: CharacterRefresh
     setIsRefreshing(true);
     try {
       console.log(`Refreshing stats for character: ${character.name}`);
+      console.log('Current character state:', character);
+      
       const playerStats = await osrsApi.fetchPlayerStats(character.name);
+      console.log('Raw API response:', playerStats);
       
       if (playerStats) {
+        // Validate the API response values
+        const combatLevel = Math.max(3, Math.min(126, parseInt(playerStats.combat_level) || 3));
+        const totalLevel = Math.max(32, Math.min(2277, parseInt(playerStats.total_level) || 32));
+        
+        console.log('Validated levels:', { combatLevel, totalLevel });
+        console.log('Original API values:', { 
+          combat_level: playerStats.combat_level, 
+          total_level: playerStats.total_level 
+        });
+        
+        // Additional safety check
+        if (combatLevel < 3 || combatLevel > 126 || totalLevel < 32 || totalLevel > 2277) {
+          console.error('Invalid levels detected after validation:', { combatLevel, totalLevel });
+          toast({
+            title: "Invalid Data",
+            description: `API returned invalid levels: Combat ${combatLevel}, Total ${totalLevel}`,
+            variant: "destructive"
+          });
+          return;
+        }
+        
         let accountType = character.type;
         
         // Map account type from API response more accurately
@@ -58,10 +82,12 @@ export function CharacterRefreshButton({ character, onUpdate }: CharacterRefresh
         
         const updatedCharacter = {
           ...character,
-          combatLevel: playerStats.combat_level,
-          totalLevel: playerStats.total_level,
+          combatLevel: combatLevel,
+          totalLevel: totalLevel,
           type: accountType
         };
+        
+        console.log('Final updated character:', updatedCharacter);
         
         onUpdate(updatedCharacter);
         
@@ -73,11 +99,10 @@ export function CharacterRefreshButton({ character, onUpdate }: CharacterRefresh
         
         toast({
           title: "Stats Updated Successfully",
-          description: `${character.name} (${accountTypeText}): Combat Level ${playerStats.combat_level}, Total Level ${playerStats.total_level}`,
+          description: `${character.name} (${accountTypeText}): Combat Level ${combatLevel}, Total Level ${totalLevel}`,
         });
         
-        console.log('Character stats updated successfully:', updatedCharacter);
-        console.log('Detailed stats:', playerStats);
+        console.log('Character stats updated successfully');
       } else {
         // Enhanced error message with suggestions
         toast({

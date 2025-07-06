@@ -269,7 +269,7 @@
 - **Price Accuracy**: ✅ Acceptable variance with manual override capability
 - **Data Refresh**: Verify all refresh buttons work correctly
 - **CSV Import**: Test with actual RuneLite export data
-- **Character Fetching**: Validate real OSRS character data retrieval
+- **Character Fetching**: Validate real OSRS character data retrieval, allow users to manually change name after it has been added.
 - **Cross-Browser**: Ensure functionality works across browsers
 - **Member vs F2P**: Test all features with both account types
 

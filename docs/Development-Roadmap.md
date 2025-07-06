@@ -124,7 +124,7 @@
 
 ### **4. Brand Redesign & Naming**
 #### Priority: HIGH - Brand Identity
-- **Name Review**: Evaluate current app name and consider rebranding (with proper SEO and indexing 4 google)
+- **Name Review**: Evaluate current app name and consider rebranding (with proper SEO and indexing 4 google) (main name ideas: 🌀 RuneAscend or ⚔️ AscendOSRS)
 - **Logo Design**: Create professional logo design for the app
 - **Brand Identity**: Establish consistent brand colors, fonts, and styling
 - **Visual Consistency**: Apply new branding across all pages and components

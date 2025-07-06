@@ -18,6 +18,8 @@ export function parseGoldInput(input: string): number {
   const [, numStr, suffix] = match;
   const num = parseFloat(numStr);
   
+  if (isNaN(num)) return 0;
+  
   switch (suffix) {
     case 'k': return num * 1000;
     case 'm': return num * 1000000;

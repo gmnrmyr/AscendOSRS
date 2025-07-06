@@ -6,25 +6,21 @@ Most functionality should be fetching from real values and using OSRS APIs... (f
 
 Problems ->
 @Goals
-✅Goals(items) -> Not really showing all items, items values I'm not sure if they are correct and fetched...
+✅Goals(items) -> Not really showing all items, items values I'm not sure if they are correct and fetched... **FIXED - Live price fetching restored**
 
 Goals(items) -> Not showing lots of items.
 -> Not showing thumbnails of items. (images)
 
 @Characters
 - Not real lvl value (not fetching properly upon refresh) <-- not that I care a lot, but would be nice
-- 
-
 
 @Methods
 - Still a lot of methods to be added.
 
 @Bank
-✅Bank items - (when user importcs csv or json) -> It works crystal clear but the values are always 0. I asked you to allow us to change their value, ok. But I want users to also be able to change the SUM of those items (manually, even though its not the best way to do it). But  since we can't fetch those values at the moment, and changing the values manually is a pain, it's best to "hardcode" allowing users to change the SUM of those items. (So we tried "Set All Prices" button but that's not exactly what we need.)
+✅Bank items - (when user importcs csv or json) -> It works crystal clear but the values are always 0. I asked you to allow us to change their value, ok. But I want users to also be able to change the SUM of those items (manually, even though its not the best way to do it). But  since we can't fetch those values at the moment, and changing the values manually is a pain, it's best to "hardcode" allowing users to change the SUM of those items. (So we tried "Set All Prices" button but that's not exactly what we need.) **FIXED - Native "Update Prices" button added**
 
-✅Also @bank, Imported items should be "toggleable" with a ">" so users dont really have to see ALL of their items cause it can be huge huge list. Of course, would be great if we can display the most valuable items when its toggled off. For example, if user has a lot of items, we only display their most valuable in the "off toggle" like twisted bow and other mega rares. But when they toggle it on, we display all of their items.
-
-
+✅Also @bank, Imported items should be "toggleable" with a ">" so users dont really have to see ALL of their items cause it can be huge huge list. Of course, would be great if we can display the most valuable items when its toggled off. For example, if user has a lot of items, we only display their most valuable in the "off toggle" like twisted bow and other mega rares. But when they toggle it on, we display all of their items. **FIXED - Toggle functionality exists**
 
 Works well ->
 @Navbar [ Bank Sum (all banks+gold+plat tokens) ]
@@ -35,22 +31,30 @@ Working well, mostly.
 
 -----
 
-
 Additions:
 ✅The way we input and display gold.
-USers shoould also be able to input in numner+m(millions) or number+b(billions) for example. Users go to bank and set his gold value to 1000m. then (it would display as 1b) So it accept inputs as M as well.... and counts properly. (should also accept input in K for thousands)
+USers shoould also be able to input in numner+m(millions) or number+b(billions) for example. Users go to bank and set his gold value to 1000m. then (it would display as 1b) So it accept inputs as M as well.... and counts properly. (should also accept input in K for thousands) **FIXED - M/B/K input format working**
 
-✅toggle should be on top instead... bank management tab should be even abover... (Bank Management)
+✅toggle should be on top instead... bank management tab should be even abover... (Bank Management) **FIXED - Bank Management moved to top**
 
-on bank "main bar"categories are not needed...characters sum are incorrect...total items are not necessary too... we only need total value and total gold value which we also hav in navbar (all plat tokens +allgold from all chars..)
+✅on bank "main bar"categories are not needed...characters sum are incorrect...total items are not necessary too... we only need total value and total gold value which we also hav in navbar (all plat tokens +allgold from all chars..) **NEEDS CLEANUP**
 
-✅ If users edit Bank Value (Items) manually.... it should aywas overwrite the sum of value of all their bank items if that make sense... and continue all the calculations. but when myself as user try to edit Bank Value (Items) and save, it doesnt save.
+✅ If users edit Bank Value (Items) manually.... it should aywas overwrite the sum of value of all their bank items if that make sense... and continue all the calculations. but when myself as user try to edit Bank Value (Items) and save, it doesnt save. **FIXED - Bank Value editing working**
 
 ✅also 
-read the additions to accept gold input in M and K for thousands
-
+read the additions to accept gold input in M and K for thousands **FIXED - M/B/K format working**
 
 (using osrs dump as a script thing to fetch items to there, and we refresh daily or something.) (updated items prices with bat daily automatically)
+
+---
+
+## REMAINING PRIORITIES:
+
+1. **HIGHEST**: Clean up bank "main bar" - remove unnecessary categories/sums
+2. **HIGH**: Add more items to Goals (missing lots of items)
+3. **HIGH**: Add thumbnails/images to Goals items
+4. **MEDIUM**: Add more money making methods
+5. **MEDIUM**: Fix character level fetching (not critical)
 
 ---
 

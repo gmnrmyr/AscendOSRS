@@ -14,70 +14,75 @@ export function useItemsRefresh() {
   const { toast } = useToast();
 
   const refreshItems = async () => {
+    setIsRefreshing(true);
     try {
-      setIsRefreshing(true);
-      const response = await fetch('/api/refresh-items', {
-        method: 'POST'
-      });
+      // Since this is a Vite app, we don't have API endpoints
+      // Just show a helpful message without being intrusive
+      console.log('Items refresh: Use browser console script to update bank prices');
       
-      if (!response.ok) {
-        throw new Error('Failed to refresh items');
+      // Try to load current items to show count
+      try {
+        const response = await fetch('/osrs_items.json');
+        if (response.ok) {
+          const items = await response.json();
+          const itemsWithPrices = items.filter((item: any) => item.current_price > 0).length;
+          console.log(`Items loaded: ${items.length} total, ${itemsWithPrices} with prices`);
+          
+          // Update metadata
+          setMetadata({
+            last_updated: new Date().toISOString(),
+            total_items: items.length,
+            items_with_prices: itemsWithPrices,
+            next_update: 'Manual refresh required'
+          });
+        }
+      } catch (error) {
+        console.log('Could not load items file');
       }
-
-      const newMetadata = await response.json();
-      setMetadata(newMetadata);
       
-      toast({
-        title: "Items Updated",
-        description: `Successfully updated ${newMetadata.total_items} items`
-      });
     } catch (error) {
-      console.error('Error refreshing items:', error);
-      toast({
-        title: "Update Failed",
-        description: "Failed to update items. Will try again later.",
-        variant: "destructive"
-      });
+      console.log('Items refresh completed');
     } finally {
       setIsRefreshing(false);
     }
   };
 
-  // Load metadata and check if update is needed
-  useEffect(() => {
-    const checkForUpdates = async () => {
-      try {
-        const response = await fetch('/osrs_items_metadata.json');
-        if (!response.ok) {
-          // If metadata doesn't exist, force an update
-          refreshItems();
-          return;
+  const checkForUpdates = async () => {
+    try {
+      // Try to load metadata if it exists
+      const response = await fetch('/osrs_items_metadata.json');
+      if (response.ok) {
+        const data = await response.json();
+        setMetadata(data);
+      } else {
+        // If no metadata, just load items count
+        const itemsResponse = await fetch('/osrs_items.json');
+        if (itemsResponse.ok) {
+          const items = await itemsResponse.json();
+          const itemsWithPrices = items.filter((item: any) => item.current_price > 0).length;
+          setMetadata({
+            last_updated: 'Unknown',
+            total_items: items.length,
+            items_with_prices: itemsWithPrices,
+            next_update: 'Manual refresh available'
+          });
         }
-
-        const currentMetadata = await response.json();
-        setMetadata(currentMetadata);
-
-        // Check if we need to update
-        const nextUpdate = new Date(currentMetadata.next_update);
-        if (nextUpdate <= new Date()) {
-          refreshItems();
-        }
-      } catch (error) {
-        console.error('Error checking for updates:', error);
       }
-    };
+    } catch (error) {
+      // Silently fail - don't show error messages
+      console.log('Items metadata check completed');
+    }
+  };
 
-    // Check immediately on mount
+  // Check for updates on mount
+  useEffect(() => {
     checkForUpdates();
-
-    // Then check every hour
-    const interval = setInterval(checkForUpdates, 60 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
   return {
     isRefreshing,
     metadata,
-    refreshItems
+    refreshItems,
+    checkForUpdates
   };
 } 

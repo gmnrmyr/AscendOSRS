@@ -6,6 +6,7 @@ export interface OsrsItem {
   is_member: boolean;
   image_url: string;
   examine: string;
+  current_price: number;
 }
 
 export function useOsrsItems() {

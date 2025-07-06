@@ -235,6 +235,25 @@ export function IntegratedBankManager({
 
   return (
     <div className="space-y-4">
+      {/* Bank Management Section - Moved to top */}
+      {selectedCharacterData && (
+        <EnhancedBankManager
+          character={selectedCharacterData}
+          bankItems={characterBankItems}
+          onUpdateCharacter={(char) => {
+            setCharacters(characters.map(c => 
+              c.name === char.name ? char : c
+            ));
+          }}
+          onUpdateBankItems={(items) => {
+            setBankData({
+              ...bankData,
+              [selectedCharacter]: items
+            });
+          }}
+        />
+      )}
+
       {/* Character selection */}
       <div className="flex gap-4 items-center">
         <Select value={selectedCharacter} onValueChange={setSelectedCharacter}>
@@ -263,26 +282,30 @@ export function IntegratedBankManager({
         )}
       </div>
 
-      {selectedCharacterData && (
+      {selectedCharacter && (
         <>
-          {/* Bank Management Section */}
-          <EnhancedBankManager
-            character={selectedCharacterData}
-            bankItems={characterBankItems}
-            onUpdateCharacter={(char) => {
-              setCharacters(characters.map(c => 
-                c.name === char.name ? char : c
-              ));
-            }}
-            onUpdateBankItems={(items) => {
-              setBankData({
-                ...bankData,
-                [selectedCharacter]: items
-              });
-            }}
-          />
+          {/* Toggle for items visibility - Moved to top */}
+          {sortedItems.length > VALUABLE_ITEMS_THRESHOLD && (
+            <Button
+              variant="outline"
+              className="w-full mb-4"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronDown className="h-4 w-4 mr-2" />
+                  Show Less
+                </>
+              ) : (
+                <>
+                  <ChevronRight className="h-4 w-4 mr-2" />
+                  Show {hiddenItemsCount} More Items
+                </>
+              )}
+            </Button>
+          )}
 
-          {/* Bank Items Section */}
+          {/* Bank Items Section - Simplified */}
           <Card>
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
@@ -292,44 +315,25 @@ export function IntegratedBankManager({
                 </span>
               </CardTitle>
             </CardHeader>
+            
             <CardContent>
-              {/* Toggle for items visibility */}
-              {sortedItems.length > VALUABLE_ITEMS_THRESHOLD && (
-                <Button
-                  variant="outline"
-                  className="w-full mb-4"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                >
-                  {isExpanded ? (
-                    <>
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                      Show Less
-                    </>
-                  ) : (
-                    <>
-                      <ChevronRight className="h-4 w-4 mr-2" />
-                      Show {hiddenItemsCount} More Items
-                    </>
-                  )}
-                </Button>
-              )}
-
               {/* Items list */}
               {displayedItems.length === 0 ? (
                 <p className="text-center text-gray-500 py-8">No items in bank</p>
               ) : (
-                <div className="space-y-4">
-                  <div className="grid gap-4">
-                    {displayedItems.map((item) => (
-                      <Card key={item.id}>
-                        <CardContent className="flex items-center justify-between p-4">
-                          <div>
-                            <h4 className="font-semibold">{item.name}</h4>
-                            <p className="text-sm text-gray-500">
+                <div className="space-y-2">
+                  {displayedItems.map((item) => (
+                    <Card key={item.id} className="p-3">
+                      <CardContent className="p-0">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium">{item.name}</h4>
+                            <p className="text-sm text-muted-foreground">
                               Quantity: {item.quantity.toLocaleString()}
                             </p>
                           </div>
-                          <div className="flex items-center gap-4">
+                          
+                          <div className="flex items-center gap-2">
                             {editingItemId === item.id ? (
                               <div className="flex items-center gap-2">
                                 <Input
@@ -368,40 +372,74 @@ export function IntegratedBankManager({
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
 
-              {/* Add item form */}
-              <div className="mt-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
-                <h3 className="font-semibold mb-4">Add New Item</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Add Item Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Add Item</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="item-name">Item Name</Label>
                   <Input
-                    placeholder="Item name"
+                    id="item-name"
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
+                    placeholder="Enter item name"
                   />
+                </div>
+                
+                <div>
+                  <Label htmlFor="item-quantity">Quantity</Label>
                   <Input
-                    type="text"
-                    placeholder="Quantity"
+                    id="item-quantity"
+                    type="number"
                     value={newItemQuantity}
                     onChange={(e) => setNewItemQuantity(e.target.value)}
+                    placeholder="0"
                   />
+                </div>
+                
+                <div>
+                  <Label htmlFor="item-price">Price (GP)</Label>
                   <Input
+                    id="item-price"
                     type="text"
-                    placeholder="Price (1m, 1b, etc)"
                     value={newItemPrice}
                     onChange={(e) => setNewItemPrice(e.target.value)}
+                    placeholder="1m, 1b, etc"
                   />
-                  <Button onClick={handleAddItem} className="w-full">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Item
-                  </Button>
+                </div>
+                
+                <div>
+                  <Label htmlFor="item-category">Category</Label>
+                  <Select value={newItemCategory} onValueChange={(value: any) => setNewItemCategory(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="stackable">Stackable</SelectItem>
+                      <SelectItem value="gear">Gear</SelectItem>
+                      <SelectItem value="materials">Materials</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+              
+              <Button onClick={handleAddItem} className="w-full mt-4">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Item
+              </Button>
             </CardContent>
           </Card>
 

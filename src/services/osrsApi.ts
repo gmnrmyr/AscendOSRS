@@ -359,6 +359,48 @@ export const osrsApi = {
 
   getDefaultMoneyMakers: (): MoneyMakingGuide[] => {
     return [
+      // === HIGHEST TIER BOSSING ===
+      {
+        id: "tob",
+        name: "Theatre of Blood",
+        category: "bossing" as const,
+        gpHour: 6000000,
+        clickIntensity: 5 as const,
+        requirements: "Very high combat stats, team coordination, expensive gear",
+        notes: "Highest tier PvM content, requires experienced team",
+        profit: 6000000,
+        difficulty: "Very High",
+        description: "Highest tier PvM content with best rewards",
+        membership: "p2p"
+      },
+      {
+        id: "cox",
+        name: "Chambers of Xeric (Raids)",
+        category: "bossing" as const,
+        gpHour: 4500000,
+        clickIntensity: 5 as const,
+        requirements: "High combat stats, raid experience, good gear",
+        notes: "Raid content with valuable unique drops",
+        profit: 4500000,
+        difficulty: "Very High",
+        description: "First raid in OSRS with unique rewards",
+        membership: "p2p"
+      },
+      {
+        id: "toa",
+        name: "Tombs of Amascut",
+        category: "bossing" as const,
+        gpHour: 5500000,
+        clickIntensity: 5 as const,
+        requirements: "Beneath Cursed Sands quest, high combat stats, good gear",
+        notes: "Newest raid with masori and lightbearer drops",
+        profit: 5500000,
+        difficulty: "Very High",
+        description: "Desert raid with unique rewards",
+        membership: "p2p"
+      },
+
+      // === HIGH TIER BOSSING ===
       {
         id: "vorkath",
         name: "Vorkath",
@@ -386,31 +428,126 @@ export const osrsApi = {
         membership: "p2p"
       },
       {
-        id: "tob",
-        name: "Theatre of Blood",
+        id: "hydra",
+        name: "Alchemical Hydra",
         category: "bossing" as const,
-        gpHour: 6000000,
-        clickIntensity: 5 as const,
-        requirements: "Very high combat stats, team coordination, expensive gear",
-        notes: "Highest tier PvM content, requires experienced team",
-        profit: 6000000,
-        difficulty: "Very High",
-        description: "Highest tier PvM content with best rewards",
+        gpHour: 3800000,
+        clickIntensity: 4 as const,
+        requirements: "95 Slayer, Kebos Lowlands diary, good gear",
+        notes: "Slayer boss with valuable drops including claws",
+        profit: 3800000,
+        difficulty: "High",
+        description: "Slayer boss with valuable drops including claws",
         membership: "p2p"
       },
       {
-        id: "cox",
-        name: "Chambers of Xeric (Raids)",
+        id: "cerberus",
+        name: "Cerberus",
         category: "bossing" as const,
-        gpHour: 4500000,
-        clickIntensity: 5 as const,
-        requirements: "High combat stats, raid experience, good gear",
-        notes: "Raid content with valuable unique drops",
-        profit: 4500000,
-        difficulty: "Very High",
-        description: "First raid in OSRS with unique rewards",
+        gpHour: 2800000,
+        clickIntensity: 4 as const,
+        requirements: "91 Slayer, good melee gear, prayer potions",
+        notes: "Slayer boss that drops primordial, pegasian, eternal crystals",
+        profit: 2800000,
+        difficulty: "High",
+        description: "Slayer boss that drops primordial, pegasian, eternal crystals",
         membership: "p2p"
       },
+      {
+        id: "nightmare",
+        name: "The Nightmare",
+        category: "bossing" as const,
+        gpHour: 3200000,
+        clickIntensity: 5 as const,
+        requirements: "High combat stats, team coordination, expensive gear",
+        notes: "Group boss with very rare but valuable drops",
+        profit: 3200000,
+        difficulty: "Very High",
+        description: "Group boss with very rare but valuable drops",
+        membership: "p2p"
+      },
+      {
+        id: "nex",
+        name: "Nex",
+        category: "bossing" as const,
+        gpHour: 4200000,
+        clickIntensity: 5 as const,
+        requirements: "The Frozen Door miniquest, very high combat stats, expensive gear",
+        notes: "Ancient Prison boss with virtus and zaryte drops",
+        profit: 4200000,
+        difficulty: "Very High",
+        description: "Ancient Prison boss with virtus and zaryte drops",
+        membership: "p2p"
+      },
+
+      // === MEDIUM TIER BOSSING ===
+      {
+        id: "bandos",
+        name: "General Graardor (Bandos)",
+        category: "bossing" as const,
+        gpHour: 2200000,
+        clickIntensity: 3 as const,
+        requirements: "70+ combat stats, good gear, team recommended",
+        notes: "GWD boss that drops bandos armor pieces",
+        profit: 2200000,
+        difficulty: "Medium",
+        description: "GWD boss that drops bandos armor pieces",
+        membership: "p2p"
+      },
+      {
+        id: "armadyl",
+        name: "Kree'arra (Armadyl)",
+        category: "bossing" as const,
+        gpHour: 2000000,
+        clickIntensity: 4 as const,
+        requirements: "70+ ranged, good ranged gear, team recommended",
+        notes: "GWD boss that drops armadyl armor and crossbow",
+        profit: 2000000,
+        difficulty: "Medium",
+        description: "GWD boss that drops armadyl armor and crossbow",
+        membership: "p2p"
+      },
+      {
+        id: "saradomin",
+        name: "Commander Zilyana (Saradomin)",
+        category: "bossing" as const,
+        gpHour: 1800000,
+        clickIntensity: 3 as const,
+        requirements: "70+ combat stats, good gear, team recommended",
+        notes: "GWD boss that drops saradomin sword and ACB",
+        profit: 1800000,
+        difficulty: "Medium",
+        description: "GWD boss that drops saradomin sword and ACB",
+        membership: "p2p"
+      },
+      {
+        id: "zamorak",
+        name: "K'ril Tsutsaroth (Zamorak)",
+        category: "bossing" as const,
+        gpHour: 1600000,
+        clickIntensity: 3 as const,
+        requirements: "70+ combat stats, good gear, team recommended",
+        notes: "GWD boss that drops zamorakian spear and staff of the dead",
+        profit: 1600000,
+        difficulty: "Medium",
+        description: "GWD boss that drops zamorakian spear and staff of the dead",
+        membership: "p2p"
+      },
+      {
+        id: "corporeal-beast",
+        name: "Corporeal Beast",
+        category: "bossing" as const,
+        gpHour: 2500000,
+        clickIntensity: 4 as const,
+        requirements: "Summer's End quest, high combat stats, team coordination",
+        notes: "Group boss that drops spirit shields and elysian sigil",
+        profit: 2500000,
+        difficulty: "High",
+        description: "Group boss that drops spirit shields and elysian sigil",
+        membership: "p2p"
+      },
+
+      // === COMBAT (NON-BOSS) ===
       {
         id: "brutal-black-dragons",
         name: "Brutal Black Dragons",
@@ -464,31 +601,59 @@ export const osrsApi = {
         membership: "p2p"
       },
       {
-        id: "cannonballs",
-        name: "Cannonballs",
-        category: "skilling" as const,
-        gpHour: 150000,
-        clickIntensity: 1 as const,
-        requirements: "Dwarf Cannon quest, 35 Smithing",
-        notes: "Very AFK money making method",
-        profit: 150000,
-        difficulty: "Very Low",
-        description: "Very AFK money making method",
+        id: "demonic-gorillas",
+        name: "Demonic Gorillas",
+        category: "combat" as const,
+        gpHour: 1500000,
+        clickIntensity: 4 as const,
+        requirements: "Monkey Madness II, high combat stats, good gear",
+        notes: "Drops zenyte shards for jewelry",
+        profit: 1500000,
+        difficulty: "High",
+        description: "Drops zenyte shards for jewelry",
         membership: "p2p"
       },
       {
-        id: "blast-furnace-gold",
-        name: "Blast Furnace Gold Bars",
-        category: "skilling" as const,
-        gpHour: 800000,
-        clickIntensity: 3 as const,
-        requirements: "40 Smithing, goldsmith gauntlets recommended",
-        notes: "Good smithing xp and profit",
-        profit: 800000,
+        id: "skeletal-wyverns",
+        name: "Skeletal Wyverns",
+        category: "combat" as const,
+        gpHour: 600000,
+        clickIntensity: 2 as const,
+        requirements: "72 Slayer, elemental/mind shield, ranged gear",
+        notes: "Drops granite legs and draconic visage",
+        profit: 600000,
         difficulty: "Medium",
-        description: "Good smithing xp and profit",
+        description: "Drops granite legs and draconic visage",
         membership: "p2p"
       },
+      {
+        id: "revenants",
+        name: "Revenants",
+        category: "combat" as const,
+        gpHour: 2000000,
+        clickIntensity: 4 as const,
+        requirements: "Medium combat stats, wilderness survival skills",
+        notes: "High risk/reward in wilderness, drops ancient artifacts",
+        profit: 2000000,
+        difficulty: "High",
+        description: "High risk/reward in wilderness, drops ancient artifacts",
+        membership: "p2p"
+      },
+      {
+        id: "green-dragons",
+        name: "Green Dragons",
+        category: "combat" as const,
+        gpHour: 400000,
+        clickIntensity: 3 as const,
+        requirements: "Medium combat stats, wilderness survival",
+        notes: "Classic wilderness money maker, watch for PKers",
+        profit: 400000,
+        difficulty: "Medium",
+        description: "Classic wilderness money maker, watch for PKers",
+        membership: "p2p"
+      },
+
+      // === SKILLING - RUNECRAFTING ===
       {
         id: "runecrafting-natures",
         name: "Nature Runes via Abyss",
@@ -503,6 +668,60 @@ export const osrsApi = {
         membership: "p2p"
       },
       {
+        id: "runecrafting-astral",
+        name: "Astral Runes",
+        category: "skilling" as const,
+        gpHour: 1200000,
+        clickIntensity: 3 as const,
+        requirements: "40 Runecrafting, Lunar Diplomacy quest",
+        notes: "Good profit and xp, less competitive than natures",
+        profit: 1200000,
+        difficulty: "Medium",
+        description: "Good profit and xp, less competitive than natures",
+        membership: "p2p"
+      },
+      {
+        id: "runecrafting-law",
+        name: "Law Runes",
+        category: "skilling" as const,
+        gpHour: 800000,
+        clickIntensity: 3 as const,
+        requirements: "54 Runecrafting, balloon transport system",
+        notes: "Decent profit, good for lower levels",
+        profit: 800000,
+        difficulty: "Medium",
+        description: "Decent profit, good for lower levels",
+        membership: "p2p"
+      },
+      {
+        id: "runecrafting-blood",
+        name: "Blood Runes",
+        category: "skilling" as const,
+        gpHour: 600000,
+        clickIntensity: 1 as const,
+        requirements: "77 Runecrafting, access to Zeah",
+        notes: "Very AFK, good for long-term profit",
+        profit: 600000,
+        difficulty: "Low",
+        description: "Very AFK, good for long-term profit",
+        membership: "p2p"
+      },
+      {
+        id: "runecrafting-wrath",
+        name: "Wrath Runes",
+        category: "skilling" as const,
+        gpHour: 1800000,
+        clickIntensity: 4 as const,
+        requirements: "95 Runecrafting, Dragon Slayer II",
+        notes: "Highest profit runecrafting method",
+        profit: 1800000,
+        difficulty: "High",
+        description: "Highest profit runecrafting method",
+        membership: "p2p"
+      },
+
+      // === SKILLING - FARMING ===
+      {
         id: "herb-runs",
         name: "Herb Runs (Ranarr)",
         category: "skilling" as const,
@@ -513,6 +732,349 @@ export const osrsApi = {
         profit: 2000000,
         difficulty: "Medium",
         description: "Hourly runs, very profitable over time",
+        membership: "p2p"
+      },
+      {
+        id: "tree-runs",
+        name: "Tree Runs",
+        category: "skilling" as const,
+        gpHour: 500000,
+        clickIntensity: 2 as const,
+        requirements: "15+ Farming, access to tree patches",
+        notes: "Daily runs for farming xp and profit",
+        profit: 500000,
+        difficulty: "Low",
+        description: "Daily runs for farming xp and profit",
+        membership: "p2p"
+      },
+      {
+        id: "fruit-tree-runs",
+        name: "Fruit Tree Runs",
+        category: "skilling" as const,
+        gpHour: 300000,
+        clickIntensity: 2 as const,
+        requirements: "27+ Farming, access to fruit tree patches",
+        notes: "Daily runs, good farming xp",
+        profit: 300000,
+        difficulty: "Low",
+        description: "Daily runs, good farming xp",
+        membership: "p2p"
+      },
+
+      // === SKILLING - SMITHING ===
+      {
+        id: "blast-furnace-gold",
+        name: "Blast Furnace Gold Bars",
+        category: "skilling" as const,
+        gpHour: 800000,
+        clickIntensity: 3 as const,
+        requirements: "40 Smithing, goldsmith gauntlets recommended",
+        notes: "Good smithing xp and profit",
+        profit: 800000,
+        difficulty: "Medium",
+        description: "Good smithing xp and profit",
+        membership: "p2p"
+      },
+      {
+        id: "blast-furnace-steel",
+        name: "Blast Furnace Steel Bars",
+        category: "skilling" as const,
+        gpHour: 600000,
+        clickIntensity: 3 as const,
+        requirements: "30 Smithing, coal bag recommended",
+        notes: "Good profit for mid-level smithing",
+        profit: 600000,
+        difficulty: "Medium",
+        description: "Good profit for mid-level smithing",
+        membership: "p2p"
+      },
+      {
+        id: "blast-furnace-mithril",
+        name: "Blast Furnace Mithril Bars",
+        category: "skilling" as const,
+        gpHour: 700000,
+        clickIntensity: 3 as const,
+        requirements: "50 Smithing, coal bag recommended",
+        notes: "Higher level smithing profit",
+        profit: 700000,
+        difficulty: "Medium",
+        description: "Higher level smithing profit",
+        membership: "p2p"
+      },
+      {
+        id: "cannonballs",
+        name: "Cannonballs",
+        category: "skilling" as const,
+        gpHour: 150000,
+        clickIntensity: 1 as const,
+        requirements: "Dwarf Cannon quest, 35 Smithing",
+        notes: "Very AFK money making method",
+        profit: 150000,
+        difficulty: "Very Low",
+        description: "Very AFK money making method",
+        membership: "p2p"
+      },
+
+      // === SKILLING - COOKING ===
+      {
+        id: "cooking-karambwans",
+        name: "Cooking Karambwans",
+        category: "skilling" as const,
+        gpHour: 400000,
+        clickIntensity: 2 as const,
+        requirements: "30 Cooking, Tai Bwo Wannai Trio quest",
+        notes: "AFK cooking with decent profit",
+        profit: 400000,
+        difficulty: "Low",
+        description: "AFK cooking with decent profit",
+        membership: "p2p"
+      },
+      {
+        id: "cooking-wines",
+        name: "Making Wines",
+        category: "skilling" as const,
+        gpHour: 200000,
+        clickIntensity: 2 as const,
+        requirements: "35 Cooking",
+        notes: "No cooking level required, instant process",
+        profit: 200000,
+        difficulty: "Very Low",
+        description: "No cooking level required, instant process",
+        membership: "p2p"
+      },
+
+      // === SKILLING - FLETCHING ===
+      {
+        id: "fletching-darts",
+        name: "Fletching Darts",
+        category: "skilling" as const,
+        gpHour: 300000,
+        clickIntensity: 2 as const,
+        requirements: "10+ Fletching",
+        notes: "AFK fletching with decent profit",
+        profit: 300000,
+        difficulty: "Low",
+        description: "AFK fletching with decent profit",
+        membership: "p2p"
+      },
+      {
+        id: "fletching-bolts",
+        name: "Fletching Bolts",
+        category: "skilling" as const,
+        gpHour: 250000,
+        clickIntensity: 2 as const,
+        requirements: "9+ Fletching",
+        notes: "Good profit for low level fletching",
+        profit: 250000,
+        difficulty: "Low",
+        description: "Good profit for low level fletching",
+        membership: "p2p"
+      },
+
+      // === SKILLING - CRAFTING ===
+      {
+        id: "crafting-battlestaves",
+        name: "Crafting Battlestaves",
+        category: "skilling" as const,
+        gpHour: 500000,
+        clickIntensity: 2 as const,
+        requirements: "58+ Crafting",
+        notes: "Daily shop runs for orb supplies",
+        profit: 500000,
+        difficulty: "Medium",
+        description: "Daily shop runs for orb supplies",
+        membership: "p2p"
+      },
+      {
+        id: "crafting-dhide",
+        name: "Crafting D'hide Bodies",
+        category: "skilling" as const,
+        gpHour: 350000,
+        clickIntensity: 2 as const,
+        requirements: "77+ Crafting",
+        notes: "Good crafting xp and profit",
+        profit: 350000,
+        difficulty: "Medium",
+        description: "Good crafting xp and profit",
+        membership: "p2p"
+      },
+
+      // === SKILLING - HUNTER ===
+      {
+        id: "hunter-chinchompas",
+        name: "Chinchompas",
+        category: "skilling" as const,
+        gpHour: 800000,
+        clickIntensity: 3 as const,
+        requirements: "53+ Hunter",
+        notes: "Good profit and hunter xp",
+        profit: 800000,
+        difficulty: "Medium",
+        description: "Good profit and hunter xp",
+        membership: "p2p"
+      },
+      {
+        id: "hunter-red-chinchompas",
+        name: "Red Chinchompas",
+        category: "skilling" as const,
+        gpHour: 1200000,
+        clickIntensity: 4 as const,
+        requirements: "63+ Hunter, wilderness survival",
+        notes: "Higher profit but in wilderness",
+        profit: 1200000,
+        difficulty: "High",
+        description: "Higher profit but in wilderness",
+        membership: "p2p"
+      },
+
+      // === SKILLING - MINING ===
+      {
+        id: "mining-amethyst",
+        name: "Mining Amethyst",
+        category: "skilling" as const,
+        gpHour: 400000,
+        clickIntensity: 1 as const,
+        requirements: "92 Mining",
+        notes: "Very AFK mining method",
+        profit: 400000,
+        difficulty: "Low",
+        description: "Very AFK mining method",
+        membership: "p2p"
+      },
+      {
+        id: "mining-volcanic-ash",
+        name: "Mining Volcanic Ash",
+        category: "skilling" as const,
+        gpHour: 300000,
+        clickIntensity: 2 as const,
+        requirements: "22 Mining, access to Fossil Island",
+        notes: "Used for ultracompost, decent profit",
+        profit: 300000,
+        difficulty: "Low",
+        description: "Used for ultracompost, decent profit",
+        membership: "p2p"
+      },
+
+      // === SKILLING - WOODCUTTING ===
+      {
+        id: "woodcutting-yews",
+        name: "Yew Trees",
+        category: "skilling" as const,
+        gpHour: 200000,
+        clickIntensity: 1 as const,
+        requirements: "60 Woodcutting",
+        notes: "Classic AFK money maker",
+        profit: 200000,
+        difficulty: "Very Low",
+        description: "Classic AFK money maker",
+        membership: "p2p"
+      },
+      {
+        id: "woodcutting-magic",
+        name: "Magic Trees",
+        category: "skilling" as const,
+        gpHour: 350000,
+        clickIntensity: 1 as const,
+        requirements: "75 Woodcutting",
+        notes: "Higher level AFK woodcutting",
+        profit: 350000,
+        difficulty: "Low",
+        description: "Higher level AFK woodcutting",
+        membership: "p2p"
+      },
+
+      // === FREE-TO-PLAY METHODS ===
+      {
+        id: "f2p-smithing-rune",
+        name: "Smithing Rune Items (F2P)",
+        category: "skilling" as const,
+        gpHour: 300000,
+        clickIntensity: 2 as const,
+        requirements: "85+ Smithing",
+        notes: "F2P smithing profit",
+        profit: 300000,
+        difficulty: "Medium",
+        description: "F2P smithing profit",
+        membership: "f2p"
+      },
+      {
+        id: "f2p-high-alching",
+        name: "High Level Alchemy (F2P)",
+        category: "skilling" as const,
+        gpHour: 100000,
+        clickIntensity: 3 as const,
+        requirements: "55 Magic",
+        notes: "Classic F2P magic training with profit",
+        profit: 100000,
+        difficulty: "Low",
+        description: "Classic F2P magic training with profit",
+        membership: "f2p"
+      },
+      {
+        id: "f2p-wine-making",
+        name: "Wine Making (F2P)",
+        category: "skilling" as const,
+        gpHour: 150000,
+        clickIntensity: 2 as const,
+        requirements: "35 Cooking",
+        notes: "F2P cooking profit method",
+        profit: 150000,
+        difficulty: "Low",
+        description: "F2P cooking profit method",
+        membership: "f2p"
+      },
+      {
+        id: "f2p-cowhides",
+        name: "Collecting Cowhides (F2P)",
+        category: "skilling" as const,
+        gpHour: 80000,
+        clickIntensity: 2 as const,
+        requirements: "Low combat stats",
+        notes: "Classic F2P beginner money maker",
+        profit: 80000,
+        difficulty: "Very Low",
+        description: "Classic F2P beginner money maker",
+        membership: "f2p"
+      },
+
+      // === MISCELLANEOUS ===
+      {
+        id: "shop-runs",
+        name: "Shop Runs",
+        category: "other" as const,
+        gpHour: 500000,
+        clickIntensity: 2 as const,
+        requirements: "Access to various shops",
+        notes: "Daily shop stock buying for resale",
+        profit: 500000,
+        difficulty: "Low",
+        description: "Daily shop stock buying for resale",
+        membership: "p2p"
+      },
+      {
+        id: "flipping",
+        name: "Grand Exchange Flipping",
+        category: "other" as const,
+        gpHour: 1000000,
+        clickIntensity: 2 as const,
+        requirements: "Starting capital, market knowledge",
+        notes: "Buy low, sell high on GE",
+        profit: 1000000,
+        difficulty: "Medium",
+        description: "Buy low, sell high on GE",
+        membership: "p2p"
+      },
+      {
+        id: "treasure-trails",
+        name: "Treasure Trails",
+        category: "other" as const,
+        gpHour: 600000,
+        clickIntensity: 3 as const,
+        requirements: "Various quest/skill requirements",
+        notes: "Clue scrolls for rare rewards",
+        profit: 600000,
+        difficulty: "Medium",
+        description: "Clue scrolls for rare rewards",
         membership: "p2p"
       }
     ];

@@ -33,7 +33,7 @@ interface CharacterBankDisplayProps {
   updateItem: (character: string, itemId: string, field: keyof BankItem, value: any) => void;
 }
 
-type SortOption = 'value' | 'name' | 'quantity' | 'category';
+type SortOption = 'value' | 'name' | 'quantity';
 
 export function CharacterBankDisplay({
   characters,
@@ -78,9 +78,6 @@ export function CharacterBankDisplay({
         case 'quantity':
           comparison = a.quantity - b.quantity;
           break;
-        case 'category':
-          comparison = a.category.localeCompare(b.category);
-          break;
         default:
           comparison = 0;
       }
@@ -122,7 +119,6 @@ export function CharacterBankDisplay({
                 <SelectItem value="value">Value</SelectItem>
                 <SelectItem value="name">Name</SelectItem>
                 <SelectItem value="quantity">Quantity</SelectItem>
-                <SelectItem value="category">Category</SelectItem>
               </SelectContent>
             </Select>
             
@@ -175,9 +171,6 @@ export function CharacterBankDisplay({
                   <Badge variant="outline" className="text-yellow-700 border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 text-sm px-2 py-1 block">
                     Gold: {formatGP(goldValue)} GP
                   </Badge>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {characterItems.length} items
-                  </p>
                 </div>
               </div>
             </CardHeader>
@@ -220,9 +213,7 @@ export function CharacterBankDisplay({
                               </Button>
                             </div>
                             
-                            <Badge className={getCategoryColor(item.category)}>
-                              {item.category}
-                            </Badge>
+
                             
                             <div className="grid grid-cols-2 gap-2 mt-2">
                               <div>
@@ -267,11 +258,7 @@ export function CharacterBankDisplay({
                             </div>
                           </div>
                         ))}
-                        {characterItems.length > 5 && (
-                          <p className="text-xs text-gray-500 text-center py-1">
-                            +{characterItems.length - 5} more items
-                          </p>
-                        )}
+
                       </div>
                     )}
                   </CardContent>

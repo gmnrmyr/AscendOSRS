@@ -1,4 +1,4 @@
-# OSRS Dashboard App - Comprehensive Development List
+# OSRS Dashboard App - Comprehensive Development Roadmap
 
 ## 🚨 CRITICAL CONSTRAINTS
 - **DO NOT BREAK EXISTING FUNCTIONALITY** - Users are already using the app
@@ -24,88 +24,92 @@
 - **Backend**: Supabase cloud function with proper data validation and error handling
 - **Data Persistence**: All user data now properly persists across sessions and devices
 
----
+### 2. BANK SUMMATION & INTERFACE - COMPLETED ✅
+- **Status**: FULLY WORKING
+- **Issue Fixed**: Bank sum was only calculating ONE character instead of all characters
+- **Interface Cleanup**: Removed unnecessary categories, item counts, character sums
+- **Solution**: Fixed calculations to include all characters + all gold + all platinum tokens
+- **Current State**: Bank sum correctly shows combined wealth across all characters
+- **Navbar Integration**: Bank Sum and Gold Sum now properly synchronized
 
-## 🔥 CURRENT PRIORITIES
-
-### 2. MONEY MAKING METHODS - DATA EXPANSION
-
-### Priority: HIGH - Core Feature Enhancement
-- **Current Issue**: Limited money making methods available
-- **Data Source**: Pull from OSRS Wiki - https://oldschool.runescape.wiki/w/Money_making_guide
-- **Include ALL Categories**: Combat, Skilling, Free-to-play, Collecting, etc.
-- **Required Methods to Add**:
-  - Mining amethyst
-  - Smithing runite items (F2P method)
-  - Killing green dragons
-  - High alching
-  - ALL other methods from OSRS wiki money making guide
-- **Sync Requirement**: Keep data synced with reality/current OSRS economy
-- **Data Source**: Use only open source data from OSRS wiki
-- **Member vs F2P Distinction**: Ensure proper categorization for member and free-to-play methods
+### 3. BANK VALUE MANAGEMENT - COMPLETED ✅
+- **Status**: FULLY WORKING
+- **Manual Editing**: Users can now edit bank values and they persist correctly
+- **Gold Input Format**: M/B/K format working (1000m → 1b display)
+- **Update Prices**: Native "Update Prices" button for bulk price updates
+- **Bank Item Toggle**: Items properly toggleable with valuable items display when collapsed
 
 ---
 
-### 3. GOALS SECTION - ITEM EXPANSION
+## 🔥 CURRENT HIGH PRIORITIES
 
-### Priority: HIGH - User Experience
-- **Current State**: Displays items (working correctly)
-- **Enhancement**: Add ALL items that players would commonly have as goals
-- **Reference**: Use OSRS Wiki for comprehensive item list
-- **Focus**: ALL items that OSRS players typically set as goals, not just popular ones
-- **Missing High-Value Items to Include**:
+### 4. GOALS SECTION - ITEM DATABASE EXPANSION
+
+#### Priority: CRITICAL - Core Feature Enhancement
+- **Current Issue**: Limited item selection, missing comprehensive goal items
+- **Missing High-Value Items**:
   - **3rd Age Items**: 3rd age sword, 3rd age bow, 3rd age mage hat, 3rd age robe, etc.
   - **Gilded Items**: Gilded armor pieces, gilded weapons
-  - Twisted bow, Dragon hunter crossbow, Bandos armor pieces
-  - Virtus equipment, Masori armor, Justiciar armor
-  - Primordial/Pegasian/Eternal boots
-  - High-tier weapons (Ghrazi rapier, Sanguinesti staff, etc.)
-  - Popular teleport items and utility gear
-  - Rare pets, achievement diary rewards
-- **Data Source**: OSRS Wiki has all items - use comprehensive item database
-- **Member vs F2P**: Ensure proper distinction between member and F2P goal items
+  - **High-Tier Weapons**: Twisted bow, Dragon hunter crossbow, Ghrazi rapier, Sanguinesti staff
+  - **Armor Sets**: Bandos, Virtus, Masori, Justiciar armor pieces
+  - **Boots**: Primordial/Pegasian/Eternal boots
+  - **Utility Items**: Popular teleport items, achievement diary rewards
+  - **Rare Pets**: All obtainable pets
+- **Data Source**: OSRS Wiki comprehensive item database
+- **Member vs F2P**: Ensure proper categorization for member and free-to-play items
+- **Integration**: Must work with existing price refresh and goal tracking systems
 
----
+### 5. GOALS SECTION - THUMBNAILS IMPLEMENTATION
 
-### 4. CHARACTER DATA FETCHING
+#### Priority: HIGH - User Experience Enhancement
+- **Current Issue**: No thumbnails/images for items in goals section
+- **Impact**: Poor visual experience for goal setting
+- **Data Source**: OSRS Wiki item images or similar open source
+- **Requirements**: Consistent sizing, fast loading, proper fallbacks
+- **Application**: All goal items must have visual representation
 
-### Priority: HIGH - Real Data Integration
-- **Current Issue**: Character refresh shows "unreal" values when refreshing/adding
-- **Data Sources**: OSRS wiki, TempleOSRS, or other open source APIs
-- **Research**: Identify best open source data source for character stats
+### 6. MONEY MAKING METHODS - DATA EXPANSION
+
+#### Priority: HIGH - Core Feature Enhancement  
+- **Current Issue**: Limited money making methods available
+- **Data Source**: OSRS Wiki Money Making Guide - https://oldschool.runescape.wiki/w/Money_making_guide
+- **Required Methods to Add**:
+  - **Combat Methods**: Killing green dragons, Vorkath, Zulrah, etc.
+  - **Skilling Methods**: Mining amethyst, High alching, Smithing runite items
+  - **F2P Methods**: All free-to-play money making options
+  - **Collecting Methods**: Various gathering activities
+  - **ALL Categories**: Combat, Skilling, Free-to-play, Collecting, etc.
+- **Member vs F2P**: Proper categorization for different account types
+- **Data Sync**: Keep synced with current OSRS economy
+
+### 7. CHARACTER DATA FETCHING
+
+#### Priority: HIGH - Real Data Integration
+- **Current Issue**: Character refresh shows "unreal" values
+- **Data Sources**: OSRS Hiscores, TempleOSRS, or other open source APIs
 - **Priority Stats to Fetch**:
   - **Total Level** (highest priority - must work)
-  - Combat Level (if fetchable)
-- **Fallback**: Keep manual input as backup when API fails
-- **Account Types**: Support proper OSRS account types (see section 8)
-- **API Integration**: Implement robust error handling for API failures
+  - **Combat Level** (if fetchable)
+  - **Individual Skills** (if API supports)
+- **Account Types**: Support proper OSRS account types (Regular, Ironman, etc.)
+- **Error Handling**: Robust API failure handling with manual input fallback
+- **API Integration**: Research and identify best open source data sources
 
 ---
 
-### 5. PRICE REFRESH & HARD EDIT FUNCTIONALITY
+## 📋 MEDIUM PRIORITY FEATURES
 
-### Priority: HIGH - User Control
-- **Issue**: Refresh button doesn't always update prices correctly
-- **Solution**: Implement "hard edit" capability for users
-- **Use Case**: When refresh fails, users can manually correct prices
-- **Scope**: Apply to both money making methods and goals sections
-- **Implementation**: Add edit buttons/fields alongside refresh functionality
+### 8. ENHANCED CSV IMPORT FUNCTIONALITY
 
----
-
-### 6. CSV IMPORT FUNCTIONALITY
-
-### Priority: HIGH - RuneLite Integration
-- **Format**: Support RuneLite "Data Exporter" plugin CSV format
+#### Priority: MEDIUM - RuneLite Integration
+- **Current State**: Basic CSV import working
+- **Enhancement**: Full RuneLite "Data Exporter" plugin CSV format support
 - **Sample Formats**: Support both member and F2P account exports
-- **Integration**: Must sync with existing features without breaking design/functionality
-- **Location**: Bank importing section
-- **User Instructions**: Add CSV import instructions to landing page
-- **Critical**: Ensure imported items work with all existing app features
+- **Integration**: Must sync with existing features without breaking design
+- **User Instructions**: Add comprehensive CSV import guide to landing page
 
-### Example CSV Formats to Support:
-
-#### F2P Account Format:
+#### Example CSV Formats to Support:
+**F2P Account Format:**
 ```json
 [
   {"id":8013,"quantity":50,"name":"Teleport to house (Members)"},
@@ -113,7 +117,7 @@
 ]
 ```
 
-#### Member Account Format:
+**Member Account Format:**
 ```json
 [
   {"id":12791,"quantity":1,"name":"Rune pouch"},
@@ -123,208 +127,161 @@
 ]
 ```
 
-- **Validation**: Ensure proper handling of both member and F2P items
-- **Error Handling**: Graceful handling of unknown item IDs
-- **Data Sync**: Imported items must integrate with price refresh and goals system
+### 9. CHARACTER TYPES REFINEMENT
 
----
-
-## 📋 MEDIUM PRIORITY FEATURES
-
-### 7. THUMBNAILS IMPLEMENTATION
-
-### Priority: MEDIUM - Visual Enhancement
-- **Requirement**: Add thumbnails for items/methods
-- **Data Source**: Pull from open source sources (OSRS wiki recommended)
-- **Research**: Find best open source thumbnail sources
-- **Application**: Apply to money making methods and goals
-- **Format**: Ensure consistent sizing and loading performance
-
----
-
-### 8. CHARACTER TYPES REFINEMENT
-
-### Priority: MEDIUM - OSRS Accuracy
+#### Priority: MEDIUM - OSRS Accuracy
 - **Current Issue**: "Alt" is not a native OSRS account type
 - **Official OSRS Account Types**:
   - Regular account
   - Ironman
-  - Ultimate Ironman
+  - Ultimate Ironman  
   - Hardcore Ironman
   - Group Ironman
-- **"Alt" Handling**: 
-  - Keep as internal type for user organization
-  - Don't let it interfere with highscores/real character data fetching
-  - Consider moving to separate category or removing from main character settings
+- **"Alt" Handling**: Keep as internal organizational type but don't let it interfere with hiscores
 - **Implementation**: Ensure account type affects data fetching appropriately
 
----
+### 10. LANDING PAGE ENHANCEMENT
 
-### 9. LANDING PAGE ENHANCEMENT
-
-### Priority: MEDIUM - User Onboarding
-- **Current Issue**: Only shows authentication
-- **Enhancement**: Add comprehensive information about:
+#### Priority: MEDIUM - User Onboarding
+- **Current State**: Only shows authentication
+- **Enhancement Requirements**:
   - App functionality overview
-  - Current features
-  - Goals and vision
-  - CSV import instructions (both F2P and member account formats)
-  - How to use the tool effectively
+  - Current features and capabilities
+  - Goals and vision statement
+  - CSV import instructions (F2P and member formats)
   - RuneLite Data Exporter plugin setup guide
-- **Target Users**: Both single account players and alt account managers
-- **Content**: Make it clear this is primarily for alt account management
+  - Effective usage tutorials
+- **Target Audience**: Both single account players and alt account managers
+- **Content Focus**: Clarity that this is primarily for alt account management
 
 ---
 
-### 10. BANK VALUE HANDLING
+## 🎯 UPCOMING PREMIUM FEATURES
 
-### Priority: LOW - Clarification
-- **Current State**: Bank value shown in characters section
-- **Action**: Remove edit capability from characters section
-- **Reason**: Bank value is handled elsewhere in the app
-- **Keep**: Display only (no editing to prevent conflicts)
-- **Note**: Bank value impossible to fetch automatically, handled in bank import section
+### 11. AUTHENTICATION & ADMIN SYSTEM
+
+#### Priority: HIGH - Business Logic
+- **Admin Access**: Add admin privileges to manera@gmail.com
+- **Password Reset**: Allow users to reset passwords in auth system
+- **Trial System**: 30-day trial for demo accounts
+- **Subscription Tiers**: 
+  - Lifetime
+  - Monthly
+  - 3/6/12 month periods
+  - 2/3/5 year periods
+- **Admin CMS**: Backend control panel (Ctrl+Shift+E) accessible to admin only
+- **Coupon System**: Admin-controlled coupon codes for all subscription periods
+- **Payment Integration**: Controlled by payments system
+
+### 12. AUTOMATED DATA UPDATES
+
+#### Priority: MEDIUM - Data Integrity
+- **OSRS Wiki Integration**: Daily automated item price updates via batch script
+- **Price Refresh Enhancement**: Improve reliability of price update systems
+- **Hard Edit Capability**: Allow manual price corrections when API fails
+- **Data Validation**: Ensure data accuracy and regular updates
 
 ---
 
 ## 🔄 ONGOING REQUIREMENTS
 
-### 11. DATA SOURCE REQUIREMENTS
+### 13. DATA SOURCE COMPLIANCE
 
-### Priority: ONGOING - Data Integrity
+#### Priority: ONGOING - Data Integrity
 - **Mandate**: ALL data must come from open source sources
 - **Primary Source**: OSRS Wiki
 - **Secondary Sources**: TempleOSRS (for character data)
 - **Prohibited**: No proprietary or closed-source data
-- **Quality**: Ensure data accuracy and regular updates
 - **Member Content**: Properly handle member vs F2P distinctions
 
----
+### 14. QUALITY ASSURANCE & TESTING
 
-### 12. TESTING & VALIDATION
-
-### Priority: CRITICAL - Quality Assurance
+#### Priority: CRITICAL - System Reliability
 - **Save/Load**: ✅ Cloud save/load tested and working
+- **Bank Calculations**: ✅ Bank summation tested and working
 - **Data Refresh**: Verify all refresh buttons work correctly
-- **CSV Import**: Test with actual RuneLite export data (both F2P and member accounts)
+- **CSV Import**: Test with actual RuneLite export data
 - **Character Fetching**: Validate real OSRS character data retrieval
 - **Cross-Browser**: Ensure functionality works across browsers
-- **User Flow**: Test complete user workflows without breaking
 - **Member vs F2P**: Test all features with both account types
 
----
+### 15. CODE MAINTENANCE
 
-### 13. TODO TRACKING SYSTEM
-
-### Priority: MEDIUM - Project Management
-- **Current Issue**: Features keep being requested repeatedly
-- **Solution**: Add items to existing todo.txt or todo.md file
-- **Purpose**: Track features so we know what's been completed
-- **Note**: If you keep getting asked for the same feature, it means it's not working properly
-- **Maintenance**: Regular updates to reflect current development status
-
----
-
-### 14. CODE MAINTENANCE
-
-### Priority: ONGOING - Technical Debt
-- **Refactoring**: Permitted only if:
+#### Priority: ONGOING - Technical Excellence
+- **Refactoring Guidelines**: Only when:
   - Doesn't break existing functionality
   - Doesn't change design
   - Improves code quality
-  - You're confident in the changes
-  - You're done with your main task
-- **Big Code**: Break down large code blocks if needed
-- **Quality**: Maintain high code standards throughout
-- **When to Refactor**: Only after completing main tasks and when confident
-
----
-
-### 15. MEMBER VS F2P CONTENT HANDLING
-
-### Priority: HIGH - Account Type Support
-- **Issue**: Need to properly distinguish between member and F2P content
-- **Implementation**: 
-  - Flag items/methods as member-only or F2P
-  - Filter content based on account type preferences
-  - Handle CSV imports with mixed member/F2P items
-- **Data Sources**: OSRS Wiki properly categorizes member vs F2P content
-- **User Experience**: Clear indicators for member-only content
-
----
-
-### 16. HIGH-VALUE ITEM INTEGRATION
-
-### Priority: MEDIUM - Comprehensive Content
-- **Enhancement**: Include ALL high-tier items that could be goals
-- **Items to Prioritize**:
-  - **3rd Age Items**: All 3rd age equipment (sword, bow, mage hat, robe, etc.)
-  - **Gilded Items**: All gilded armor pieces and weapons
-  - Twisted bow, Dragon hunter crossbow
-  - Masori armor (f), Virtus equipment
-  - Bandos armor, Justiciar armor
-  - Primordial/Pegasian/Eternal boots
-  - Max capes and achievement diary rewards
-  - Rare pets and special items
-- **Goal**: Make the app reflect actual comprehensive OSRS content from wiki
-- **Integration**: Ensure these items work with price refresh and goal tracking
+  - High confidence in changes
+  - Main tasks are completed
+- **Code Quality**: Maintain high standards throughout
+- **Documentation**: Keep comprehensive development records
 
 ---
 
 ## 🎯 SUCCESS CRITERIA
 
-The app should function as a comprehensive tool for OSRS players, particularly those managing multiple alt accounts, while serving single-account players effectively. All features must work reliably with real OSRS data integration and proper cloud persistence.
+### Primary Goals
+- **Comprehensive Tool**: Complete solution for OSRS players managing multiple accounts
+- **Data Accuracy**: All calculations and displays reflect real OSRS data
+- **User Experience**: Intuitive interface with all necessary features
+- **Reliability**: Stable cloud persistence and data management
 
-**Target Users:**
-- OSRS players with multiple alt accounts (PRIMARY TARGET)
-- OSRS players with single accounts (SECONDARY TARGET)
-
-**Account Type Support:**
-- Both member and F2P accounts
-- Proper content filtering based on membership status
-- Mixed account management (some alts F2P, some member)
-
-## ⚠️ FAILURE CONDITIONS
-
-- Breaking existing functionality
-- Losing user data
-- Changing current design
-- Removing features users depend on
-- Save/load not working properly (RESOLVED ✅)
-- Features being requested repeatedly (means they're not implemented properly)
-- Poor handling of member vs F2P content distinction
-
-## 📊 CURRENT STATUS UPDATE
-
-**What's Working:**
-- ✅ Save to Cloud: ALL data (characters, methods, goals, bank, settings)
-- ✅ Load from Cloud: ALL data persists correctly
-- ✅ Money making methods: Basic functionality
-- ✅ Character display and manual input
-- ✅ Basic CSV import functionality
-- ✅ Active/Inactive method states: Now saving and loading correctly
-
-**What's Missing/Needs Enhancement:**
-- ❌ Money making methods: Limited selection (need expansion from OSRS Wiki)
-- ❌ Character data: Showing "unreal" values on refresh (need real API integration)
-- ❌ Price refresh: Not working reliably (need hard edit functionality)
-- ❌ Member vs F2P content distinction (need proper categorization)
-- ❌ Goals missing: 3rd Age items, Gilded items, comprehensive item list
-- ❌ Comprehensive CSV import (member accounts)
-- ❌ Thumbnails and visual enhancements
-- ❌ Landing page comprehensive information
-
-## 🔄 DEVELOPMENT PRIORITIES
-
-1. **HIGH**: Expand money making methods from OSRS Wiki
-2. **HIGH**: Add ALL items to goals (including 3rd Age, Gilded, comprehensive wiki list)
-3. **HIGH**: Implement character data fetching from open sources
-4. **HIGH**: Add hard edit functionality for prices
-5. **HIGH**: Enhance CSV import for member account format
-6. **MEDIUM**: Add thumbnails and visual enhancements
-7. **MEDIUM**: Improve landing page with comprehensive information
-8. **MEDIUM**: Refine character types and bank value handling
+### Target User Support
+- **OSRS players with multiple alt accounts** (PRIMARY TARGET)
+- **OSRS players with single accounts** (SECONDARY TARGET)
+- **Account Type Support**: Both member and F2P accounts
+- **Content Filtering**: Proper filtering based on membership status
+- **Mixed Management**: Some alts F2P, some member
 
 ---
 
-*This comprehensive list maintains all original requirements while incorporating the latest status updates and clarifications about missing functionality and data completeness requirements. Cloud save/load functionality is now COMPLETE and working properly.*
+## ⚠️ FAILURE CONDITIONS TO AVOID
+
+- Breaking existing functionality
+- Losing user data
+- Changing current design without user request
+- Removing features users depend on
+- Poor handling of member vs F2P content distinction
+- Features being requested repeatedly (indicates poor implementation)
+
+---
+
+## 📊 CURRENT STATUS OVERVIEW
+
+### ✅ WORKING EXCELLENTLY
+- **Core Calculations**: Bank summation across all characters
+- **Data Persistence**: Save/load to cloud with all data types
+- **User Interface**: Clean, organized, and functional
+- **Bank Management**: Value editing, item toggling, price updates
+- **Input Formats**: M/B/K format parsing for gold values
+
+### 🔄 NEEDS IMMEDIATE ATTENTION
+- **Goals Database**: Missing comprehensive item selection
+- **Method Database**: Limited money making methods
+- **Visual Elements**: Item thumbnails and images
+- **API Integration**: Character level fetching
+
+### 🏗️ FUTURE DEVELOPMENT
+- **Premium Features**: Admin system, subscriptions, advanced analytics
+- **Advanced Integrations**: Real-time data feeds, automated updates
+- **Enhanced UX**: Advanced filtering, sorting, analytics
+
+---
+
+## 🎉 DEVELOPMENT ACHIEVEMENTS
+
+The app has evolved into a robust, reliable tool for OSRS wealth management. Recent fixes have resolved critical calculation issues and interface problems, creating a solid foundation for database expansion and premium feature development.
+
+**Key Accomplishments:**
+- ✅ Resolved multi-character bank summation
+- ✅ Cleaned up interface complexity
+- ✅ Established reliable cloud persistence
+- ✅ Created flexible input systems
+- ✅ Built scalable architecture
+
+**Next Phase Focus**: Content database expansion while maintaining excellent existing functionality.
+
+---
+
+*This roadmap maintains all original requirements while reflecting current status and organizing priorities for efficient development progression.*

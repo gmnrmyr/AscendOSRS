@@ -30,22 +30,15 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
   // Filter active characters for calculations
   const activeCharacters = characters.filter(char => char.isActive);
 
-  // Filter bank data for active characters only
-  const activeBankData = Object.fromEntries(
-    Object.entries(bankData).filter(([characterName]) => 
-      activeCharacters.some(char => char.name === characterName)
-    )
-  );
-
   return (
     <Tabs value={activeTab} className="space-y-8">
       <TabsContent value="summary">
         <div className="pixel-card p-6">
           <SummaryDashboard 
-            characters={activeCharacters}
+            characters={characters}
             moneyMethods={moneyMethods}
             purchaseGoals={purchaseGoals}
-            bankData={activeBankData}
+            bankData={bankData}
             hoursPerDay={hoursPerDay}
           />
         </div>

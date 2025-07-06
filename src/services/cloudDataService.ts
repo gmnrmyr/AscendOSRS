@@ -325,7 +325,63 @@ export class CloudDataService {
     }
   }
 
-  // FIXED: Chunked sync method that doesn't accidentally clear data
+  // BANK-ONLY save method for chunked saves - doesn't clear existing data
+  static async saveUserDataBankOnly(
+    character: string,
+    items: BankItem[],
+    hoursPerDay: number
+  ) {
+    try {
+      console.log(`Starting bank-only save for ${character} (${items.length} items)...`);
+      
+      // Sort items by value (most valuable first)
+      const sortedItems = [...items].sort((a, b) => {
+        const valueA = (a.quantity || 0) * (a.estimatedPrice || 0);
+        const valueB = (b.quantity || 0) * (b.estimatedPrice || 0);
+        return valueB - valueA;
+      });
+      
+      // Clean and prepare bank data
+      const cleanedBankData = {
+        [character]: sortedItems
+          .filter(item => item && typeof item === 'object' && item.name && String(item.name).trim())
+          .map(item => ({
+            ...item,
+            category: mapBankItemCategory(item.category),
+            quantity: Math.min(typeof item.quantity === 'number' ? item.quantity : 0, 999999999999),
+            estimatedPrice: Math.min(typeof item.estimatedPrice === 'number' ? item.estimatedPrice : 0, 999999999999),
+            name: String(item.name).trim()
+          }))
+      };
+      
+      console.log(`Saving ${Object.values(cleanedBankData).flat().length} cleaned items for ${character}`);
+      
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
+        body: {
+          action: 'save',
+          bankOnly: true, // CRITICAL: Use bank-only mode
+          characters: [],
+          moneyMethods: [],
+          purchaseGoals: [],
+          bankData: cleanedBankData,
+          hoursPerDay: hoursPerDay
+        }
+      });
+
+      if (error) {
+        console.error(`Bank-only save error for ${character}:`, error);
+        throw new Error(`Bank-only save failed for ${character}: ${error.message || 'Unknown error'}`);
+      }
+
+      console.log(`Bank-only save completed for ${character}:`, data);
+      return data;
+    } catch (error) {
+      console.error(`Error in bank-only save for ${character}:`, error);
+      throw error;
+    }
+  }
+
+  // TRUE CHUNKED: Character-by-character save to overcome 1000-item limit
   static async saveUserDataChunked(
     characters: Character[],
     moneyMethods: MoneyMethod[],
@@ -335,50 +391,147 @@ export class CloudDataService {
     progressCallback?: (progress: { current: number; total: number; phase: string }) => void
   ) {
     try {
-      console.log('Starting FIXED chunked cloud save...');
+      console.log('Starting TRUE CHUNKED cloud save...');
       
       const totalBankItems = Object.values(bankData).flat().length;
+      const characterNames = Object.keys(bankData).filter(char => bankData[char]?.length > 0);
       
-      // If dataset is small, use regular save
-      if (totalBankItems <= 500) {
-        console.log('Dataset is small, using regular save method');
-        return await this.saveUserData(characters, moneyMethods, purchaseGoals, bankData, hoursPerDay);
+      console.log(`TRUE CHUNKED: ${totalBankItems} items across ${characterNames.length} characters`);
+      
+      // STEP 1: Save non-bank data first
+      progressCallback?.({ current: 1, total: characterNames.length + 3, phase: 'Saving characters, methods, and goals...' });
+      
+      console.log('Step 1: Saving non-bank data...');
+      const nonBankResult = await this.saveUserData(characters, moneyMethods, purchaseGoals, {}, hoursPerDay);
+      console.log('Non-bank data saved successfully');
+      
+      // STEP 2: Save each character's bank separately using bank-only mode
+      let totalSaved = 0;
+      let totalExpected = 0;
+      const saveResults = [];
+      
+      progressCallback?.({ current: 2, total: characterNames.length + 3, phase: 'Processing bank data by character...' });
+      
+      for (let i = 0; i < characterNames.length; i++) {
+        const character = characterNames[i];
+        const items = bankData[character] || [];
+        
+        if (items.length === 0) continue;
+        
+        // Sort items by value for this character (most valuable first)
+        const sortedItems = [...items].sort((a, b) => {
+          const valueA = (a.quantity || 0) * (a.estimatedPrice || 0);
+          const valueB = (b.quantity || 0) * (b.estimatedPrice || 0);
+          return valueB - valueA;
+        });
+        
+        totalExpected += sortedItems.length;
+        
+        progressCallback?.({ 
+          current: i + 3, 
+          total: characterNames.length + 3, 
+          phase: `Saving ${character}'s bank (${sortedItems.length} items)...` 
+        });
+        
+        console.log(`Saving ${character}: ${sortedItems.length} items (most valuable first)`);
+        
+        // Log top 3 most valuable items for this character
+        const topItems = sortedItems.slice(0, 3);
+        topItems.forEach((item, idx) => {
+          const value = (item.quantity || 0) * (item.estimatedPrice || 0);
+          if (value > 0) {
+            console.log(`  ${idx + 1}. ${item.name} - ${value.toLocaleString()} GP`);
+          }
+        });
+        
+        try {
+          // CRITICAL FIX: Use bank-only mode to avoid clearing existing data
+          const characterResult = await this.saveUserDataBankOnly(character, sortedItems, hoursPerDay);
+          
+          const savedCount = characterResult?.saved?.bankItems || 0;
+          totalSaved += savedCount;
+          
+          saveResults.push({
+            character,
+            expected: sortedItems.length,
+            saved: savedCount,
+            success: savedCount === sortedItems.length
+          });
+          
+          console.log(`${character}: ${savedCount}/${sortedItems.length} items saved (${((savedCount/sortedItems.length)*100).toFixed(1)}%)`);
+          
+          // Small delay between characters to prevent overwhelming the database
+          if (i < characterNames.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+          
+        } catch (characterError) {
+          console.error(`Failed to save ${character}'s bank:`, characterError);
+          saveResults.push({
+            character,
+            expected: sortedItems.length,
+            saved: 0,
+            success: false,
+            error: characterError.message
+          });
+        }
       }
       
-      console.log(`Large dataset detected (${totalBankItems} items), using chunked save...`);
+      progressCallback?.({ current: characterNames.length + 3, total: characterNames.length + 3, phase: 'Completed' });
       
-      // FIXED: Save everything with prioritized bank data instead of clearing bank data
-      progressCallback?.({ current: 1, total: 3, phase: 'Saving all data with prioritized items...' });
+      // STEP 3: Generate detailed report
+      const successRate = totalExpected > 0 ? ((totalSaved / totalExpected) * 100).toFixed(1) : '100';
       
-      // Sort all bank items by value first
-      const prioritizedBankData = Object.fromEntries(
-        Object.entries(bankData).map(([character, items]) => [
-          character,
-          [...items].sort((a, b) => {
-            const valueA = (a.quantity || 0) * (a.estimatedPrice || 0);
-            const valueB = (b.quantity || 0) * (b.estimatedPrice || 0);
-            return valueB - valueA; // Most valuable first
-          })
-        ])
-      );
+      console.log('\n=== TRUE CHUNKED SAVE RESULTS ===');
+      console.log(`Total: ${totalSaved}/${totalExpected} items saved (${successRate}% success)`);
+      console.log('\nPer-character breakdown:');
+      saveResults.forEach(result => {
+        const rate = result.expected > 0 ? ((result.saved / result.expected) * 100).toFixed(1) : '100';
+        const status = result.success ? '✅' : '❌';
+        console.log(`  ${status} ${result.character}: ${result.saved}/${result.expected} (${rate}%)`);
+        if (result.error) {
+          console.log(`    Error: ${result.error}`);
+        }
+      });
       
-      progressCallback?.({ current: 2, total: 3, phase: 'Saving prioritized data to cloud...' });
+      if (totalSaved < totalExpected) {
+        const missingItems = totalExpected - totalSaved;
+        const failedCharacters = saveResults.filter(r => !r.success).map(r => r.character);
+        
+        let message = `True chunked save completed: ${totalSaved}/${totalExpected} items saved (${successRate}% success). `;
+        message += `${missingItems} items failed to sync. Most valuable items were prioritized first.`;
+        
+        if (failedCharacters.length > 0) {
+          message += ` Issues with: ${failedCharacters.join(', ')}`;
+        }
+        
+        return {
+          ...nonBankResult,
+          warning: message,
+          partialSync: {
+            expected: totalExpected,
+            saved: totalSaved,
+            missing: missingItems,
+            successRate: parseFloat(successRate),
+            method: 'true-chunked',
+            characterResults: saveResults,
+            failedCharacters
+          }
+        };
+      }
       
-      // Save everything at once with prioritized data (no chunking needed - the server now handles this better)
-      const result = await this.saveUserData(characters, moneyMethods, purchaseGoals, prioritizedBankData, hoursPerDay);
-      
-      progressCallback?.({ current: 3, total: 3, phase: 'Completed' });
-      
-      console.log('Fixed chunked save completed successfully');
+      console.log('🎉 All items saved successfully!');
       
       return {
-        ...result,
-        method: 'fixed-chunked',
-        note: 'Used improved chunked method with value prioritization'
+        ...nonBankResult,
+        success: true,
+        method: 'true-chunked',
+        saved: { ...nonBankResult.saved, bankItems: totalSaved },
+        characterResults: saveResults
       };
       
     } catch (error) {
-      console.error('Error in fixed chunked save:', error);
+      console.error('Error in true chunked save:', error);
       throw error;
     }
   }

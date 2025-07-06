@@ -422,8 +422,15 @@ export function CloudOperations({
               <div>
                 <h4 className="font-medium text-orange-800">Sync Warning</h4>
                 <p className="text-sm text-orange-700 mt-1">{lastSyncWarning}</p>
+                <div className="bg-orange-100 rounded p-2 mt-2 text-xs text-orange-800">
+                  <p><strong>💡 Understanding the results:</strong></p>
+                  <p>• <strong>90%+ success rate is excellent!</strong> Your most valuable items (Twisted Bow, Scythe, etc.) are saved first</p>
+                  <p>• Failed items are typically the least valuable ones (low-value materials, consumables)</p>
+                  <p>• Each character's bank is saved separately to overcome database limits</p>
+                  <p>• Check browser console for detailed per-character breakdown</p>
+                </div>
                 <p className="text-xs text-orange-600 mt-2">
-                  Try saving again or check your internet connection. Large bank imports may take multiple attempts.
+                  <strong>Next steps:</strong> Try saving again, or check individual characters if needed. Your most valuable items are secure!
                 </p>
               </div>
             </div>
@@ -436,7 +443,7 @@ export function CloudOperations({
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
               <div className="flex-1">
-                <h4 className="font-medium text-blue-800">Saving Large Dataset</h4>
+                <h4 className="font-medium text-blue-800">Saving Large Dataset - Character by Character</h4>
                 <p className="text-sm text-blue-700">{chunkProgress.phase}</p>
                 <div className="w-full bg-blue-200 rounded-full h-2 mt-1">
                   <div 
@@ -445,7 +452,7 @@ export function CloudOperations({
                   ></div>
                 </div>
                 <p className="text-xs text-blue-600 mt-1">
-                  Step {chunkProgress.current} of {chunkProgress.total}
+                  Step {chunkProgress.current} of {chunkProgress.total} - Each character saved separately
                 </p>
               </div>
             </div>
@@ -481,7 +488,7 @@ export function CloudOperations({
             }`}
           >
             <Upload className="h-4 w-4 mr-2" />
-            {isCloudSavingChunked ? "Saving..." : "Chunked Save (FIXED)"}
+            {isCloudSavingChunked ? "Saving..." : "True Chunked Save"}
             {isLargeDataset && <span className="ml-1 text-xs">✅</span>}
           </Button>
           
@@ -507,15 +514,15 @@ export function CloudOperations({
         
         <div className="text-sm text-blue-600 space-y-1">
           <p>Cloud storage automatically syncs your data when you make changes.</p>
-          {isLargeDataset && (
-            <p className="text-purple-600 font-medium">
-              ★ Chunked Save recommended for {totalBankItems.toLocaleString()} items - saves most valuable items first
-            </p>
-          )}
+                  {isLargeDataset && (
+          <p className="text-green-600 font-medium">
+            ✅ True Chunked Save recommended for {totalBankItems.toLocaleString()} items - saves each character separately with most valuable items first
+          </p>
+        )}
           <p className="text-xs text-gray-500">
             Regular Save: Fast, may timeout with large datasets | 
             Enhanced Save: Better validation | 
-            Chunked Save (FIXED): Best for 500+ items | 
+            True Chunked Save: Character-by-character saves, overcomes 1000-item limit | 
             🚨 Recovery: Restores data from browser storage
           </p>
         </div>

@@ -153,12 +153,13 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const { action } = body
+    const { action, bankOnly = false } = body
 
     if (action === 'save') {
       const { characters, moneyMethods, purchaseGoals, bankData, hoursPerDay } = body
 
       console.log('Starting cloud save for user:', user.id)
+      console.log('Bank-only mode:', bankOnly)
       console.log('Data counts:', {
         characters: characters?.length || 0,
         moneyMethods: moneyMethods?.length || 0,
@@ -173,18 +174,22 @@ serve(async (req) => {
         bankItems: 0
       }
 
-      // Clear existing data first
-      console.log('Clearing existing user data...')
-      try {
-        await Promise.all([
-          supabaseClient.from('characters').delete().eq('user_id', user.id),
-          supabaseClient.from('money_methods').delete().eq('user_id', user.id),  
-          supabaseClient.from('purchase_goals').delete().eq('user_id', user.id),
-          supabaseClient.from('bank_items').delete().eq('user_id', user.id)
-        ])
-        console.log('Existing data cleared successfully')
-      } catch (deleteError) {
-        console.warn('Some delete operations failed, continuing anyway:', deleteError)
+      // CRITICAL FIX: Only clear existing data if NOT in bank-only mode
+      if (!bankOnly) {
+        console.log('Clearing existing user data...')
+        try {
+          await Promise.all([
+            supabaseClient.from('characters').delete().eq('user_id', user.id),
+            supabaseClient.from('money_methods').delete().eq('user_id', user.id),  
+            supabaseClient.from('purchase_goals').delete().eq('user_id', user.id),
+            supabaseClient.from('bank_items').delete().eq('user_id', user.id)
+          ])
+          console.log('Existing data cleared successfully')
+        } catch (deleteError) {
+          console.warn('Some delete operations failed, continuing anyway:', deleteError)
+        }
+      } else {
+        console.log('Bank-only mode: Not clearing existing data, only adding bank items')
       }
 
       // Save characters
@@ -304,6 +309,36 @@ serve(async (req) => {
         if (allBankItems.length > 0) {
           console.log(`Processing ${allBankItems.length} bank items...`)
           
+          // CRITICAL: If in bank-only mode, clear existing bank items for these specific characters first
+          if (bankOnly) {
+            const charactersToUpdate = Object.keys(bankData).filter(char => 
+              Array.isArray(bankData[char]) && bankData[char].length > 0
+            );
+            
+            if (charactersToUpdate.length > 0) {
+              console.log(`Bank-only mode: Clearing existing bank items for characters: ${charactersToUpdate.join(', ')}`);
+              
+              try {
+                // Clear bank items for these specific characters only
+                const { error: clearError } = await supabaseClient
+                  .from('bank_items')
+                  .delete()
+                  .eq('user_id', user.id)
+                  .in('character', charactersToUpdate);
+                
+                if (clearError) {
+                  console.error('Error clearing character bank items:', clearError);
+                  throw new Error(`Failed to clear character bank items: ${clearError.message}`);
+                }
+                
+                console.log(`Successfully cleared bank items for characters: ${charactersToUpdate.join(', ')}`);
+              } catch (clearError) {
+                console.error('Failed to clear character bank items:', clearError);
+                throw clearError;
+              }
+            }
+          }
+          
           const bankItemsToInsert = allBankItems
             .filter((item: any) => {
               const hasValidName = item && typeof item === 'object' && item.name && String(item.name).trim();
@@ -371,10 +406,12 @@ serve(async (req) => {
           });
           
           if (bankItemsToInsert.length > 0) {
-            // Significantly increased batch size and improved retry logic
-            const batchSize = 100; // Increased from 50 to 100
+            // Optimized batch parameters for character-by-character saves
+            const batchSize = 75; // Reduced from 100 to 75 for better reliability
             let totalInserted = 0;
-            const maxRetries = 5; // Increased from 3 to 5
+            const maxRetries = 5; // Keep 5 retries
+            
+            console.log(`Processing ${bankItemsToInsert.length} items in batches of ${batchSize}...`);
             
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize);
@@ -429,7 +466,7 @@ serve(async (req) => {
                         totalValue: item.quantity * item.estimated_price
                       }))
                       .sort((a, b) => b.totalValue - a.totalValue)
-                      .slice(0, Math.min(20, batch.length)); // Try top 20 items from failed batch
+                      .slice(0, Math.min(15, batch.length)); // Try top 15 items from failed batch (reduced from 20)
                     
                     for (const item of sortedBatch) {
                       try {
@@ -445,6 +482,9 @@ serve(async (req) => {
                         } else {
                           console.error(`Individual save failed for ${item.name}:`, singleError?.message);
                         }
+                        
+                        // Small delay between individual saves
+                        await new Promise(resolve => setTimeout(resolve, 50));
                       } catch (individualError) {
                         console.error(`Individual save exception for ${item.name}:`, individualError);
                       }
@@ -464,9 +504,9 @@ serve(async (req) => {
               totalInserted += batchInserted;
               console.log(`Running total: ${totalInserted}/${bankItemsToInsert.length} items saved (${((totalInserted/bankItemsToInsert.length)*100).toFixed(1)}%)`);
               
-              // Add a small delay between batches to prevent overwhelming the database
+              // Increased delay between batches for character-by-character saves
               if (i + batchSize < bankItemsToInsert.length) {
-                await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+                await new Promise(resolve => setTimeout(resolve, 200)); // Increased from 100ms to 200ms
               }
             }
             

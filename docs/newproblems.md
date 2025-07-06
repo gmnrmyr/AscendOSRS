@@ -115,13 +115,24 @@ USERS ARE ALREADY USING THE APP. IT'S SUPER WELL DONE AND SMART MADE. MOST FEATU
 
 ## 🎯 UPCOMING PRIORITIES
 
-### Authentication & Admin Features
-- **Admin Access**: Add admin privileges to manera@gmail.com
-- **Password Reset**: Allow users to reset passwords
-- **Trial System**: 30-day trial for demo accounts
-- **Subscription Tiers**: Lifetime, monthly, 3/6/12 month, 2/3/5 year periods
-- **Admin CMS**: Backend control panel (Ctrl+Shift+E) for admin management
-- **Coupon System**: Admin-controlled coupon codes for all subscription periods
+### Business Model & User Experience
+- **Landing Page Overhaul**: Comprehensive review and redesign with pricing tiers
+- **Subscription Plans**: Monthly, 3-month, 6-month, yearly with discounts
+- **Founder Lifetime**: Special lifetime access for early adopters
+- **Free Trial**: 30-day free trial for all first-time users
+- **Demo Accounts**: Automated demo account creation with trial period
+
+### Premium Features & Admin Control
+- **Admin Dashboard**: Full admin control panel for manera@gmail.com
+- **Premium Code System**: Auto-generate and manage premium codes for all tiers
+- **Code Analytics**: Track usage, conversion rates, and user acquisition
+- **Automated Control**: Auto-apply codes and manage subscription periods
+
+### UI/UX Enhancements
+- **Dark Mode**: Complete dark theme implementation with toggle
+- **Brand Redesign**: App name review, logo design, and brand identity
+- **Theme Persistence**: Save user preferences to cloud/local storage
+- **Accessibility**: WCAG compliance for both light and dark modes
 
 ### Data Integration Improvements
 - **OSRS Wiki Integration**: Daily automated item price updates via batch script
@@ -152,7 +163,10 @@ USERS ARE ALREADY USING THE APP. IT'S SUPER WELL DONE AND SMART MADE. MOST FEATU
 - Character level fetching
 
 **🏗️ FUTURE ENHANCEMENTS:**
-- Admin/subscription system
+- Landing page overhaul with subscription tiers
+- Dark mode implementation
+- Brand redesign and naming
+- Premium code management system
 - Advanced API integrations
 - Enhanced visual elements
 - Improved price accuracy algorithms

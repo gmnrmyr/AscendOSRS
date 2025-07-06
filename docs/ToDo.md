@@ -41,9 +41,22 @@
 
 ---
 
+## 🔄 ONGOING IMPROVEMENTS
+
+### 4. PRICE FETCHING ACCURACY - CONTINUOUS IMPROVEMENT 🔄
+- **Current State**: Most items fetch prices correctly, minor discrepancies exist
+- **Known Limitation**: Some items may not fetch current/accurate prices from APIs
+- **Impact**: Character bank values may be slightly lower than reality (acceptable variance)
+- **User Control**: Manual price editing available for immediate corrections
+- **Approach**: Continuous refinement without breaking existing functionality
+- **Priority**: LOW - Ongoing optimization as data sources improve
+- **Future Enhancements**: Better API integration, multiple data source fallbacks
+
+---
+
 ## 🔥 CURRENT HIGH PRIORITIES
 
-### 4. GOALS SECTION - ITEM DATABASE EXPANSION
+### 5. GOALS SECTION - ITEM DATABASE EXPANSION
 
 #### Priority: CRITICAL - Core Feature Enhancement
 - **Current Issue**: Limited item selection, missing comprehensive goal items
@@ -59,7 +72,7 @@
 - **Member vs F2P**: Ensure proper categorization for member and free-to-play items
 - **Integration**: Must work with existing price refresh and goal tracking systems
 
-### 5. GOALS SECTION - THUMBNAILS IMPLEMENTATION
+### 6. GOALS SECTION - THUMBNAILS IMPLEMENTATION
 
 #### Priority: HIGH - User Experience Enhancement
 - **Current Issue**: No thumbnails/images for items in goals section
@@ -68,7 +81,7 @@
 - **Requirements**: Consistent sizing, fast loading, proper fallbacks
 - **Application**: All goal items must have visual representation
 
-### 6. MONEY MAKING METHODS - DATA EXPANSION
+### 7. MONEY MAKING METHODS - DATA EXPANSION
 
 #### Priority: HIGH - Core Feature Enhancement  
 - **Current Issue**: Limited money making methods available
@@ -82,7 +95,7 @@
 - **Member vs F2P**: Proper categorization for different account types
 - **Data Sync**: Keep synced with current OSRS economy
 
-### 7. CHARACTER DATA FETCHING
+### 8. CHARACTER DATA FETCHING
 
 #### Priority: HIGH - Real Data Integration
 - **Current Issue**: Character refresh shows "unreal" values
@@ -97,9 +110,62 @@
 
 ---
 
+## 🚀 NEW HIGH PRIORITY FEATURES
+
+### 9. LANDING PAGE OVERHAUL & SUBSCRIPTION PLANS
+
+#### Priority: HIGH - Business Model & User Experience
+- **Landing Page Review**: Comprehensive review and redesign of landing page
+- **Subscription Tiers**: Implement tiered pricing structure
+  - **Monthly Plan**: Standard monthly subscription
+  - **3-Month Plan**: Quarterly subscription with discount
+  - **6-Month Plan**: Semi-annual subscription with better discount
+  - **Yearly Plan**: Annual subscription with significant discount
+  - **Lifetime Plan**: Founder-exclusive lifetime access option
+- **Free Trial**: 30-day free trial for all first-time users
+- **Demo Accounts**: Automated demo account creation with trial period
+- **Pricing Display**: Clear pricing comparison and feature breakdown
+- **Call-to-Action**: Optimized conversion flows for subscriptions
+
+### 10. PREMIUM CODE MANAGEMENT SYSTEM
+
+#### Priority: HIGH - Admin Control & Automation
+- **Admin Dashboard**: Full admin control panel for myself (manera@gmail.com)
+- **Premium Code Generation**: Auto-generate premium codes for all subscription tiers
+- **Code Management**: Create, edit, disable, and track premium codes
+- **Automated Control**: Auto-apply codes and manage subscription periods
+- **Bulk Operations**: Mass code generation for promotions and giveaways
+- **Usage Analytics**: Track code usage, conversion rates, and user acquisition
+- **Founder Codes**: Special lifetime codes for early adopters/founders
+- **Integration**: Seamless integration with payment system and user accounts
+
+### 11. DARK MODE IMPLEMENTATION
+
+#### Priority: HIGH - User Experience & Accessibility
+- **Dark Theme**: Complete dark mode implementation across all components
+- **Theme Toggle**: User-controlled theme switching (light/dark)
+- **System Preference**: Auto-detect user's system theme preference
+- **Persistent Settings**: Save user's theme preference to cloud/local storage
+- **Accessibility**: Ensure WCAG compliance for both light and dark modes
+- **OSRS Styling**: Maintain OSRS aesthetic in both themes
+- **Smooth Transitions**: Implement smooth theme switching animations
+
+### 12. BRAND REDESIGN & NAMING
+
+#### Priority: HIGH - Brand Identity
+- **Name Review**: Evaluate current app name and consider rebranding
+- **Logo Design**: Create professional logo design for the app
+- **Brand Identity**: Establish consistent brand colors, fonts, and styling
+- **Visual Consistency**: Apply new branding across all pages and components
+- **Marketing Materials**: Update all marketing and documentation materials
+- **Domain Strategy**: Consider domain name alignment with new branding
+- **User Communication**: Plan communication strategy for brand transition
+
+---
+
 ## 📋 MEDIUM PRIORITY FEATURES
 
-### 8. ENHANCED CSV IMPORT FUNCTIONALITY
+### 13. ENHANCED CSV IMPORT FUNCTIONALITY
 
 #### Priority: MEDIUM - RuneLite Integration
 - **Current State**: Basic CSV import working
@@ -127,7 +193,7 @@
 ]
 ```
 
-### 9. CHARACTER TYPES REFINEMENT
+### 14. CHARACTER TYPES REFINEMENT
 
 #### Priority: MEDIUM - OSRS Accuracy
 - **Current Issue**: "Alt" is not a native OSRS account type
@@ -140,7 +206,7 @@
 - **"Alt" Handling**: Keep as internal organizational type but don't let it interfere with hiscores
 - **Implementation**: Ensure account type affects data fetching appropriately
 
-### 10. LANDING PAGE ENHANCEMENT
+### 15. ORIGINAL LANDING PAGE ENHANCEMENT
 
 #### Priority: MEDIUM - User Onboarding
 - **Current State**: Only shows authentication
@@ -158,7 +224,7 @@
 
 ## 🎯 UPCOMING PREMIUM FEATURES
 
-### 11. AUTHENTICATION & ADMIN SYSTEM
+### 16. AUTHENTICATION & ADMIN SYSTEM
 
 #### Priority: HIGH - Business Logic
 - **Admin Access**: Add admin privileges to manera@gmail.com
@@ -173,19 +239,20 @@
 - **Coupon System**: Admin-controlled coupon codes for all subscription periods
 - **Payment Integration**: Controlled by payments system
 
-### 12. AUTOMATED DATA UPDATES
+### 17. AUTOMATED DATA UPDATES
 
 #### Priority: MEDIUM - Data Integrity
 - **OSRS Wiki Integration**: Daily automated item price updates via batch script
 - **Price Refresh Enhancement**: Improve reliability of price update systems
 - **Hard Edit Capability**: Allow manual price corrections when API fails
 - **Data Validation**: Ensure data accuracy and regular updates
+- **Multiple Data Sources**: Implement fallback systems for price accuracy
 
 ---
 
 ## 🔄 ONGOING REQUIREMENTS
 
-### 13. DATA SOURCE COMPLIANCE
+### 18. DATA SOURCE COMPLIANCE
 
 #### Priority: ONGOING - Data Integrity
 - **Mandate**: ALL data must come from open source sources
@@ -194,18 +261,19 @@
 - **Prohibited**: No proprietary or closed-source data
 - **Member Content**: Properly handle member vs F2P distinctions
 
-### 14. QUALITY ASSURANCE & TESTING
+### 19. QUALITY ASSURANCE & TESTING
 
 #### Priority: CRITICAL - System Reliability
 - **Save/Load**: ✅ Cloud save/load tested and working
 - **Bank Calculations**: ✅ Bank summation tested and working
+- **Price Accuracy**: ✅ Acceptable variance with manual override capability
 - **Data Refresh**: Verify all refresh buttons work correctly
 - **CSV Import**: Test with actual RuneLite export data
 - **Character Fetching**: Validate real OSRS character data retrieval
 - **Cross-Browser**: Ensure functionality works across browsers
 - **Member vs F2P**: Test all features with both account types
 
-### 15. CODE MAINTENANCE
+### 20. CODE MAINTENANCE
 
 #### Priority: ONGOING - Technical Excellence
 - **Refactoring Guidelines**: Only when:
@@ -223,7 +291,7 @@
 
 ### Primary Goals
 - **Comprehensive Tool**: Complete solution for OSRS players managing multiple accounts
-- **Data Accuracy**: All calculations and displays reflect real OSRS data
+- **Data Accuracy**: All calculations and displays reflect real OSRS data (with acceptable variance)
 - **User Experience**: Intuitive interface with all necessary features
 - **Reliability**: Stable cloud persistence and data management
 
@@ -233,6 +301,11 @@
 - **Account Type Support**: Both member and F2P accounts
 - **Content Filtering**: Proper filtering based on membership status
 - **Mixed Management**: Some alts F2P, some member
+
+### Realistic Expectations
+- **Price Accuracy**: Minor variances acceptable with manual override options
+- **Data Completeness**: Comprehensive databases with ongoing expansion
+- **User Control**: Manual input available when automated systems have limitations
 
 ---
 
@@ -255,6 +328,11 @@
 - **User Interface**: Clean, organized, and functional
 - **Bank Management**: Value editing, item toggling, price updates
 - **Input Formats**: M/B/K format parsing for gold values
+
+### 🔄 WORKING WELL (Minor Improvements Ongoing)
+- **Price Fetching**: Most items accurate, some minor variances (acceptable)
+- **Value Calculations**: Realistic accuracy with manual override options
+- **API Integration**: Basic functionality with room for enhancement
 
 ### 🔄 NEEDS IMMEDIATE ATTENTION
 - **Goals Database**: Missing comprehensive item selection
@@ -279,9 +357,12 @@ The app has evolved into a robust, reliable tool for OSRS wealth management. Rec
 - ✅ Established reliable cloud persistence
 - ✅ Created flexible input systems
 - ✅ Built scalable architecture
+- ✅ Implemented realistic expectations for price accuracy
 
-**Next Phase Focus**: Content database expansion while maintaining excellent existing functionality.
+**Current State**: The app provides excellent functionality with minor price variances that are acceptable and manageable through manual overrides.
+
+**Next Phase Focus**: Content database expansion while maintaining excellent existing functionality and gradually improving price accuracy through better API integration.
 
 ---
 
-*This roadmap maintains all original requirements while reflecting current status and organizing priorities for efficient development progression.*
+*This roadmap maintains all original requirements while reflecting current status and organizing priorities for efficient development progression. Price accuracy is acknowledged as an ongoing improvement area with realistic expectations.*

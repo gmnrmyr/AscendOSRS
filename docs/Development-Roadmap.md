@@ -327,3 +327,18 @@ The app has evolved into a robust, reliable tool for OSRS wealth management. Rec
 ---
 
 *This comprehensive roadmap combines all development requirements, current status, and future plans into one organized document. Price accuracy is acknowledged as an ongoing improvement area with realistic expectations, while focusing resources on high-impact business model and content expansion features.* 
+
+
+
+------
+
+New admin notes, please integrate above...
+ -- we need to add the fact we need to implement gmail login properly as well for users.
+-- the note about 3rd age items, gilded items can be tacked as complete. it is working properly.
+-- i dont think revoer from browser and save to cloud 1 and 2 is needed since we already have the tree chunk save super complex and working.
+--- I think we need to start adding more notes to our code. Making it more understandeable and comprehensive for futher developers.
+--- i think we need to start  refractoring more big codes...
+--- i think there are improvements in the onboarding of course to be done on demo users.... 
+---- add the fact that we currently have only email auth working
+---- add the fact that we will need to have google ads for monetization.
+---- add the fact both on onboarding and on our dev roadmap here that we need to make this project closed source as a real saas and charge users right after they make a demo acc. if they dont, we give them 30 days for free for everyone either way... or something smarter. but in the same idea.

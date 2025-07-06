@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
@@ -43,15 +42,17 @@ export function CharacterRefreshButton({ character, onUpdate }: CharacterRefresh
       if (playerStats) {
         let accountType = character.type;
         
-        // Map account type from API response
+        // Map account type from API response more accurately
         if (playerStats.account_type) {
           const apiType = playerStats.account_type.toLowerCase();
-          if (apiType.includes('ironman')) {
-            accountType = 'ironman';
+          if (apiType.includes('ultimate')) {
+            accountType = 'ultimate';
           } else if (apiType.includes('hardcore')) {
             accountType = 'hardcore';
-          } else if (apiType.includes('ultimate')) {
-            accountType = 'ultimate';
+          } else if (apiType.includes('ironman')) {
+            accountType = 'ironman';
+          } else if (apiType === 'main' || apiType === 'regular') {
+            accountType = 'main';
           }
         }
         
@@ -64,24 +65,35 @@ export function CharacterRefreshButton({ character, onUpdate }: CharacterRefresh
         
         onUpdate(updatedCharacter);
         
+        // Show detailed success message
+        const accountTypeText = accountType === 'main' ? 'Main' : 
+                               accountType === 'ironman' ? 'Ironman' :
+                               accountType === 'hardcore' ? 'Hardcore Ironman' :
+                               accountType === 'ultimate' ? 'Ultimate Ironman' : 'Unknown';
+        
         toast({
-          title: "Stats Updated",
-          description: `${character.name}'s stats refreshed: CB ${playerStats.combat_level}, Total ${playerStats.total_level}`,
+          title: "Stats Updated Successfully",
+          description: `${character.name} (${accountTypeText}): Combat Level ${playerStats.combat_level}, Total Level ${playerStats.total_level}`,
         });
         
         console.log('Character stats updated successfully:', updatedCharacter);
+        console.log('Detailed stats:', playerStats);
       } else {
+        // Enhanced error message with suggestions
         toast({
           title: "Refresh Failed",
-          description: `Could not find stats for "${character.name}". Check the spelling or try again later.`,
+          description: `Could not find stats for "${character.name}". Please check:\n• Username spelling\n• Account privacy settings\n• Try again in a few moments`,
           variant: "destructive"
         });
+        
+        console.warn(`Failed to fetch stats for ${character.name}`);
       }
     } catch (error) {
       console.error('Error refreshing character stats:', error);
+      
       toast({
-        title: "Refresh Error",
-        description: "Failed to refresh character stats. Please try again.",
+        title: "Network Error",
+        description: "Failed to connect to OSRS hiscores. Please check your internet connection and try again.",
         variant: "destructive"
       });
     } finally {

@@ -9,85 +9,297 @@ export const osrsApi = {
   fetchPlayerStats: async (playerName: string): Promise<PlayerStats | null> => {
     console.log(`Fetching stats for player: ${playerName}`);
     
+    if (!playerName || playerName.trim().length === 0) {
+      console.error('Player name is required');
+      return null;
+    }
+
+    const cleanPlayerName = playerName.trim();
+    
     try {
-      // Try TempleOSRS first for most reliable data
+      // Try multiple APIs for better success rate
+      let stats: PlayerStats | null = null;
+
+      // 1. Try TempleOSRS API first (most reliable for detailed stats)
       console.log('Trying TempleOSRS API...');
-      const templeUrl = `${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`;
-      const templeResponse = await fetch(templeUrl);
-      
-      if (templeResponse.ok) {
-        const templeData = await templeResponse.json();
-        console.log('TempleOSRS response:', templeData);
-        
-        if (templeData && templeData.data && !templeData.error) {
-          const stats = {
-            combat_level: templeData.data.Combat_level || templeData.data.combat_level || 3,
-            total_level: templeData.data.Overall || templeData.data.total_level || 32,
-            account_type: templeData.data.Game_mode || 'main',
-            username: playerName
-          };
-          console.log('Successfully fetched from TempleOSRS:', stats);
-          return stats;
-        }
+      stats = await osrsApi.fetchFromTempleOSRS(cleanPlayerName);
+      if (stats) {
+        console.log('Successfully fetched from TempleOSRS');
+        return stats;
       }
 
-      // Fallback to official hiscores
+      // 2. Try WiseOldMan API as backup
+      console.log('Trying WiseOldMan API...');
+      stats = await osrsApi.fetchFromWiseOldMan(cleanPlayerName);
+      if (stats) {
+        console.log('Successfully fetched from WiseOldMan');
+        return stats;
+      }
+
+      // 3. Try official OSRS hiscores as final fallback
       console.log('Trying official OSRS hiscores...');
-      const hiscoreUrl = `https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=${encodeURIComponent(playerName)}`;
-      const hiscoreResponse = await fetch(hiscoreUrl);
-      
-      if (!hiscoreResponse.ok) {
-        console.error('Hiscore API failed:', hiscoreResponse.status, hiscoreResponse.statusText);
-        return null;
+      stats = await osrsApi.fetchFromOfficialHiscores(cleanPlayerName);
+      if (stats) {
+        console.log('Successfully fetched from official hiscores');
+        return stats;
       }
 
-      const text = await hiscoreResponse.text();
-      const lines = text.split('\n').filter(line => line.trim());
-      
-      if (lines.length < 8) {
-        console.error('Invalid hiscore format for player:', playerName);
-        return null;
-      }
-
-      // Parse overall stats (first line is overall)
-      const overallStats = lines[0].split(',');
-      const totalLevel = parseInt(overallStats[1]) || 32;
-      
-      // Parse individual combat stats for combat level calculation
-      const attackLevel = parseInt(lines[1].split(',')[1]) || 1;
-      const defenceLevel = parseInt(lines[2].split(',')[1]) || 1;
-      const strengthLevel = parseInt(lines[3].split(',')[1]) || 1;
-      const hitpointsLevel = parseInt(lines[4].split(',')[1]) || 10;
-      const rangedLevel = parseInt(lines[5].split(',')[1]) || 1;
-      const prayerLevel = parseInt(lines[6].split(',')[1]) || 1;
-      const magicLevel = parseInt(lines[7].split(',')[1]) || 1;
-
-      // Calculate combat level using OSRS formula
-      const baseCombat = (attackLevel + strengthLevel) * 0.325;
-      const defenceCombat = defenceLevel * 0.325;
-      const hitpointsCombat = hitpointsLevel * 0.25;
-      const prayerCombat = Math.floor(prayerLevel / 2) * 0.25;
-      const rangedCombat = rangedLevel * 0.325;
-      const magicCombat = magicLevel * 0.325;
-      
-      const meleeCombat = baseCombat + defenceCombat + hitpointsCombat + prayerCombat;
-      const rangedCombatTotal = rangedCombat + defenceCombat + hitpointsCombat + prayerCombat;
-      const magicCombatTotal = magicCombat + defenceCombat + hitpointsCombat + prayerCombat;
-      
-      const combatLevel = Math.floor(Math.max(meleeCombat, rangedCombatTotal, magicCombatTotal)) + 1;
-
-      const stats = {
-        combat_level: Math.min(126, Math.max(3, combatLevel)),
-        total_level: totalLevel,
-        account_type: 'main',
-        username: playerName
-      };
-      
-      console.log('Successfully parsed from hiscores:', stats);
-      return stats;
+      console.error('All APIs failed to fetch player stats');
+      return null;
       
     } catch (error) {
       console.error('Error fetching player stats:', error);
+      return null;
+    }
+  },
+
+  fetchFromTempleOSRS: async (playerName: string): Promise<PlayerStats | null> => {
+    try {
+      const templeUrl = `${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`;
+      const response = await fetch(templeUrl, {
+        headers: {
+          'User-Agent': 'OSRS Wealth Tracker (Contact: user@example.com)',
+        },
+        timeout: 10000
+      });
+      
+      if (!response.ok) {
+        console.log(`TempleOSRS API returned ${response.status}`);
+        return null;
+      }
+
+      const data = await response.json();
+      console.log('TempleOSRS response:', data);
+      
+      if (data && data.data && !data.error) {
+        // Parse account type more accurately
+        let accountType = 'main';
+        const gameMode = data.data.Game_mode || '';
+        if (gameMode.toLowerCase().includes('ironman')) {
+          accountType = 'ironman';
+        } else if (gameMode.toLowerCase().includes('hardcore')) {
+          accountType = 'hardcore';
+        } else if (gameMode.toLowerCase().includes('ultimate')) {
+          accountType = 'ultimate';
+        }
+
+        return {
+          combat_level: data.data.Combat_level || data.data.combat_level || 3,
+          total_level: data.data.Overall || data.data.total_level || 32,
+          account_type: accountType,
+          username: playerName,
+          // Additional stats if available
+          attack: data.data.Attack || 1,
+          defence: data.data.Defence || 1,
+          strength: data.data.Strength || 1,
+          hitpoints: data.data.Hitpoints || 10,
+          ranged: data.data.Ranged || 1,
+          prayer: data.data.Prayer || 1,
+          magic: data.data.Magic || 1,
+          cooking: data.data.Cooking || 1,
+          woodcutting: data.data.Woodcutting || 1,
+          fletching: data.data.Fletching || 1,
+          fishing: data.data.Fishing || 1,
+          firemaking: data.data.Firemaking || 1,
+          crafting: data.data.Crafting || 1,
+          smithing: data.data.Smithing || 1,
+          mining: data.data.Mining || 1,
+          herblore: data.data.Herblore || 1,
+          agility: data.data.Agility || 1,
+          thieving: data.data.Thieving || 1,
+          slayer: data.data.Slayer || 1,
+          farming: data.data.Farming || 1,
+          runecraft: data.data.Runecraft || 1,
+          hunter: data.data.Hunter || 1,
+          construction: data.data.Construction || 1
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('TempleOSRS API error:', error);
+      return null;
+    }
+  },
+
+  fetchFromWiseOldMan: async (playerName: string): Promise<PlayerStats | null> => {
+    try {
+      const womUrl = `https://api.wiseoldman.net/v2/players/${encodeURIComponent(playerName)}`;
+      const response = await fetch(womUrl, {
+        headers: {
+          'User-Agent': 'OSRS Wealth Tracker (Contact: user@example.com)',
+        },
+        timeout: 10000
+      });
+      
+      if (!response.ok) {
+        console.log(`WiseOldMan API returned ${response.status}`);
+        return null;
+      }
+
+      const data = await response.json();
+      console.log('WiseOldMan response:', data);
+      
+      if (data && data.latestSnapshot && data.latestSnapshot.data) {
+        const stats = data.latestSnapshot.data;
+        
+        // Parse account type
+        let accountType = 'main';
+        const playerType = data.type || '';
+        if (playerType.toLowerCase().includes('ironman')) {
+          accountType = 'ironman';
+        } else if (playerType.toLowerCase().includes('hardcore')) {
+          accountType = 'hardcore';
+        } else if (playerType.toLowerCase().includes('ultimate')) {
+          accountType = 'ultimate';
+        }
+
+        return {
+          combat_level: data.combatLevel || 3,
+          total_level: stats.overall?.level || 32,
+          account_type: accountType,
+          username: playerName,
+          attack: stats.attack?.level || 1,
+          defence: stats.defence?.level || 1,
+          strength: stats.strength?.level || 1,
+          hitpoints: stats.hitpoints?.level || 10,
+          ranged: stats.ranged?.level || 1,
+          prayer: stats.prayer?.level || 1,
+          magic: stats.magic?.level || 1,
+          cooking: stats.cooking?.level || 1,
+          woodcutting: stats.woodcutting?.level || 1,
+          fletching: stats.fletching?.level || 1,
+          fishing: stats.fishing?.level || 1,
+          firemaking: stats.firemaking?.level || 1,
+          crafting: stats.crafting?.level || 1,
+          smithing: stats.smithing?.level || 1,
+          mining: stats.mining?.level || 1,
+          herblore: stats.herblore?.level || 1,
+          agility: stats.agility?.level || 1,
+          thieving: stats.thieving?.level || 1,
+          slayer: stats.slayer?.level || 1,
+          farming: stats.farming?.level || 1,
+          runecraft: stats.runecraft?.level || 1,
+          hunter: stats.hunter?.level || 1,
+          construction: stats.construction?.level || 1
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('WiseOldMan API error:', error);
+      return null;
+    }
+  },
+
+  fetchFromOfficialHiscores: async (playerName: string): Promise<PlayerStats | null> => {
+    try {
+      // Try different hiscore endpoints for different account types
+      const hiscoreEndpoints = [
+        'https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws',
+        'https://secure.runescape.com/m=hiscore_oldschool_ironman/index_lite.ws',
+        'https://secure.runescape.com/m=hiscore_oldschool_hardcore_ironman/index_lite.ws',
+        'https://secure.runescape.com/m=hiscore_oldschool_ultimate/index_lite.ws'
+      ];
+
+      const accountTypes = ['main', 'ironman', 'hardcore', 'ultimate'];
+
+      for (let i = 0; i < hiscoreEndpoints.length; i++) {
+        const endpoint = hiscoreEndpoints[i];
+        const accountType = accountTypes[i];
+        
+        try {
+          const hiscoreUrl = `${endpoint}?player=${encodeURIComponent(playerName)}`;
+          const response = await fetch(hiscoreUrl, {
+            headers: {
+              'User-Agent': 'OSRS Wealth Tracker (Contact: user@example.com)',
+            },
+            timeout: 10000
+          });
+          
+          if (!response.ok) {
+            console.log(`Hiscore API (${accountType}) returned ${response.status}`);
+            continue;
+          }
+
+          const text = await response.text();
+          const lines = text.split('\n').filter(line => line.trim());
+          
+          if (lines.length < 24) { // Need at least 24 lines for all skills
+            console.log(`Invalid hiscore format for ${accountType} account`);
+            continue;
+          }
+
+          // Parse all skill levels
+          const skillLevels = lines.slice(0, 24).map(line => {
+            const parts = line.split(',');
+            return {
+              rank: parseInt(parts[0]) || -1,
+              level: parseInt(parts[1]) || 1,
+              experience: parseInt(parts[2]) || 0
+            };
+          });
+
+          // Calculate combat level using accurate OSRS formula
+          const attack = skillLevels[1].level;
+          const defence = skillLevels[2].level;
+          const strength = skillLevels[3].level;
+          const hitpoints = skillLevels[4].level;
+          const ranged = skillLevels[5].level;
+          const prayer = skillLevels[6].level;
+          const magic = skillLevels[7].level;
+
+          const baseCombat = (attack + strength) * 0.325;
+          const defenceCombat = defence * 0.325;
+          const hitpointsCombat = hitpoints * 0.25;
+          const prayerCombat = Math.floor(prayer / 2) * 0.25;
+          const rangedCombat = ranged * 0.325;
+          const magicCombat = magic * 0.325;
+          
+          const meleeCombat = baseCombat + defenceCombat + hitpointsCombat + prayerCombat;
+          const rangedCombatTotal = rangedCombat + defenceCombat + hitpointsCombat + prayerCombat;
+          const magicCombatTotal = magicCombat + defenceCombat + hitpointsCombat + prayerCombat;
+          
+          const combatLevel = Math.floor(Math.max(meleeCombat, rangedCombatTotal, magicCombatTotal)) + 1;
+
+          return {
+            combat_level: Math.min(126, Math.max(3, combatLevel)),
+            total_level: skillLevels[0].level,
+            account_type: accountType,
+            username: playerName,
+            attack: skillLevels[1].level,
+            defence: skillLevels[2].level,
+            strength: skillLevels[3].level,
+            hitpoints: skillLevels[4].level,
+            ranged: skillLevels[5].level,
+            prayer: skillLevels[6].level,
+            magic: skillLevels[7].level,
+            cooking: skillLevels[8].level,
+            woodcutting: skillLevels[9].level,
+            fletching: skillLevels[10].level,
+            fishing: skillLevels[11].level,
+            firemaking: skillLevels[12].level,
+            crafting: skillLevels[13].level,
+            smithing: skillLevels[14].level,
+            mining: skillLevels[15].level,
+            herblore: skillLevels[16].level,
+            agility: skillLevels[17].level,
+            thieving: skillLevels[18].level,
+            slayer: skillLevels[19].level,
+            farming: skillLevels[20].level,
+            runecraft: skillLevels[21].level,
+            hunter: skillLevels[22].level,
+            construction: skillLevels[23].level
+          };
+        } catch (error) {
+          console.log(`Error fetching from ${accountType} hiscores:`, error);
+          continue;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Official hiscores API error:', error);
       return null;
     }
   },

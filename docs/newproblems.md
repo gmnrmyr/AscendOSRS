@@ -58,3 +58,9 @@ read the additions to accept gold input in M and K for thousands **FIXED - M/B/K
 
 ---
 
+
+we need to add admin to manera@gmail.com, 
+allow reset password on auth.
+demo acc start on 30 day trial. controlled by payments. (need to work)
+acc has lifetime, monthly, 3 month, 6 month, 1 year, 2 year, 3 year, 5 year period.
+

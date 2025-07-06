@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Save, CloudDownload, Cloud, Upload } from "lucide-react";
+import { Save, CloudDownload, Cloud, Upload, AlertTriangle } from "lucide-react";
 import { CloudDataService } from "@/services/cloudDataService";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -33,6 +32,7 @@ export function CloudOperations({
   const [isCloudSaving, setIsCloudSaving] = useState(false);
   const [isCloudSaving2, setIsCloudSaving2] = useState(false);
   const [isCloudLoading, setIsCloudLoading] = useState(false);
+  const [lastSyncWarning, setLastSyncWarning] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -47,6 +47,8 @@ export function CloudOperations({
     }
 
     setIsCloudSaving(true);
+    setLastSyncWarning(null);
+    
     try {
       console.log('Starting cloud save...');
       console.log('User ID:', user.id);
@@ -58,7 +60,7 @@ export function CloudOperations({
         hoursPerDay
       });
       
-      await CloudDataService.saveUserData(
+      const result = await CloudDataService.saveUserData(
         characters,
         moneyMethods,
         purchaseGoals,
@@ -66,10 +68,22 @@ export function CloudOperations({
         hoursPerDay
       );
       
-      toast({
-        title: "Cloud Save Successful",
-        description: "Your data has been saved to the cloud"
-      });
+      // Check for warnings or partial sync
+      if (result?.warning || result?.partialSync) {
+        setLastSyncWarning(result.warning || 'Some data may not have synced completely');
+        
+        toast({
+          title: "Cloud Save - Warning",
+          description: result.warning || "Some items may not have synced properly. Check the sync status below.",
+          variant: "destructive",
+          duration: 8000
+        });
+      } else {
+        toast({
+          title: "Cloud Save Successful",
+          description: "Your data has been saved to the cloud"
+        });
+      }
     } catch (error) {
       console.error('Cloud save failed:', error);
       toast({
@@ -93,6 +107,8 @@ export function CloudOperations({
     }
 
     setIsCloudSaving2(true);
+    setLastSyncWarning(null);
+    
     try {
       console.log('Starting cloud save 2...');
       
@@ -133,7 +149,7 @@ export function CloudOperations({
         hoursPerDay
       };
 
-      await CloudDataService.saveUserData(
+      const result = await CloudDataService.saveUserData(
         validatedData.characters,
         validatedData.moneyMethods,
         validatedData.purchaseGoals,
@@ -141,10 +157,22 @@ export function CloudOperations({
         validatedData.hoursPerDay
       );
       
-      toast({
-        title: "Cloud Save 2 Successful",
-        description: "Your data has been saved to the cloud with enhanced validation"
-      });
+      // Check for warnings or partial sync
+      if (result?.warning || result?.partialSync) {
+        setLastSyncWarning(result.warning || 'Some data may not have synced completely');
+        
+        toast({
+          title: "Cloud Save 2 - Warning",
+          description: result.warning || "Some items may not have synced properly with enhanced validation.",
+          variant: "destructive",
+          duration: 8000
+        });
+      } else {
+        toast({
+          title: "Cloud Save 2 Successful",
+          description: "Your data has been saved to the cloud with enhanced validation"
+        });
+      }
     } catch (error) {
       console.error('Cloud save 2 failed:', error);
       toast({
@@ -168,25 +196,30 @@ export function CloudOperations({
     }
 
     setIsCloudLoading(true);
+    setLastSyncWarning(null);
+    
     try {
-      console.log('Starting cloud load...');
-      console.log('User ID:', user.id);
+      console.log('Loading data from cloud...');
+      const data = await CloudDataService.loadUserData();
       
-      const cloudData = await CloudDataService.loadUserData();
+      console.log('Loaded data:', data);
       
-      console.log('Cloud data loaded:', {
-        characters: cloudData.characters?.length || 0,
-        moneyMethods: cloudData.moneyMethods?.length || 0,
-        purchaseGoals: cloudData.purchaseGoals?.length || 0,
-        bankData: Object.keys(cloudData.bankData || {}).length,
-        hoursPerDay: cloudData.hoursPerDay
+      // Update all data
+      setAllData({
+        characters: data.characters || [],
+        moneyMethods: data.moneyMethods || [],
+        purchaseGoals: data.purchaseGoals || [],
+        bankData: data.bankData || {},
+        hoursPerDay: data.hoursPerDay || 10
       });
       
-      setAllData(cloudData);
+      // Count loaded items for user feedback
+      const totalBankItems = Object.values(data.bankData || {}).flat().length;
+      const totalCharacters = Object.keys(data.bankData || {}).length;
       
       toast({
         title: "Cloud Load Successful",
-        description: "Your data has been loaded from the cloud"
+        description: `Loaded ${data.characters?.length || 0} characters, ${data.moneyMethods?.length || 0} methods, ${data.purchaseGoals?.length || 0} goals, and ${totalBankItems} bank items across ${totalCharacters} characters`
       });
     } catch (error) {
       console.error('Cloud load failed:', error);
@@ -213,6 +246,22 @@ export function CloudOperations({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Sync Warning Alert */}
+        {lastSyncWarning && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-orange-800">Sync Warning</h4>
+                <p className="text-sm text-orange-700 mt-1">{lastSyncWarning}</p>
+                <p className="text-xs text-orange-600 mt-2">
+                  Try saving again or check your internet connection. Large bank imports may take multiple attempts.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="flex gap-4 flex-wrap">
           <Button 
             onClick={saveToCloud} 

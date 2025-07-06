@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 interface Character {
@@ -146,6 +145,11 @@ export class CloudDataService {
   ) {
     try {
       console.log('Starting cloud save via edge function...');
+      
+      // Count total items before save
+      const totalBankItems = Object.values(bankData).flat().length;
+      console.log(`Attempting to save ${totalBankItems} bank items across ${Object.keys(bankData).length} characters`);
+      
       // Save ALL fields for every entity, preserving all user data
       const cleanedData = {
         characters: characters.map(char => ({
@@ -205,13 +209,19 @@ export class CloudDataService {
         hoursPerDay: typeof hoursPerDay === 'number' ? hoursPerDay : 10
       };
 
+      // Log detailed info about what's being saved
+      const cleanedBankItems = Object.values(cleanedData.bankData).flat().length;
       console.log('Sending cleaned data to edge function:', {
         charactersCount: cleanedData.characters.length,
         methodsCount: cleanedData.moneyMethods.length,
         goalsCount: cleanedData.purchaseGoals.length,
-        bankItemsCount: Object.values(cleanedData.bankData).flat().length,
+        bankItemsCount: cleanedBankItems,
         hoursPerDay: cleanedData.hoursPerDay
       });
+      
+      if (cleanedBankItems < totalBankItems) {
+        console.warn(`WARNING: ${totalBankItems - cleanedBankItems} bank items were filtered out during cleaning`);
+      }
       
       // Debug: Log the actual character data being sent
       console.log('Character data being sent:', JSON.stringify(cleanedData.characters, null, 2));
@@ -231,6 +241,24 @@ export class CloudDataService {
       }
 
       console.log('Cloud save completed successfully:', data);
+      
+      // Check if bank items save was partial
+      if (data?.saved?.bankItems && data.saved.bankItems < cleanedBankItems) {
+        const message = `Cloud save completed with warnings: Only ${data.saved.bankItems} out of ${cleanedBankItems} bank items were saved. Some items may have failed to sync.`;
+        console.warn(message);
+        
+        // Return success but with warning info
+        return {
+          ...data,
+          warning: message,
+          partialSync: {
+            expected: cleanedBankItems,
+            saved: data.saved.bankItems,
+            missing: cleanedBankItems - data.saved.bankItems
+          }
+        };
+      }
+      
       return data;
     } catch (error) {
       console.error('Error saving to cloud:', error);

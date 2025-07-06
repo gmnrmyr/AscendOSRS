@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Trash2, Plus, Upload, RefreshCw, Coins, Edit, Save, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Trash2, Plus, Upload, RefreshCw, Coins, Edit, Save, X, ChevronDown, ChevronRight, AlertTriangle } from 'lucide-react';
 import { Character, BankItem } from '@/hooks/useAppData';
 import { useCharacterRefresh } from '@/hooks/useCharacterRefresh';
 import { EnhancedBankManager } from './EnhancedBankManager';
@@ -37,6 +38,8 @@ export function IntegratedBankManager({
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [pendingImportData, setPendingImportData] = useState<BankItem[]>([]);
   
   const { refreshCharacter, isRefreshing } = useCharacterRefresh();
 
@@ -144,76 +147,105 @@ export function IntegratedBankManager({
     setEditingPrice('');
   };
 
+  const parseCSVData = (csvData: string): BankItem[] => {
+    let newItems: BankItem[] = [];
+    
+    try {
+      const jsonData = JSON.parse(csvData);
+      if (Array.isArray(jsonData)) {
+        // Handle OSRS bank export JSON format
+        newItems = jsonData.map(item => ({
+          id: Date.now().toString() + Math.random(),
+          name: item.name || 'Unknown Item',
+          quantity: parseInt(item.quantity) || 0,
+          estimatedPrice: 0, // Will be looked up later
+          category: 'stackable',
+          character: selectedCharacter
+        })).filter(item => item.name && item.quantity > 0);
+      }
+    } catch (jsonError) {
+      // If JSON parsing fails, try CSV parsing
+      const lines = csvData.trim().split('\n');
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      
+      const nameIndex = headers.indexOf('name') || headers.indexOf('item');
+      const quantityIndex = headers.indexOf('quantity') || headers.indexOf('qty');
+      const valueIndex = headers.indexOf('value') || headers.indexOf('price');
+
+      if (nameIndex === -1 || quantityIndex === -1) {
+        throw new Error('Data must be valid JSON or CSV with name and quantity columns');
+      }
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values.length >= 2) {
+          const name = values[nameIndex] || '';
+          const quantity = parseInt(values[quantityIndex]) || 0;
+          const price = valueIndex !== -1 ? parseInt(values[valueIndex]) || 0 : 0;
+          
+          if (name && quantity > 0) {
+            newItems.push({
+              id: Date.now().toString() + Math.random(),
+              name,
+              quantity,
+              estimatedPrice: price,
+              category: 'stackable',
+              character: selectedCharacter
+            });
+          }
+        }
+      }
+    }
+    
+    return newItems;
+  };
+
   const handleCSVImport = () => {
     if (!selectedCharacter || !csvData.trim()) return;
 
     try {
-      // First try to parse as JSON (OSRS bank export format)
-      let newItems: BankItem[] = [];
+      const newItems = parseCSVData(csvData);
       
-      try {
-        const jsonData = JSON.parse(csvData);
-        if (Array.isArray(jsonData)) {
-          // Handle OSRS bank export JSON format
-          newItems = jsonData.map(item => ({
-            id: Date.now().toString() + Math.random(),
-            name: item.name || 'Unknown Item',
-            quantity: parseInt(item.quantity) || 0,
-            estimatedPrice: 0, // Will be looked up later
-            category: 'stackable',
-            character: selectedCharacter
-          })).filter(item => item.name && item.quantity > 0);
-        }
-      } catch (jsonError) {
-        // If JSON parsing fails, try CSV parsing
-        const lines = csvData.trim().split('\n');
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-        
-        const nameIndex = headers.indexOf('name') || headers.indexOf('item');
-        const quantityIndex = headers.indexOf('quantity') || headers.indexOf('qty');
-        const valueIndex = headers.indexOf('value') || headers.indexOf('price');
-
-        if (nameIndex === -1 || quantityIndex === -1) {
-          alert('Data must be valid JSON or CSV with name and quantity columns');
-          return;
-        }
-
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(',').map(v => v.trim());
-          if (values.length >= 2) {
-            const name = values[nameIndex] || '';
-            const quantity = parseInt(values[quantityIndex]) || 0;
-            const price = valueIndex !== -1 ? parseInt(values[valueIndex]) || 0 : 0;
-            
-            if (name && quantity > 0) {
-              newItems.push({
-                id: Date.now().toString() + Math.random(),
-                name,
-                quantity,
-                estimatedPrice: price,
-                category: 'stackable',
-                character: selectedCharacter
-              });
-            }
-          }
-        }
+      if (newItems.length === 0) {
+        alert('No valid items found in the data');
+        return;
       }
 
-      if (newItems.length > 0) {
-        const updatedBankData = {
-          ...bankData,
-          [selectedCharacter]: [...characterBankItems, ...newItems]
-        };
-        setBankData(updatedBankData);
-        setCsvData('');
-        alert(`Successfully imported ${newItems.length} items!`);
+      // Check if character already has bank items
+      if (characterBankItems.length > 0) {
+        setPendingImportData(newItems);
+        setShowImportDialog(true);
       } else {
-        alert('No valid items found in the data');
+        // No existing items, import directly
+        performImport(newItems, false);
       }
     } catch (error) {
       console.error('Error parsing data:', error);
       alert('Error parsing data. Please check the format.');
     }
+  };
+
+  const performImport = (newItems: BankItem[], replaceExisting: boolean) => {
+    const updatedBankData = {
+      ...bankData,
+      [selectedCharacter]: replaceExisting ? newItems : [...characterBankItems, ...newItems]
+    };
+    
+    setBankData(updatedBankData);
+    setCsvData('');
+    setShowImportDialog(false);
+    setPendingImportData([]);
+    
+    const action = replaceExisting ? 'replaced' : 'imported';
+    alert(`Successfully ${action} ${newItems.length} items!`);
+  };
+
+  const handleImportReplace = () => {
+    performImport(pendingImportData, true);
+  };
+
+  const handleImportAppend = () => {
+    performImport(pendingImportData, false);
   };
 
   const totalBankValue = characterBankItems.reduce((total, item) => 
@@ -463,6 +495,44 @@ export function IntegratedBankManager({
               </div>
             </CardContent>
           </Card>
+
+          {/* Import Confirmation Dialog */}
+          <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-500" />
+                  Import Bank Items
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  <div className="space-y-2">
+                    <p>
+                      This character already has <strong>{characterBankItems.length}</strong> items in their bank.
+                    </p>
+                    <p>
+                      You're about to import <strong>{pendingImportData.length}</strong> new items.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Choose how you want to handle the import:
+                    </p>
+                    <div className="bg-gray-50 p-3 rounded-md text-sm">
+                      <p><strong>Replace:</strong> Remove all existing items and import new ones</p>
+                      <p><strong>Add:</strong> Keep existing items and add new ones</p>
+                    </div>
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleImportReplace} className="bg-orange-600 hover:bg-orange-700">
+                  Replace All Items
+                </AlertDialogAction>
+                <AlertDialogAction onClick={handleImportAppend} className="bg-green-600 hover:bg-green-700">
+                  Add to Existing
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       )}
     </div>

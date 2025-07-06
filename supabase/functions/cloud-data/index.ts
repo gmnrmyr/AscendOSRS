@@ -337,37 +337,96 @@ serve(async (req) => {
           console.log(`Attempting to insert ${bankItemsToInsert.length} validated bank items...`)
           
           if (bankItemsToInsert.length > 0) {
-            // Insert in smaller batches to avoid timeout and better error handling
-            const batchSize = 15;
+            // Increased batch size and added retry logic
+            const batchSize = 50; // Increased from 15 to 50
             let totalInserted = 0;
+            const maxRetries = 3;
             
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize);
-              console.log(`Inserting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(bankItemsToInsert.length/batchSize)} with ${batch.length} items`);
+              const batchNumber = Math.floor(i/batchSize) + 1;
+              const totalBatches = Math.ceil(bankItemsToInsert.length/batchSize);
               
-              // Log each item in the batch for debugging
-              batch.forEach((item, index) => {
-                console.log(`  Item ${index + 1}: ${item.name} (${item.category})`);
+              console.log(`Inserting batch ${batchNumber}/${totalBatches} with ${batch.length} items`);
+              
+              // Log first few items in batch for debugging
+              batch.slice(0, 3).forEach((item, index) => {
+                console.log(`  Item ${index + 1}: ${item.name} (${item.category}) - Qty: ${item.quantity}`);
               });
-              
-              const { data: bankData, error: bankError } = await supabaseClient
-                .from('bank_items')
-                .insert(batch)
-                .select();
-              
-              if (bankError) {
-                console.error(`Error saving bank items batch ${Math.floor(i/batchSize) + 1}:`, bankError);
-                console.error('Failed batch contents:', JSON.stringify(batch, null, 2));
-                throw new Error(`Failed to save bank items: ${bankError.message}`);
+              if (batch.length > 3) {
+                console.log(`  ... and ${batch.length - 3} more items`);
               }
               
-              const batchInserted = bankData?.length || 0;
+              // Retry logic for each batch
+              let batchInserted = 0;
+              let retryCount = 0;
+              
+              while (retryCount < maxRetries) {
+                try {
+                  const { data: bankData, error: bankError } = await supabaseClient
+                    .from('bank_items')
+                    .insert(batch)
+                    .select();
+                  
+                  if (bankError) {
+                    throw bankError;
+                  }
+                  
+                  batchInserted = bankData?.length || 0;
+                  console.log(`Batch ${batchNumber} inserted ${batchInserted} items successfully`);
+                  break; // Success, exit retry loop
+                  
+                } catch (batchError) {
+                  retryCount++;
+                  console.error(`Error saving batch ${batchNumber}, attempt ${retryCount}:`, batchError);
+                  
+                  if (retryCount >= maxRetries) {
+                    // Final attempt failed, log details but continue with next batch
+                    console.error(`Failed to save batch ${batchNumber} after ${maxRetries} attempts:`);
+                    console.error('Failed batch contents:', JSON.stringify(batch, null, 2));
+                    
+                    // Try to save items one by one to identify problematic items
+                    console.log(`Attempting to save batch ${batchNumber} items individually...`);
+                    
+                    for (const item of batch) {
+                      try {
+                        const { data: singleData, error: singleError } = await supabaseClient
+                          .from('bank_items')
+                          .insert([item])
+                          .select();
+                        
+                        if (!singleError && singleData?.length > 0) {
+                          batchInserted++;
+                          console.log(`Individual save successful: ${item.name}`);
+                        } else {
+                          console.error(`Individual save failed for ${item.name}:`, singleError);
+                        }
+                      } catch (individualError) {
+                        console.error(`Individual save exception for ${item.name}:`, individualError);
+                      }
+                    }
+                    
+                    console.log(`Batch ${batchNumber} individual saves completed: ${batchInserted} items saved`);
+                    break; // Exit retry loop
+                  } else {
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                    console.log(`Retrying batch ${batchNumber} in ${1000 * retryCount}ms...`);
+                  }
+                }
+              }
+              
               totalInserted += batchInserted;
-              console.log(`Batch ${Math.floor(i/batchSize) + 1} inserted ${batchInserted} items successfully`);
+              console.log(`Running total: ${totalInserted}/${bankItemsToInsert.length} items saved`);
             }
             
             saveResults.bankItems = totalInserted;
-            console.log(`${saveResults.bankItems} bank items saved successfully`);
+            console.log(`${saveResults.bankItems} bank items saved successfully out of ${bankItemsToInsert.length} attempted`);
+            
+            // Warn if not all items were saved
+            if (totalInserted < bankItemsToInsert.length) {
+              console.warn(`WARNING: Only ${totalInserted} out of ${bankItemsToInsert.length} bank items were saved`);
+            }
           }
         }
       }

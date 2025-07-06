@@ -295,7 +295,7 @@ serve(async (req) => {
         console.log(`${saveResults.purchaseGoals} purchase goals saved successfully`)
       }
 
-      // Save bank items with bulletproof validation
+      // Save bank items with bulletproof validation and value prioritization
       if (bankData && typeof bankData === 'object') {
         const allBankItems = Object.entries(bankData).flatMap(([character, items]: [string, any]) => 
           Array.isArray(items) ? items.map((item: any) => ({ ...item, characterName: character })) : []
@@ -329,32 +329,66 @@ serve(async (req) => {
                 quantity: quantity,
                 estimated_price: estimatedPrice,
                 category: validatedCategory,
-                character: safeString(item.characterName || item.character || 'Unknown', 100)
+                character: safeString(item.characterName || item.character || 'Unknown', 100),
+                totalValue: quantity * estimatedPrice // Add total value for sorting
               };
             })
-            .filter(item => item !== null);
+            .filter(item => item !== null)
+            .sort((a: any, b: any) => {
+              // Sort by total value (descending) - most valuable items first
+              const valueA = a.totalValue || 0;
+              const valueB = b.totalValue || 0;
+              if (valueB !== valueA) {
+                return valueB - valueA;
+              }
+              // Secondary sort by item name for consistency
+              return a.name.localeCompare(b.name);
+            })
+            .map(item => {
+              // Remove totalValue before inserting to database
+              const { totalValue, ...itemForDb } = item;
+              return itemForDb;
+            });
 
-          console.log(`Attempting to insert ${bankItemsToInsert.length} validated bank items...`)
+          console.log(`Attempting to insert ${bankItemsToInsert.length} validated bank items (sorted by value)...`)
+          
+          // Log the top 5 most valuable items being saved
+          console.log('Top 5 most valuable items being saved:');
+          const topItems = allBankItems
+            .map(item => ({
+              name: item.name,
+              quantity: safeNumber(item.quantity, 0),
+              price: safeNumber(item.estimatedPrice, 0),
+              character: item.characterName || item.character
+            }))
+            .filter(item => item.name)
+            .sort((a, b) => (b.quantity * b.price) - (a.quantity * a.price))
+            .slice(0, 5);
+          
+          topItems.forEach((item, index) => {
+            const totalValue = item.quantity * item.price;
+            console.log(`  ${index + 1}. ${item.name} (${item.character}) - ${item.quantity.toLocaleString()} x ${item.price.toLocaleString()} = ${totalValue.toLocaleString()} GP`);
+          });
           
           if (bankItemsToInsert.length > 0) {
-            // Increased batch size and added retry logic
-            const batchSize = 50; // Increased from 15 to 50
+            // Significantly increased batch size and improved retry logic
+            const batchSize = 100; // Increased from 50 to 100
             let totalInserted = 0;
-            const maxRetries = 3;
+            const maxRetries = 5; // Increased from 3 to 5
             
             for (let i = 0; i < bankItemsToInsert.length; i += batchSize) {
               const batch = bankItemsToInsert.slice(i, i + batchSize);
               const batchNumber = Math.floor(i/batchSize) + 1;
               const totalBatches = Math.ceil(bankItemsToInsert.length/batchSize);
               
-              console.log(`Inserting batch ${batchNumber}/${totalBatches} with ${batch.length} items`);
+              console.log(`Inserting batch ${batchNumber}/${totalBatches} with ${batch.length} items (items ${i + 1}-${Math.min(i + batchSize, bankItemsToInsert.length)})`);
               
               // Log first few items in batch for debugging
-              batch.slice(0, 3).forEach((item, index) => {
-                console.log(`  Item ${index + 1}: ${item.name} (${item.category}) - Qty: ${item.quantity}`);
+              batch.slice(0, 2).forEach((item, index) => {
+                console.log(`  Item ${index + 1}: ${item.name} (${item.character}) - Qty: ${item.quantity}`);
               });
-              if (batch.length > 3) {
-                console.log(`  ... and ${batch.length - 3} more items`);
+              if (batch.length > 2) {
+                console.log(`  ... and ${batch.length - 2} more items in this batch`);
               }
               
               // Retry logic for each batch
@@ -381,25 +415,35 @@ serve(async (req) => {
                   console.error(`Error saving batch ${batchNumber}, attempt ${retryCount}:`, batchError);
                   
                   if (retryCount >= maxRetries) {
-                    // Final attempt failed, log details but continue with next batch
+                    // Final attempt failed, try individual saves for critical items
                     console.error(`Failed to save batch ${batchNumber} after ${maxRetries} attempts:`);
-                    console.error('Failed batch contents:', JSON.stringify(batch, null, 2));
+                    console.error('Failed batch error:', batchError.message);
                     
-                    // Try to save items one by one to identify problematic items
-                    console.log(`Attempting to save batch ${batchNumber} items individually...`);
+                    // For failed batches, try to save the most valuable items individually
+                    console.log(`Attempting to save most valuable items from batch ${batchNumber} individually...`);
                     
-                    for (const item of batch) {
+                    // Sort this batch by value and try to save the top items
+                    const sortedBatch = batch
+                      .map(item => ({
+                        ...item,
+                        totalValue: item.quantity * item.estimated_price
+                      }))
+                      .sort((a, b) => b.totalValue - a.totalValue)
+                      .slice(0, Math.min(20, batch.length)); // Try top 20 items from failed batch
+                    
+                    for (const item of sortedBatch) {
                       try {
+                        const { totalValue, ...itemForDb } = item;
                         const { data: singleData, error: singleError } = await supabaseClient
                           .from('bank_items')
-                          .insert([item])
+                          .insert([itemForDb])
                           .select();
                         
                         if (!singleError && singleData?.length > 0) {
                           batchInserted++;
-                          console.log(`Individual save successful: ${item.name}`);
+                          console.log(`Individual save successful: ${item.name} (${item.totalValue.toLocaleString()} GP)`);
                         } else {
-                          console.error(`Individual save failed for ${item.name}:`, singleError);
+                          console.error(`Individual save failed for ${item.name}:`, singleError?.message);
                         }
                       } catch (individualError) {
                         console.error(`Individual save exception for ${item.name}:`, individualError);
@@ -409,23 +453,32 @@ serve(async (req) => {
                     console.log(`Batch ${batchNumber} individual saves completed: ${batchInserted} items saved`);
                     break; // Exit retry loop
                   } else {
-                    // Wait before retrying
-                    await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
-                    console.log(`Retrying batch ${batchNumber} in ${1000 * retryCount}ms...`);
+                    // Wait before retrying with exponential backoff
+                    const waitTime = 1000 * Math.pow(2, retryCount - 1); // 1s, 2s, 4s, 8s, 16s
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    console.log(`Retrying batch ${batchNumber} in ${waitTime}ms...`);
                   }
                 }
               }
               
               totalInserted += batchInserted;
-              console.log(`Running total: ${totalInserted}/${bankItemsToInsert.length} items saved`);
+              console.log(`Running total: ${totalInserted}/${bankItemsToInsert.length} items saved (${((totalInserted/bankItemsToInsert.length)*100).toFixed(1)}%)`);
+              
+              // Add a small delay between batches to prevent overwhelming the database
+              if (i + batchSize < bankItemsToInsert.length) {
+                await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+              }
             }
             
             saveResults.bankItems = totalInserted;
             console.log(`${saveResults.bankItems} bank items saved successfully out of ${bankItemsToInsert.length} attempted`);
             
-            // Warn if not all items were saved
+            // Detailed reporting
             if (totalInserted < bankItemsToInsert.length) {
-              console.warn(`WARNING: Only ${totalInserted} out of ${bankItemsToInsert.length} bank items were saved`);
+              const missingCount = bankItemsToInsert.length - totalInserted;
+              const successRate = ((totalInserted / bankItemsToInsert.length) * 100).toFixed(1);
+              console.warn(`WARNING: Only ${totalInserted} out of ${bankItemsToInsert.length} bank items were saved (${successRate}% success rate)`);
+              console.warn(`${missingCount} items failed to save. Most valuable items were prioritized.`);
             }
           }
         }

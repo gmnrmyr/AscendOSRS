@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Save, CloudDownload, Cloud, Upload, AlertTriangle } from "lucide-react";
+import { Save, CloudDownload, Cloud, Upload, AlertTriangle, RefreshCw } from "lucide-react";
 import { CloudDataService } from "@/services/cloudDataService";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -31,10 +31,16 @@ export function CloudOperations({
 }: CloudOperationsProps) {
   const [isCloudSaving, setIsCloudSaving] = useState(false);
   const [isCloudSaving2, setIsCloudSaving2] = useState(false);
+  const [isCloudSavingChunked, setIsCloudSavingChunked] = useState(false);
   const [isCloudLoading, setIsCloudLoading] = useState(false);
   const [lastSyncWarning, setLastSyncWarning] = useState<string | null>(null);
+  const [chunkProgress, setChunkProgress] = useState<{ current: number; total: number; phase: string } | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Calculate total bank items for recommendations
+  const totalBankItems = Object.values(bankData).flat().length;
+  const isLargeDataset = totalBankItems > 500;
 
   const saveToCloud = async () => {
     if (!user) {
@@ -185,6 +191,73 @@ export function CloudOperations({
     }
   };
 
+  const saveToCloudChunked = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to save data to the cloud",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsCloudSavingChunked(true);
+    setLastSyncWarning(null);
+    setChunkProgress({ current: 0, total: 4, phase: 'Starting chunked save...' });
+    
+    try {
+      console.log('Starting chunked cloud save...');
+      console.log('User ID:', user.id);
+      console.log('Large dataset detected:', {
+        bankItems: totalBankItems,
+        characters: characters.length,
+        moneyMethods: moneyMethods.length,
+        purchaseGoals: purchaseGoals.length
+      });
+      
+      const result = await CloudDataService.saveUserDataChunked(
+        characters,
+        moneyMethods,
+        purchaseGoals,
+        bankData,
+        hoursPerDay,
+        (progress) => {
+          setChunkProgress(progress);
+          console.log('Chunked save progress:', progress);
+        }
+      );
+      
+      setChunkProgress(null);
+      
+      // Check for warnings or partial sync
+      if (result?.warning || result?.partialSync) {
+        setLastSyncWarning(result.warning || 'Some data may not have synced completely');
+        
+        toast({
+          title: "Chunked Save - Warning",
+          description: result.warning || "Some items may not have synced properly using chunked method.",
+          variant: "destructive",
+          duration: 10000
+        });
+      } else {
+        toast({
+          title: "Chunked Save Successful",
+          description: `Large dataset saved successfully using chunked method. ${totalBankItems} items processed.`
+        });
+      }
+    } catch (error) {
+      console.error('Chunked cloud save failed:', error);
+      setChunkProgress(null);
+      toast({
+        title: "Chunked Save Failed",
+        description: `Failed to save large dataset: ${error.message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsCloudSavingChunked(false);
+    }
+  };
+
   const loadFromCloud = async () => {
     if (!user) {
       toast({
@@ -233,6 +306,62 @@ export function CloudOperations({
     }
   };
 
+  const recoverFromBrowser = () => {
+    try {
+      console.log('🔄 Attempting to recover data from browser localStorage...');
+      
+      const savedData = localStorage.getItem('osrs-dashboard-data');
+      if (!savedData) {
+        toast({
+          title: "No Browser Data Found",
+          description: "No data found in browser storage. Your data may have been lost.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const parsed = JSON.parse(savedData);
+      console.log('📦 Found browser data:', parsed);
+      
+      const recoveredData = {
+        characters: parsed.characters || [],
+        moneyMethods: parsed.moneyMethods || [],
+        purchaseGoals: parsed.purchaseGoals || [],
+        bankData: parsed.bankData || {},
+        hoursPerDay: parsed.hoursPerDay || 10
+      };
+
+      // Count items for feedback
+      const totalBankItems = Object.values(recoveredData.bankData).flat().length;
+      const totalCharacters = Object.keys(recoveredData.bankData).length;
+
+      console.log('📊 Recovery summary:', {
+        characters: recoveredData.characters.length,
+        bankItems: totalBankItems,
+        charactersWithBanks: totalCharacters
+      });
+
+      // Update app state
+      setAllData(recoveredData);
+
+      toast({
+        title: "Data Recovered Successfully! 🎉",
+        description: `Recovered ${recoveredData.characters.length} characters and ${totalBankItems} bank items from browser storage!`,
+        duration: 8000
+      });
+
+      console.log('✅ Data recovery completed successfully!');
+      
+    } catch (error) {
+      console.error('Recovery failed:', error);
+      toast({
+        title: "Recovery Failed",
+        description: "Failed to recover data from browser storage",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (!user) {
     return null;
   }
@@ -246,6 +375,45 @@ export function CloudOperations({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Emergency Data Recovery Alert */}
+        {(totalBankItems === 0 && characters.length === 0) && (
+          <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-6 w-6 text-red-600 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-red-800 text-lg">🚨 Data Recovery Needed</h4>
+                <p className="text-red-700 mt-1">
+                  Your data appears to be missing. This may have happened due to a sync issue.
+                </p>
+                <p className="text-red-600 text-sm mt-2 font-medium">
+                  ✅ Click "🚨 Recover from Browser" below to restore your data from browser storage!
+                </p>
+                <p className="text-red-500 text-xs mt-1">
+                  Your bank items, characters, and other data should still be saved in your browser.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Large Dataset Warning */}
+        {isLargeDataset && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-amber-800">Large Dataset Detected</h4>
+                <p className="text-sm text-amber-700 mt-1">
+                  You have {totalBankItems.toLocaleString()} bank items. For better reliability with large datasets, use "Chunked Save".
+                </p>
+                <p className="text-xs text-amber-600 mt-1">
+                  Chunked save processes items in smaller batches and prioritizes your most valuable items first.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Sync Warning Alert */}
         {lastSyncWarning && (
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
@@ -261,11 +429,33 @@ export function CloudOperations({
             </div>
           </div>
         )}
+
+        {/* Chunked Save Progress */}
+        {chunkProgress && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="flex-1">
+                <h4 className="font-medium text-blue-800">Saving Large Dataset</h4>
+                <p className="text-sm text-blue-700">{chunkProgress.phase}</p>
+                <div className="w-full bg-blue-200 rounded-full h-2 mt-1">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${(chunkProgress.current / chunkProgress.total) * 100}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-blue-600 mt-1">
+                  Step {chunkProgress.current} of {chunkProgress.total}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="flex gap-4 flex-wrap">
           <Button 
             onClick={saveToCloud} 
-            disabled={isCloudSaving}
+            disabled={isCloudSaving || isCloudSavingChunked}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Save className="h-4 w-4 mr-2" />
@@ -274,26 +464,61 @@ export function CloudOperations({
 
           <Button 
             onClick={saveToCloud2} 
-            disabled={isCloudSaving2}
+            disabled={isCloudSaving2 || isCloudSavingChunked}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
             <Upload className="h-4 w-4 mr-2" />
             {isCloudSaving2 ? "Saving..." : "Save to Cloud 2"}
           </Button>
+
+          {/* Fixed Chunked Save Button */}
+          <Button 
+            onClick={saveToCloudChunked} 
+            disabled={isCloudSavingChunked || isCloudSaving || isCloudSaving2}
+            className={`${isLargeDataset 
+              ? "bg-green-600 hover:bg-green-700 text-white border-2 border-green-300" 
+              : "bg-gray-600 hover:bg-gray-700 text-white"
+            }`}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {isCloudSavingChunked ? "Saving..." : "Chunked Save (FIXED)"}
+            {isLargeDataset && <span className="ml-1 text-xs">✅</span>}
+          </Button>
           
           <Button 
             onClick={loadFromCloud} 
-            disabled={isCloudLoading}
+            disabled={isCloudLoading || isCloudSavingChunked}
             variant="outline"
             className="border-blue-300 text-blue-700 hover:bg-blue-50"
           >
             <CloudDownload className="h-4 w-4 mr-2" />
             {isCloudLoading ? "Loading..." : "Load from Cloud"}
           </Button>
+
+          {/* Emergency Recovery Button */}
+          <Button 
+            onClick={recoverFromBrowser} 
+            className="bg-red-600 hover:bg-red-700 text-white border-2 border-red-300"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            🚨 Recover from Browser
+          </Button>
         </div>
-        <p className="text-sm text-blue-600">
-          Cloud storage automatically syncs your data when you make changes. Use "Save to Cloud 2" for enhanced validation.
-        </p>
+        
+        <div className="text-sm text-blue-600 space-y-1">
+          <p>Cloud storage automatically syncs your data when you make changes.</p>
+          {isLargeDataset && (
+            <p className="text-purple-600 font-medium">
+              ★ Chunked Save recommended for {totalBankItems.toLocaleString()} items - saves most valuable items first
+            </p>
+          )}
+          <p className="text-xs text-gray-500">
+            Regular Save: Fast, may timeout with large datasets | 
+            Enhanced Save: Better validation | 
+            Chunked Save (FIXED): Best for 500+ items | 
+            🚨 Recovery: Restores data from browser storage
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

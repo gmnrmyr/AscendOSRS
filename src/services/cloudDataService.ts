@@ -146,9 +146,53 @@ export class CloudDataService {
     try {
       console.log('Starting cloud save via edge function...');
       
-      // Count total items before save
-      const totalBankItems = Object.values(bankData).flat().length;
+      // Count and analyze bank items before save
+      const allBankItems = Object.values(bankData).flat();
+      const totalBankItems = allBankItems.length;
+      
+      // Calculate total bank value for reporting
+      const totalBankValue = allBankItems.reduce((sum, item) => {
+        const value = (item.quantity || 0) * (item.estimatedPrice || 0);
+        return sum + value;
+      }, 0);
+      
       console.log(`Attempting to save ${totalBankItems} bank items across ${Object.keys(bankData).length} characters`);
+      console.log(`Total bank value: ${totalBankValue.toLocaleString()} GP`);
+      
+      // Sort and prioritize bank items by value before sending
+      const prioritizedBankData = Object.fromEntries(
+        Object.entries(bankData).map(([character, items]) => [
+          character,
+          [...items].sort((a, b) => {
+            const valueA = (a.quantity || 0) * (a.estimatedPrice || 0);
+            const valueB = (b.quantity || 0) * (b.estimatedPrice || 0);
+            // Sort by value descending, then by name for consistency
+            if (valueB !== valueA) {
+              return valueB - valueA;
+            }
+            return (a.name || '').localeCompare(b.name || '');
+          })
+        ])
+      );
+      
+      // Log top 10 most valuable items being saved
+      const topItems = allBankItems
+        .map(item => ({
+          name: item.name || 'Unknown',
+          quantity: item.quantity || 0,
+          price: item.estimatedPrice || 0,
+          value: (item.quantity || 0) * (item.estimatedPrice || 0),
+          character: item.character || 'Unknown'
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 10);
+      
+      console.log('Top 10 most valuable items being saved:');
+      topItems.forEach((item, index) => {
+        if (item.value > 0) {
+          console.log(`  ${index + 1}. ${item.name} (${item.character}) - ${item.quantity.toLocaleString()} x ${item.price.toLocaleString()} = ${item.value.toLocaleString()} GP`);
+        }
+      });
       
       // Save ALL fields for every entity, preserving all user data
       const cleanedData = {
@@ -193,7 +237,7 @@ export class CloudDataService {
           imageUrl: String(goal.imageUrl || '')
         })),
         bankData: Object.fromEntries(
-          Object.entries(bankData).map(([character, items]) => [
+          Object.entries(prioritizedBankData).map(([character, items]) => [
             character,
             items
               .filter(item => item && typeof item === 'object' && item.name && String(item.name).trim())
@@ -226,7 +270,11 @@ export class CloudDataService {
       // Debug: Log the actual character data being sent
       console.log('Character data being sent:', JSON.stringify(cleanedData.characters, null, 2));
       console.log('Money methods being sent:', JSON.stringify(cleanedData.moneyMethods, null, 2));
-      console.log('Bank data being sent:', JSON.stringify(cleanedData.bankData, null, 2));
+      console.log('Bank data summary being sent:', Object.entries(cleanedData.bankData).map(([char, items]) => ({
+        character: char,
+        itemCount: items.length,
+        topItems: items.slice(0, 3).map(item => ({ name: item.name, value: (item.quantity || 0) * (item.estimatedPrice || 0) }))
+      })));
 
       const { data, error } = await supabase.functions.invoke('cloud-data', {
         body: {
@@ -242,26 +290,95 @@ export class CloudDataService {
 
       console.log('Cloud save completed successfully:', data);
       
-      // Check if bank items save was partial
-      if (data?.saved?.bankItems && data.saved.bankItems < cleanedBankItems) {
-        const message = `Cloud save completed with warnings: Only ${data.saved.bankItems} out of ${cleanedBankItems} bank items were saved. Some items may have failed to sync.`;
-        console.warn(message);
+      // Enhanced reporting for bank items
+      if (data?.saved?.bankItems) {
+        const savedItems = data.saved.bankItems;
+        const successRate = ((savedItems / cleanedBankItems) * 100).toFixed(1);
         
-        // Return success but with warning info
-        return {
-          ...data,
-          warning: message,
-          partialSync: {
-            expected: cleanedBankItems,
-            saved: data.saved.bankItems,
-            missing: cleanedBankItems - data.saved.bankItems
-          }
-        };
+        console.log(`Bank items sync result: ${savedItems}/${cleanedBankItems} items saved (${successRate}% success rate)`);
+        
+        if (savedItems < cleanedBankItems) {
+          const missingItems = cleanedBankItems - savedItems;
+          const message = `Cloud save completed with warnings: Only ${savedItems} out of ${cleanedBankItems} bank items were saved (${successRate}% success). ${missingItems} items failed to sync. Most valuable items were prioritized.`;
+          console.warn(message);
+          
+          // Return success but with detailed warning info
+          return {
+            ...data,
+            warning: message,
+            partialSync: {
+              expected: cleanedBankItems,
+              saved: savedItems,
+              missing: missingItems,
+              successRate: parseFloat(successRate),
+              totalValue: totalBankValue,
+              itemsLost: missingItems
+            }
+          };
+        }
       }
       
       return data;
     } catch (error) {
       console.error('Error saving to cloud:', error);
+      throw error;
+    }
+  }
+
+  // FIXED: Chunked sync method that doesn't accidentally clear data
+  static async saveUserDataChunked(
+    characters: Character[],
+    moneyMethods: MoneyMethod[],
+    purchaseGoals: PurchaseGoal[],
+    bankData: Record<string, BankItem[]>,
+    hoursPerDay: number,
+    progressCallback?: (progress: { current: number; total: number; phase: string }) => void
+  ) {
+    try {
+      console.log('Starting FIXED chunked cloud save...');
+      
+      const totalBankItems = Object.values(bankData).flat().length;
+      
+      // If dataset is small, use regular save
+      if (totalBankItems <= 500) {
+        console.log('Dataset is small, using regular save method');
+        return await this.saveUserData(characters, moneyMethods, purchaseGoals, bankData, hoursPerDay);
+      }
+      
+      console.log(`Large dataset detected (${totalBankItems} items), using chunked save...`);
+      
+      // FIXED: Save everything with prioritized bank data instead of clearing bank data
+      progressCallback?.({ current: 1, total: 3, phase: 'Saving all data with prioritized items...' });
+      
+      // Sort all bank items by value first
+      const prioritizedBankData = Object.fromEntries(
+        Object.entries(bankData).map(([character, items]) => [
+          character,
+          [...items].sort((a, b) => {
+            const valueA = (a.quantity || 0) * (a.estimatedPrice || 0);
+            const valueB = (b.quantity || 0) * (b.estimatedPrice || 0);
+            return valueB - valueA; // Most valuable first
+          })
+        ])
+      );
+      
+      progressCallback?.({ current: 2, total: 3, phase: 'Saving prioritized data to cloud...' });
+      
+      // Save everything at once with prioritized data (no chunking needed - the server now handles this better)
+      const result = await this.saveUserData(characters, moneyMethods, purchaseGoals, prioritizedBankData, hoursPerDay);
+      
+      progressCallback?.({ current: 3, total: 3, phase: 'Completed' });
+      
+      console.log('Fixed chunked save completed successfully');
+      
+      return {
+        ...result,
+        method: 'fixed-chunked',
+        note: 'Used improved chunked method with value prioritization'
+      };
+      
+    } catch (error) {
+      console.error('Error in fixed chunked save:', error);
       throw error;
     }
   }

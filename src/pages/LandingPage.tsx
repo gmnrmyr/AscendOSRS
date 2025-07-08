@@ -11,12 +11,14 @@ export function LandingPage() {
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-6">
           <div className="flex items-center gap-3">
             <TrendingUp className="h-8 w-8 text-green-600" />
-            <span className="text-2xl font-bold text-gray-900">OSRS Alt Tracker</span>
+            <span className="text-2xl font-bold text-gray-900">AscendOSRS</span>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => window.location.href = '/auth'}>Sign In / Register</Button>
-            <Button variant="outline" onClick={() => window.open('https://github.com/osrstracker/dashboard', '_blank')}>
-              <Github className="h-4 w-4 mr-2" /> GitHub
+            <Button onClick={() => window.location.href = '/auth'} className="bg-amber-600 hover:bg-amber-700 text-white">
+              Sign In / Register
+            </Button>
+            <Button variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50">
+              Beta Access
             </Button>
           </div>
         </div>
@@ -24,7 +26,7 @@ export function LandingPage() {
       <main className="flex-1 container mx-auto px-6 py-12 flex flex-col gap-8">
         <Card className="osrs-card">
           <CardHeader>
-            <CardTitle>Welcome to OSRS Alt Tracker</CardTitle>
+            <CardTitle>Welcome to AscendOSRS</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="mb-4 text-lg text-amber-900">
@@ -95,13 +97,13 @@ export function LandingPage() {
               <li>Open source, community-driven development</li>
             </ul>
             <div className="mt-4 flex gap-2">
-              <Button variant="outline" onClick={() => window.open('https://github.com/osrstracker/dashboard', '_blank')}>
-                <Github className="h-4 w-4 mr-2" /> GitHub
+              <Button variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50">
+                <TrendingUp className="h-4 w-4 mr-2" /> Start Tracking
               </Button>
-              <Button variant="outline" onClick={() => window.open('https://discord.gg/osrstracker', '_blank')}>
-                <ExternalLink className="h-4 w-4 mr-2" /> Discord
+              <Button variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50">
+                <ExternalLink className="h-4 w-4 mr-2" /> Community
               </Button>
-              <Button variant="outline" onClick={() => window.open('https://buymeacoffee.com/osrstracker', '_blank')}>
+              <Button variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50">
                 <Coffee className="h-4 w-4 mr-2" /> Support
               </Button>
             </div>
@@ -109,7 +111,7 @@ export function LandingPage() {
         </Card>
       </main>
       <footer className="py-8 bg-gradient-to-r from-amber-100 to-yellow-50 text-center text-amber-700 text-sm">
-        &copy; {new Date().getFullYear()} OSRS Alt Tracker. Open source. Not affiliated with Jagex or RuneLite.
+                        &copy; {new Date().getFullYear()} AscendOSRS. The ultimate OSRS progress tracker. Not affiliated with Jagex or RuneLite.
       </footer>
     </div>
   );

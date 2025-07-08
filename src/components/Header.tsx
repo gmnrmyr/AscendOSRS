@@ -20,10 +20,10 @@ export function Header() {
   return (
     <div className="flex items-center justify-between">
       <div className="osrs-card p-6 flex-1 mr-4">
-        <h1 className="text-5xl font-bold text-amber-800 flex items-center gap-3 mb-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
-          <TrendingUp className="h-10 w-10 text-amber-600" />
-          ⚔️ OSRS Tracker Dashboard ⚔️
-        </h1>
+                  <h1 className="text-5xl font-bold text-amber-800 flex items-center gap-3 mb-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <img src="/logo.svg" alt="AscendOSRS" className="h-12 w-12" />
+            ⚔️ AscendOSRS ⚔️
+          </h1>
         <p className="text-amber-700 text-lg font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
           🏰 Track thy Old School RuneScape progress, gold-making methods, and purchase goals 🏰
         </p>

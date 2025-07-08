@@ -17,7 +17,7 @@ const DUMP_URL = 'https://prices.runescape.wiki/api/v1/osrs/mapping';
 const PRICES_URL = 'https://prices.runescape.wiki/api/v1/osrs/latest';
 
 // Your app name and contact - PLEASE REPLACE THESE
-const APP_NAME = 'GE Alt Tracker';
+const APP_NAME = 'AscendOSRS';
 const CONTACT = 'your@email.com'; // Replace with your contact info
 
 async function fetchWithRetry(url, retries = 3) {

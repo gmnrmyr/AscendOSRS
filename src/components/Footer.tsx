@@ -17,10 +17,10 @@ export function Footer() {
             </p>
             <Button 
               className="osrs-button w-full"
-              onClick={() => window.open('https://buymeacoffee.com/osrstracker', '_blank')}
+              disabled
             >
               <Coffee className="h-4 w-4 mr-2" />
-              Buy us a Coffee
+              Support AscendOSRS
             </Button>
           </Card>
 
@@ -34,10 +34,10 @@ export function Footer() {
             <Button 
               variant="outline"
               className="osrs-button-secondary w-full"
-              onClick={() => window.open('https://github.com/osrstracker/dashboard', '_blank')}
+              disabled
             >
               <Github className="h-4 w-4 mr-2" />
-              View on GitHub
+              Open Source
             </Button>
           </Card>
 
@@ -51,10 +51,10 @@ export function Footer() {
             <Button 
               variant="outline"
               className="osrs-button-secondary w-full"
-              onClick={() => window.open('https://discord.gg/osrstracker', '_blank')}
+              disabled
             >
               <ExternalLink className="h-4 w-4 mr-2" />
-              Join Discord
+              Community Hub
             </Button>
           </Card>
         </div>
@@ -62,7 +62,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-amber-200 text-center">
           <p className="text-amber-700 text-sm">
-            © 2025 OSRS Tracker Dashboard. Made with ❤️ for the OSRS community.
+            © 2025 AscendOSRS. Made with ❤️ for the OSRS community.
           </p>
         </div>
       </div>

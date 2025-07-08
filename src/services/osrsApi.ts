@@ -58,7 +58,7 @@ export const osrsApi = {
       const templeUrl = `${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`;
       const response = await fetch(templeUrl, {
         headers: {
-          'User-Agent': 'OSRS Wealth Tracker (Contact: user@example.com)',
+          'User-Agent': 'AscendOSRS (Contact: user@example.com)',
         },
         timeout: 10000
       });
@@ -139,7 +139,7 @@ export const osrsApi = {
       const womUrl = `https://api.wiseoldman.net/v2/players/${encodeURIComponent(playerName)}`;
       const response = await fetch(womUrl, {
         headers: {
-          'User-Agent': 'OSRS Wealth Tracker (Contact: user@example.com)',
+          'User-Agent': 'AscendOSRS (Contact: user@example.com)',
         },
         timeout: 10000
       });
@@ -236,7 +236,7 @@ export const osrsApi = {
           const hiscoreUrl = `${endpoint}?player=${encodeURIComponent(playerName)}`;
           const response = await fetch(hiscoreUrl, {
             headers: {
-              'User-Agent': 'OSRS Wealth Tracker (Contact: user@example.com)',
+              'User-Agent': 'AscendOSRS (Contact: user@example.com)',
             },
             timeout: 10000
           });

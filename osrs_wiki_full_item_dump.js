@@ -17,7 +17,7 @@ const OUTPUT_FILE = path.join(__dirname, 'public', 'osrs_items.json');
 const METADATA_FILE = path.join(__dirname, 'public', 'osrs_items_metadata.json');
 
 // Your app name and contact - PLEASE REPLACE THESE
-const APP_NAME = 'GE Alt Tracker';
+const APP_NAME = 'AscendOSRS';
 const CONTACT = 'your@email.com'; // Replace with your contact info
 
 // Fallback prices for common items (when API fails)

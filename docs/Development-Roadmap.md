@@ -1,4 +1,4 @@
-# OSRS GE Alt Tracker - Complete Development Roadmap
+# AscendOSRS - Complete Development Roadmap
 
 ## 🚨 CRITICAL CONSTRAINTS
 - **DO NOT BREAK EXISTING FUNCTIONALITY** - Users are already using the app

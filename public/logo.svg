@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Background shield -->
+  <path d="M32 4 L20 12 L20 32 Q20 45 32 60 Q44 45 44 32 L44 12 Z" 
+        fill="#8B4513" stroke="#654321" stroke-width="2"/>
+  
+  <!-- Inner shield highlight -->
+  <path d="M32 8 L24 14 L24 30 Q24 40 32 52 Q40 40 40 30 L40 14 Z" 
+        fill="#CD853F" stroke="#A0522D" stroke-width="1"/>
+  
+  <!-- Medieval sword -->
+  <rect x="30" y="16" width="4" height="24" fill="#C0C0C0"/>
+  <rect x="28" y="18" width="8" height="2" fill="#C0C0C0"/>
+  <rect x="29" y="40" width="6" height="4" fill="#8B4513"/>
+  <circle cx="32" cy="44" r="2" fill="#FFD700"/>
+  
+  <!-- Sword highlight -->
+  <rect x="31" y="16" width="1" height="24" fill="#E6E6E6"/>
+  
+  <!-- Medieval cross pattern -->
+  <rect x="31" y="10" width="2" height="6" fill="#FFD700"/>
+  <rect x="28" y="12" width="8" height="2" fill="#FFD700"/>
+  
+  <!-- Shield emblem dots (pixel style) -->
+  <rect x="26" y="24" width="2" height="2" fill="#FFD700"/>
+  <rect x="36" y="24" width="2" height="2" fill="#FFD700"/>
+  <rect x="31" y="28" width="2" height="2" fill="#FFD700"/>
+</svg> 

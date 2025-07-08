@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { LogOut, User, TrendingUp, Menu, X } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface ModernNavbarProps {
   activeTab: string;
@@ -75,8 +76,8 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
                 <img src="/logo.svg" alt="AscendOSRS" className="h-8 w-8" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'MedievalSharp, cursive' }}>AscendOSRS</h1>
-                <p className="text-xs text-gray-600">Ultimate OSRS Progress Tracker</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>AscendOSRS</h1>
+                <p className="text-xs text-gray-600 dark:text-gray-300">Ultimate OSRS Progress Tracker</p>
               </div>
             </div>
 
@@ -98,8 +99,10 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
 
             {/* User Section */}
             <div className="flex items-center gap-3">
+              <ThemeToggle />
+              
               <div className="hidden sm:flex items-center gap-2">
-                <Avatar className="h-8 w-8 border-2 border-gray-900">
+                <Avatar className="h-8 w-8 border-2 border-gray-900 dark:border-gray-100">
                   <AvatarFallback className="bg-green-500 text-white font-bold">
                     {getUserInitials(user?.email || '')}
                   </AvatarFallback>
@@ -135,7 +138,7 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 bg-white/95 backdrop-blur-md">
+          <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md">
             <div className="container mx-auto px-4 py-4 space-y-2">
               {navItems.map((item) => (
                 <Button
@@ -150,9 +153,9 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
                 </Button>
               ))}
               
-              <div className="pt-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8 border-2 border-gray-900">
+                  <Avatar className="h-8 w-8 border-2 border-gray-900 dark:border-gray-100">
                     <AvatarFallback className="bg-green-500 text-white font-bold">
                       {getUserInitials(user?.email || '')}
                     </AvatarFallback>

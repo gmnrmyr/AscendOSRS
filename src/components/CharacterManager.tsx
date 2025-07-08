@@ -112,8 +112,8 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-amber-800 mb-2">Character Manager</h2>
-        <p className="text-amber-600">Manage your OSRS characters and track their progress</p>
+        <h2 className="text-2xl font-bold text-amber-800 dark:text-amber-200 mb-2">Character Manager</h2>
+        <p className="text-amber-600 dark:text-amber-400">Manage your OSRS characters and track their progress</p>
       </div>
 
       {/* Add New Character */}
@@ -236,34 +236,34 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
             
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs text-gray-500">Combat Level</Label>
-                  <Input
-                    type="number"
-                    value={character.combatLevel}
-                    onChange={(e) => updateCharacter(character.id, 'combatLevel', Number(e.target.value))}
-                    className="h-8 text-sm"
-                    min="3"
-                    max="126"
-                  />
-                </div>
-                
-                <div>
-                  <Label className="text-xs text-gray-500">Total Level</Label>
-                  <Input
-                    type="number"
-                    value={character.totalLevel}
-                    onChange={(e) => updateCharacter(character.id, 'totalLevel', Number(e.target.value))}
-                    className="h-8 text-sm"
-                    min="32"
-                    max="2277"
-                  />
-                </div>
+                              <div>
+                <Label className="text-xs text-gray-500 dark:text-gray-400">Combat Level</Label>
+                <Input
+                  type="number"
+                  value={character.combatLevel}
+                  onChange={(e) => updateCharacter(character.id, 'combatLevel', Number(e.target.value))}
+                  className="h-8 text-sm"
+                  min="3"
+                  max="126"
+                />
+              </div>
+              
+              <div>
+                <Label className="text-xs text-gray-500 dark:text-gray-400">Total Level</Label>
+                <Input
+                  type="number"
+                  value={character.totalLevel}
+                  onChange={(e) => updateCharacter(character.id, 'totalLevel', Number(e.target.value))}
+                  className="h-8 text-sm"
+                  min="32"
+                  max="2277"
+                />
+              </div>
               </div>
 
               {character.notes && (
                 <div>
-                  <Label className="text-xs text-gray-500">Notes</Label>
+                  <Label className="text-xs text-gray-500 dark:text-gray-400">Notes</Label>
                   <Textarea
                     value={character.notes}
                     onChange={(e) => updateCharacter(character.id, 'notes', e.target.value)}

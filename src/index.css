@@ -87,7 +87,23 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
+  }
+
+  body:not(.dark) {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  }
+
+  body.dark {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+
+  /* Fix for shadcn components in dark mode */
+  .dark input, .dark textarea, .dark select {
+    @apply bg-gray-800 border-gray-600 text-gray-100;
+  }
+
+  .dark input:focus, .dark textarea:focus, .dark select:focus {
+    @apply ring-amber-500 border-amber-500;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -100,9 +116,10 @@
 @layer components {
   /* Modern pixel-inspired components */
   .pixel-button {
-    @apply bg-white border-2 border-gray-900 text-gray-900 font-medium px-4 py-2 shadow-[4px_4px_0px_0px_theme(colors.gray.900)];
-    @apply hover:shadow-[2px_2px_0px_0px_theme(colors.gray.900)] hover:translate-x-[2px] hover:translate-y-[2px];
-    @apply active:shadow-[0px_0px_0px_0px_theme(colors.gray.900)] active:translate-x-[4px] active:translate-y-[4px];
+    @apply bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 font-medium px-4 py-2;
+    @apply shadow-[4px_4px_0px_0px_theme(colors.gray.900)] dark:shadow-[4px_4px_0px_0px_theme(colors.gray.100)];
+    @apply hover:shadow-[2px_2px_0px_0px_theme(colors.gray.900)] dark:hover:shadow-[2px_2px_0px_0px_theme(colors.gray.100)] hover:translate-x-[2px] hover:translate-y-[2px];
+    @apply active:shadow-[0px_0px_0px_0px_theme(colors.gray.900)] dark:active:shadow-[0px_0px_0px_0px_theme(colors.gray.100)] active:translate-x-[4px] active:translate-y-[4px];
     @apply transition-all duration-150 ease-out;
     font-family: 'JetBrains Mono', monospace;
   }
@@ -116,34 +133,79 @@
   }
 
   .pixel-card {
-    @apply bg-white border-2 border-gray-900 shadow-[8px_8px_0px_0px_theme(colors.gray.900)];
+    @apply bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100;
+    @apply shadow-[8px_8px_0px_0px_theme(colors.gray.900)] dark:shadow-[8px_8px_0px_0px_theme(colors.gray.100)];
     @apply rounded-none;
   }
 
   .pixel-input {
-    @apply bg-white border-2 border-gray-900 text-gray-900 px-3 py-2;
+    @apply bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 px-3 py-2;
     @apply focus:ring-0 focus:border-blue-500 focus:shadow-[4px_4px_0px_0px_theme(colors.blue.500)];
     @apply transition-all duration-150 ease-out;
     font-family: 'JetBrains Mono', monospace;
   }
 
   .pixel-badge {
-    @apply bg-gray-900 text-white font-medium px-2 py-1 text-xs border-2 border-gray-900;
+    @apply bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium px-2 py-1 text-xs border-2 border-gray-900 dark:border-gray-100;
     font-family: 'JetBrains Mono', monospace;
   }
 
   .pixel-tab {
-    @apply bg-white border-2 border-gray-900 text-gray-900 font-medium px-4 py-2;
-    @apply hover:bg-gray-50 data-[state=active]:bg-gray-900 data-[state=active]:text-white;
+    @apply bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 font-medium px-4 py-2;
+    @apply hover:bg-gray-50 dark:hover:bg-gray-700 data-[state=active]:bg-gray-900 dark:data-[state=active]:bg-gray-100 data-[state=active]:text-white dark:data-[state=active]:text-gray-900;
     @apply transition-colors duration-150;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .osrs-card {
+    @apply bg-white dark:bg-gray-800 border-2 border-amber-400 dark:border-amber-600 rounded-lg;
+    @apply shadow-lg dark:shadow-xl;
+    @apply transition-colors duration-150;
+  }
+
+  .osrs-badge {
+    @apply bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700;
+    @apply px-2 py-1 text-xs font-semibold rounded;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .osrs-progress {
+    @apply bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600;
+  }
+
+  .osrs-progress-fill {
+    @apply bg-gradient-to-r from-amber-500 to-yellow-500 h-full transition-all duration-300 ease-out;
+  }
+
+  .osrs-title {
+    @apply text-amber-800 dark:text-amber-200 font-bold;
+    font-family: 'MedievalSharp', cursive;
+  }
+
+  .osrs-button {
+    @apply bg-amber-600 hover:bg-amber-700 text-white border-2 border-amber-700 dark:border-amber-500;
+    @apply shadow-lg hover:shadow-xl transition-all duration-150;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .osrs-button-secondary {
+    @apply border-amber-600 dark:border-amber-400 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20;
     font-family: 'JetBrains Mono', monospace;
   }
 
   .navbar-blur {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+  }
+
+  .navbar-blur:not(.dark) {
     background: rgba(255, 255, 255, 0.8);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .navbar-blur {
+    background: rgba(15, 23, 42, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .navbar-hidden {
@@ -171,4 +233,18 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #1f2937;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #64748b;
+  border: 2px solid #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

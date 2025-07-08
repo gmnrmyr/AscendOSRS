@@ -18,7 +18,7 @@ export function HoursPerDayInput() {
       </CardHeader>
       <CardContent>
         <div className="max-w-xs">
-          <Label htmlFor="hours">How many hours per day do you play?</Label>
+          <Label htmlFor="hours" className="text-blue-700 dark:text-blue-300">How many hours per day do you play?</Label>
           <Input
             id="hours"
             type="number"

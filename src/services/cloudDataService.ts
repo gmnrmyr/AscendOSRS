@@ -279,12 +279,19 @@ export class CloudDataService {
       const { data, error } = await supabase.functions.invoke('cloud-data', {
         body: {
           action: 'save',
-          ...cleanedData
+          ...cleanedData,
+          forceOverwrite: false // Default to protected mode
         }
       });
 
       if (error) {
         console.error('Cloud save error details:', error);
+        
+        // Handle data protection error specially
+        if (error.message?.includes('DATA_PROTECTION_ERROR')) {
+          throw new Error(`🚨 DATA PROTECTION: ${error.message}. Your data is safe!`);
+        }
+        
         throw new Error(`Cloud save failed: ${error.message || 'Unknown error'}`);
       }
 
@@ -321,6 +328,238 @@ export class CloudDataService {
       return data;
     } catch (error) {
       console.error('Error saving to cloud:', error);
+      throw error;
+    }
+  }
+
+  // Force save method for when user confirms to overwrite empty data
+  static async forceOverwriteUserData(
+    characters: Character[],
+    moneyMethods: MoneyMethod[],
+    purchaseGoals: PurchaseGoal[],
+    bankData: Record<string, BankItem[]>,
+    hoursPerDay: number
+  ) {
+    try {
+      console.log('🚨 FORCE OVERWRITE: Starting protected save with force flag...');
+      
+      // Same data cleaning as regular save
+      const cleanedData = {
+        characters: characters.map(char => ({
+          ...char,
+          combatLevel: Math.min(Math.max(typeof char.combatLevel === 'number' ? char.combatLevel : 3, 3), 126),
+          totalLevel: Math.min(Math.max(typeof char.totalLevel === 'number' ? char.totalLevel : 32, 32), 2277),
+          bank: Math.min(typeof char.bank === 'number' ? char.bank : 0, 999999999999),
+          platTokens: Math.min(typeof char.platTokens === 'number' ? char.platTokens : 0, 999999999999),
+          type: char.type || 'main',
+          name: String(char.name || 'Unnamed Character'),
+          notes: String(char.notes || ''),
+          isActive: typeof char.isActive === 'boolean' ? char.isActive : true
+        })),
+        moneyMethods: moneyMethods.map(method => ({
+          ...method,
+          gpHour: Math.min(typeof method.gpHour === 'number' ? method.gpHour : 0, 999999999999),
+          clickIntensity: Math.min(Math.max(typeof method.clickIntensity === 'number' ? method.clickIntensity : 1, 1), 5),
+          category: method.category || 'other',
+          name: String(method.name || 'Unnamed Method'),
+          character: String(method.character || 'Unknown'),
+          requirements: String(method.requirements || ''),
+          notes: String(method.notes || ''),
+          isActive: typeof method.isActive === 'boolean' ? method.isActive : true
+        })),
+        purchaseGoals: purchaseGoals.map(goal => ({
+          ...goal,
+          currentPrice: typeof goal.currentPrice === 'number' ? goal.currentPrice : 0,
+          targetPrice: typeof goal.targetPrice === 'number' ? goal.targetPrice : undefined,
+          quantity: typeof goal.quantity === 'number' ? goal.quantity : 1,
+          priority: goal.priority || 'A',
+          category: goal.category || 'other',
+          name: String(goal.name || 'Unnamed Goal'),
+          notes: String(goal.notes || ''),
+          imageUrl: String(goal.imageUrl || '')
+        })),
+        bankData: Object.fromEntries(
+          Object.entries(bankData).map(([character, items]) => [
+            character,
+            items
+              .filter(item => item && typeof item === 'object' && item.name && String(item.name).trim())
+              .map(item => ({
+                ...item,
+                category: mapBankItemCategory(item.category),
+                quantity: Math.min(typeof item.quantity === 'number' ? item.quantity : 0, 999999999999),
+                estimatedPrice: Math.min(typeof item.estimatedPrice === 'number' ? item.estimatedPrice : 0, 999999999999),
+                name: String(item.name).trim()
+              }))
+          ])
+        ),
+        hoursPerDay: typeof hoursPerDay === 'number' ? hoursPerDay : 10
+      };
+
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
+        body: {
+          action: 'save',
+          ...cleanedData,
+          forceOverwrite: true // This bypasses protection
+        }
+      });
+
+      if (error) {
+        console.error('Force overwrite error details:', error);
+        throw new Error(`Force overwrite failed: ${error.message || 'Unknown error'}`);
+      }
+
+      console.log('🚨 FORCE OVERWRITE: Save completed successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error in force overwrite:', error);
+      throw error;
+    }
+  }
+
+  // List available snapshots for version management
+  static async listSnapshots() {
+    try {
+      console.log('Loading available snapshots...');
+      
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
+        body: {
+          action: 'list_snapshots'
+        }
+      });
+
+      if (error) {
+        console.error('List snapshots error:', error);
+        throw new Error(`Failed to load snapshots: ${error.message || 'Unknown error'}`);
+      }
+
+      console.log('Snapshots loaded successfully:', data);
+      
+      // Handle graceful degradation when versioning system isn't set up yet
+      if (data.warning) {
+        console.warn('⚠️ Versioning system warning:', data.warning);
+      }
+      
+      return data.snapshots || [];
+    } catch (error) {
+      console.error('Error loading snapshots:', error);
+      throw error;
+    }
+  }
+
+  // Restore data from a specific snapshot
+  static async restoreFromSnapshot(snapshotId: string) {
+    try {
+      console.log('Restoring from snapshot:', snapshotId);
+      
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
+        body: {
+          action: 'restore_snapshot',
+          snapshotId: snapshotId
+        }
+      });
+
+      if (error) {
+        console.error('Restore snapshot error:', error);
+        throw new Error(`Failed to restore snapshot: ${error.message || 'Unknown error'}`);
+      }
+
+      console.log('Snapshot restored successfully:', data);
+      return data.data;
+    } catch (error) {
+      console.error('Error restoring snapshot:', error);
+      throw error;
+    }
+  }
+
+  // Create a manual snapshot
+  static async createManualSnapshot() {
+    try {
+      console.log('Creating manual snapshot...');
+      
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
+        body: {
+          action: 'create_manual_snapshot'
+        }
+      });
+
+      if (error) {
+        console.error('Create manual snapshot error:', error);
+        throw new Error(`Failed to create manual snapshot: ${error.message || 'Unknown error'}`);
+      }
+
+      // Handle specific error response for missing versioning system
+      if (!data.success && data.migrationRequired) {
+        console.warn('⚠️ Migration required for versioning system:', data.message);
+        console.log('Debug info:', data.debugInfo);
+        throw new Error(`MIGRATION_REQUIRED: ${data.message}`);
+      }
+      
+      if (!data.success && data.error) {
+        console.warn('⚠️ Versioning system error:', data.error);
+        console.log('Debug info:', data.debugInfo);
+        
+        // Provide more specific error messages based on error type
+        if (data.error === 'FUNCTION_ERROR') {
+          throw new Error(`Function Error: ${data.message}. Check that the migration script ran completely.`);
+        } else if (data.error === 'UNEXPECTED_ERROR') {
+          throw new Error(`Unexpected Error: ${data.message}. Check the browser console for details.`);
+        } else {
+          throw new Error(`Versioning system error: ${data.message || data.error}`);
+        }
+      }
+
+      console.log('Manual snapshot created successfully:', data);
+      return data.snapshot;
+    } catch (error) {
+      console.error('Error creating manual snapshot:', error);
+      throw error;
+    }
+  }
+
+  // Test Edge Function connectivity
+  static async testEdgeFunction() {
+    try {
+      console.log('🧪 Testing Edge Function connectivity...');
+      
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
+        body: {
+          action: 'test'
+        }
+      });
+
+      if (error) {
+        console.error('Edge Function test error:', error);
+        throw new Error(`Edge Function test failed: ${error.message || 'Unknown error'}`);
+      }
+
+      console.log('✅ Edge Function test successful:', data);
+      return data;
+    } catch (error) {
+      console.error('Error testing Edge Function:', error);
+      throw error;
+    }
+  }
+
+  // Verify migration status
+  static async verifyMigration() {
+    try {
+      console.log('🔍 Verifying migration status...');
+      
+      const { data, error } = await supabase.functions.invoke('cloud-data', {
+        body: {
+          action: 'verify_migration'
+        }
+      });
+
+      if (error) {
+        console.error('Verification error:', error);
+        throw new Error(`Failed to verify migration: ${error.message || 'Unknown error'}`);
+      }
+
+      console.log('✅ Migration verification complete:', data);
+      return data.migrationStatus;
+    } catch (error) {
+      console.error('Error verifying migration:', error);
       throw error;
     }
   }

@@ -252,7 +252,7 @@ export function EnhancedBankManager({
     // Calculate from actual bank items first
     const bankItemsValue = bankItems
       .filter(item => !item.name.toLowerCase().includes('coin') && !item.name.toLowerCase().includes('platinum'))
-      .reduce((total, item) => total + (item.quantity * item.estimatedPrice), 0);
+      .reduce((total, item) => total + (Math.floor(item.quantity) * item.estimatedPrice), 0);
     
     return bankItemsValue;
   };
@@ -359,7 +359,7 @@ export function EnhancedBankManager({
     }
 
     // Calculate current total value of non-gold items
-    const currentTotalValue = nonGoldItems.reduce((sum, item) => sum + (item.quantity * item.estimatedPrice), 0);
+    const currentTotalValue = nonGoldItems.reduce((sum, item) => sum + (Math.floor(item.quantity) * item.estimatedPrice), 0);
     
     // If current total is 0, distribute the new value equally among items
     if (currentTotalValue === 0) {

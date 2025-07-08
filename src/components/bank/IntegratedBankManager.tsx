@@ -48,7 +48,7 @@ export function IntegratedBankManager({
 
   // Sort items by value (quantity * price)
   const sortedItems = [...characterBankItems].sort((a, b) => 
-    (b.quantity * b.estimatedPrice) - (a.quantity * a.estimatedPrice)
+    (Math.floor(b.quantity) * b.estimatedPrice) - (Math.floor(a.quantity) * a.estimatedPrice)
   );
 
   // Get items to display based on expanded state
@@ -249,7 +249,7 @@ export function IntegratedBankManager({
   };
 
   const totalBankValue = characterBankItems.reduce((total, item) => 
-    total + (item.quantity * item.estimatedPrice), 0
+    total + (Math.floor(item.quantity) * item.estimatedPrice), 0
   );
 
   if (!characters.length) {
@@ -343,7 +343,7 @@ export function IntegratedBankManager({
               <CardTitle className="flex justify-between items-center">
                 <span>Bank Items</span>
                 <span className="text-lg text-green-600 font-bold">
-                  {formatGoldValue(displayedItems.reduce((sum, item) => sum + (item.quantity * item.estimatedPrice), 0))}
+                  {formatGoldValue(displayedItems.reduce((sum, item) => sum + (Math.floor(item.quantity) * item.estimatedPrice), 0))}
                 </span>
               </CardTitle>
             </CardHeader>
@@ -361,7 +361,7 @@ export function IntegratedBankManager({
                           <div className="flex-1">
                             <h4 className="font-medium">{item.name}</h4>
                             <p className="text-sm text-muted-foreground">
-                              Quantity: {item.quantity.toLocaleString()}
+                              Quantity: {Math.floor(item.quantity).toLocaleString()}
                             </p>
                           </div>
                           

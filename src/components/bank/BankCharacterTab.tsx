@@ -21,7 +21,7 @@ export function BankCharacterTab({ character, items, onDeleteItem }: BankCharact
 
   // Sort items by value (quantity * price)
   const sortedItems = [...items].sort((a, b) => 
-    (b.quantity * b.estimatedPrice) - (a.quantity * a.estimatedPrice)
+    (Math.floor(b.quantity) * b.estimatedPrice) - (Math.floor(a.quantity) * a.estimatedPrice)
   );
 
   const filteredItems = sortedItems.filter(item => {
@@ -35,7 +35,7 @@ export function BankCharacterTab({ character, items, onDeleteItem }: BankCharact
     ? filteredItems 
     : filteredItems.slice(0, VALUABLE_ITEMS_THRESHOLD);
 
-  const totalValue = items.reduce((sum, item) => sum + (item.quantity * item.estimatedPrice), 0);
+  const totalValue = items.reduce((sum, item) => sum + (Math.floor(item.quantity) * item.estimatedPrice), 0);
   const hiddenItemsCount = filteredItems.length - displayedItems.length;
 
   return (

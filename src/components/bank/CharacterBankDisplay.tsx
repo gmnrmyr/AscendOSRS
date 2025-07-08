@@ -70,7 +70,7 @@ export function CharacterBankDisplay({
       
       switch (sortBy) {
         case 'value':
-          comparison = (a.quantity * a.estimatedPrice) - (b.quantity * b.estimatedPrice);
+          comparison = (Math.floor(a.quantity) * a.estimatedPrice) - (Math.floor(b.quantity) * b.estimatedPrice);
           break;
         case 'name':
           comparison = a.name.localeCompare(b.name);
@@ -239,7 +239,7 @@ export function CharacterBankDisplay({
                             
                             <div className="mt-2 pt-2 border-t text-center">
                               <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                {formatGP(item.quantity * item.estimatedPrice)} GP
+                                {formatGP(Math.floor(item.quantity) * item.estimatedPrice)} GP
                               </span>
                             </div>
                           </div>
@@ -251,9 +251,9 @@ export function CharacterBankDisplay({
                           <div key={item.id} className="flex items-center justify-between py-1 px-2 bg-gray-50 dark:bg-gray-900/50 rounded text-sm">
                             <span className="truncate">{item.name}</span>
                             <div className="flex items-center gap-2">
-                              <span className="text-gray-500">{item.quantity}x</span>
+                              <span className="text-gray-500">{Math.floor(item.quantity).toLocaleString()}x</span>
                               <span className="font-medium text-green-600">
-                                {formatGP(item.quantity * item.estimatedPrice)}
+                                {formatGP(Math.floor(item.quantity) * item.estimatedPrice)}
                               </span>
                             </div>
                           </div>

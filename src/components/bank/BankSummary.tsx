@@ -13,11 +13,11 @@ export function BankSummary({ characters, bankData }: BankSummaryProps) {
   const totalValue = Object.values(bankData).reduce((sum, items) => {
     return sum + items.reduce((itemSum, item) => {
       if (item.name.toLowerCase().includes('coin')) {
-        return itemSum + (item.quantity || 0);
+        return itemSum + Math.floor(item.quantity || 0);
       } else if (item.name.toLowerCase().includes('platinum')) {
-        return itemSum + ((item.quantity || 0) * 1000);
+        return itemSum + (Math.floor(item.quantity || 0) * 1000);
       } else {
-        return itemSum + ((item.quantity || 0) * (item.estimatedPrice || 0));
+        return itemSum + (Math.floor(item.quantity || 0) * (item.estimatedPrice || 0));
       }
     }, 0);
   }, 0);
@@ -26,9 +26,9 @@ export function BankSummary({ characters, bankData }: BankSummaryProps) {
   const totalGoldValue = Object.values(bankData).reduce((sum, items) => {
     return sum + items.reduce((itemSum, item) => {
       if (item.name.toLowerCase().includes('coin')) {
-        return itemSum + (item.quantity || 0);
+        return itemSum + Math.floor(item.quantity || 0);
       } else if (item.name.toLowerCase().includes('platinum')) {
-        return itemSum + ((item.quantity || 0) * 1000);
+        return itemSum + (Math.floor(item.quantity || 0) * 1000);
       }
       return itemSum;
     }, 0);

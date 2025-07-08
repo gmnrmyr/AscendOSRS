@@ -84,7 +84,7 @@ export function BankValueManager({
               <div className="flex-1">
                 <p className="font-medium">{item.name}</p>
                 <p className="text-sm text-muted-foreground">
-                  Quantity: {item.quantity.toLocaleString()}
+                  Quantity: {Math.floor(item.quantity).toLocaleString()}
                 </p>
               </div>
               

@@ -19,7 +19,7 @@ export function BankItemCard({ item, onDelete }: BankItemCardProps) {
     }
   };
 
-  const totalValue = item.quantity * item.estimatedPrice;
+  const totalValue = Math.floor(item.quantity) * item.estimatedPrice;
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -43,7 +43,7 @@ export function BankItemCard({ item, onDelete }: BankItemCardProps) {
           
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Package className="h-4 w-4" />
-            <span>Qty: {item.quantity.toLocaleString()}</span>
+            <span>Qty: {Math.floor(item.quantity).toLocaleString()}</span>
           </div>
           
           <div className="flex items-center gap-2 text-sm text-gray-600">

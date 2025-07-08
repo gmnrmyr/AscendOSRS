@@ -126,6 +126,65 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🚀 Edge Function called with method:', req.method)
+    console.log('🔗 Request URL:', req.url)
+    
+    // Parse request body with better error handling
+    let body;
+    try {
+      body = await req.json()
+      console.log('📝 Request body parsed successfully:', JSON.stringify(body, null, 2))
+    } catch (jsonError) {
+      console.error('❌ JSON parsing error:', jsonError)
+      return new Response(
+        JSON.stringify({ 
+          error: 'INVALID_JSON',
+          message: 'Invalid JSON in request body',
+          details: jsonError.message 
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    const { action, bankOnly = false } = body
+    console.log('🎯 Action:', action, 'Bank-only:', bankOnly)
+
+    // Simple test endpoint that doesn't require auth
+    if (action === 'test') {
+      console.log('✅ Test endpoint called successfully')
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Edge Function is working!',
+          timestamp: new Date().toISOString(),
+          receivedAction: action
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check authorization header
+    const authHeader = req.headers.get('Authorization')
+    console.log('🔐 Auth header present:', !!authHeader)
+    
+    if (!authHeader) {
+      console.error('❌ No authorization header')
+      return new Response(
+        JSON.stringify({ 
+          error: 'NO_AUTH_HEADER',
+          message: 'No authorization header provided'
+        }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
+    console.log('🔧 Creating Supabase client...')
     const supabaseClient = createClient(
       // @ts-ignore
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -133,18 +192,36 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     )
 
-    // Get the user from the Authorization header
+    console.log('👤 Getting user from auth header...')
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
     
-    if (userError || !user) {
-      console.error('User authentication failed:', userError)
+    if (userError) {
+      console.error('❌ User authentication error:', userError)
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ 
+          error: 'AUTH_ERROR',
+          message: 'User authentication failed', 
+          details: userError.message 
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+    
+    if (!user) {
+      console.error('❌ No user found in auth response')
+      return new Response(
+        JSON.stringify({ 
+          error: 'NO_USER',
+          message: 'No user found in authentication response'
+        }),
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -152,14 +229,14 @@ serve(async (req) => {
       )
     }
 
-    const body = await req.json()
-    const { action, bankOnly = false } = body
+    console.log('✅ User authenticated successfully:', user.id)
 
     if (action === 'save') {
-      const { characters, moneyMethods, purchaseGoals, bankData, hoursPerDay } = body
+      const { characters, moneyMethods, purchaseGoals, bankData, hoursPerDay, forceOverwrite } = body
 
       console.log('Starting cloud save for user:', user.id)
       console.log('Bank-only mode:', bankOnly)
+      console.log('Force overwrite:', forceOverwrite)
       console.log('Data counts:', {
         characters: characters?.length || 0,
         moneyMethods: moneyMethods?.length || 0,
@@ -172,6 +249,55 @@ serve(async (req) => {
         moneyMethods: 0,
         purchaseGoals: 0,
         bankItems: 0
+      }
+
+      // DATA PROTECTION: Check if we're about to save empty data
+      const totalCharacters = characters?.length || 0
+      const totalMethods = moneyMethods?.length || 0
+      const totalGoals = purchaseGoals?.length || 0
+      const totalBankItems = Object.values(bankData || {}).flat().length
+      const hasAnyData = totalCharacters > 0 || totalMethods > 0 || totalGoals > 0 || totalBankItems > 0
+
+      if (!bankOnly && !hasAnyData && !forceOverwrite) {
+        console.error('❌ DATA PROTECTION: Attempted to save empty data without force override')
+        return new Response(
+          JSON.stringify({ 
+            error: 'DATA_PROTECTION_ERROR',
+            message: 'Cannot save empty data. This would erase all your existing data. Use forceOverwrite=true to override.',
+            code: 'EMPTY_DATA_PROTECTION',
+            details: {
+              totalCharacters,
+              totalMethods,
+              totalGoals,
+              totalBankItems,
+              hasAnyData
+            }
+          }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+
+      // VERSIONING: Create snapshot before making changes (only if not bank-only mode)
+      let snapshotId = null
+      if (!bankOnly) {
+        try {
+          console.log('🔄 Creating data snapshot before save...')
+          const snapshotResult = await supabaseClient.rpc('create_data_snapshot_before_save', {
+            target_user_id: user.id,
+            snapshot_type: 'auto'
+          })
+          snapshotId = snapshotResult.data
+          if (snapshotId) {
+            console.log('✅ Data snapshot created:', snapshotId)
+          } else {
+            console.log('ℹ️ No snapshot created (no existing data to backup)')
+          }
+        } catch (snapshotError) {
+          console.warn('⚠️ Failed to create snapshot, continuing with save:', snapshotError)
+        }
       }
 
       // CRITICAL FIX: Only clear existing data if NOT in bank-only mode
@@ -555,11 +681,230 @@ serve(async (req) => {
         JSON.stringify({ 
           success: true, 
           message: 'Data saved successfully',
-          saved: saveResults
+          saved: saveResults,
+          snapshot: snapshotId ? { id: snapshotId, created: true } : { created: false }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
 
+    } else if (action === 'list_snapshots') {
+      console.log('Listing snapshots for user:', user.id)
+      
+      try {
+        const { data: snapshots, error: snapshotsError } = await supabaseClient
+          .from('data_snapshots')
+          .select('id, version_number, snapshot_type, data_summary, created_at')
+          .eq('user_id', user.id)
+          .order('version_number', { ascending: false })
+          .limit(10)
+        
+        if (snapshotsError) {
+          console.error('List snapshots error details:', snapshotsError)
+          
+          // Handle missing table gracefully with broader error detection
+          if (snapshotsError.message?.includes('does not exist') ||
+              snapshotsError.message?.includes('data_snapshots') ||
+              snapshotsError.code === 'PGRST116' ||
+              snapshotsError.code === '42P01') {
+            console.warn('⚠️ Versioning tables not yet created. Run the manual migration.')
+            return new Response(
+              JSON.stringify({ 
+                success: true, 
+                snapshots: [],
+                migrationRequired: true,
+                warning: 'Versioning system not yet initialized. Please run the database migration.'
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+          }
+          throw new Error(`Failed to load snapshots: ${snapshotsError.message}`)
+        }
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            snapshots: snapshots || []
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } catch (error) {
+        console.error('List snapshots error:', error)
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            snapshots: [],
+            warning: 'Versioning system not available. Please run the database migration.'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      
+    } else if (action === 'restore_snapshot') {
+      const { snapshotId } = body
+      console.log('Restoring snapshot:', snapshotId, 'for user:', user.id)
+      
+      const { data: snapshotData, error: restoreError } = await supabaseClient
+        .rpc('restore_from_snapshot', { snapshot_id: snapshotId })
+      
+      if (restoreError) {
+        throw new Error(`Failed to restore snapshot: ${restoreError.message}`)
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          data: snapshotData
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+      
+    } else if (action === 'create_manual_snapshot') {
+      console.log('Creating manual snapshot for user:', user.id)
+      
+      try {
+        // First, let's verify the table exists
+        console.log('🔍 Checking if data_snapshots table exists...')
+        const { data: tableCheck, error: tableError } = await supabaseClient
+          .from('data_snapshots')
+          .select('id')
+          .limit(1)
+        
+        if (tableError) {
+          console.error('❌ Table check failed:', tableError)
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: 'MIGRATION_REQUIRED',
+              message: `Table not found: ${tableError.message}. Please run the database migration.`,
+              migrationRequired: true,
+              snapshot: { id: null, created: false },
+              debugInfo: {
+                tableError: tableError.message,
+                code: tableError.code
+              }
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        
+        console.log('✅ Table exists, now checking function...')
+        
+        // Now try to call the function
+        const { data: snapshotId, error: snapshotError } = await supabaseClient
+          .rpc('create_data_snapshot_before_save', {
+            target_user_id: user.id,
+            snapshot_type: 'manual'
+          })
+        
+        if (snapshotError) {
+          console.error('❌ Function call failed:', snapshotError)
+          
+          // Enhanced error detection with full error details
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: 'FUNCTION_ERROR',
+              message: `Function error: ${snapshotError.message}. The function may not exist or have an error.`,
+              migrationRequired: true,
+              snapshot: { id: null, created: false },
+              debugInfo: {
+                functionError: snapshotError.message,
+                code: snapshotError.code,
+                hint: snapshotError.hint,
+                details: snapshotError.details
+              }
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+        
+        console.log('✅ Snapshot created successfully:', snapshotId)
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            snapshot: { id: snapshotId, created: true }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } catch (error) {
+        console.error('💥 Unexpected error in create_manual_snapshot:', error)
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'UNEXPECTED_ERROR',
+            message: `Unexpected error: ${error.message}`,
+            snapshot: { id: null, created: false },
+            debugInfo: {
+              errorType: error.constructor.name,
+              errorMessage: error.message,
+              stack: error.stack
+            }
+          }),
+          { 
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        )
+      }
+      
+    } else if (action === 'verify_migration') {
+      console.log('🔍 Verifying migration status for user:', user.id)
+      
+      const verificationResults = {
+        tableExists: false,
+        functionExists: false,
+        canCreateSnapshot: false,
+        errors: []
+      }
+      
+      try {
+        // Test 1: Check if table exists
+        console.log('📋 Testing data_snapshots table...')
+        const { data: tableTest, error: tableError } = await supabaseClient
+          .from('data_snapshots')
+          .select('id')
+          .limit(1)
+        
+        if (tableError) {
+          verificationResults.errors.push(`Table error: ${tableError.message}`)
+        } else {
+          verificationResults.tableExists = true
+          console.log('✅ Table exists')
+        }
+        
+        // Test 2: Check if function exists
+        console.log('⚙️ Testing create_data_snapshot_before_save function...')
+        const { data: functionTest, error: functionError } = await supabaseClient
+          .rpc('create_data_snapshot_before_save', {
+            target_user_id: user.id,
+            snapshot_type: 'manual'
+          })
+        
+        if (functionError) {
+          verificationResults.errors.push(`Function error: ${functionError.message}`)
+        } else {
+          verificationResults.functionExists = true
+          verificationResults.canCreateSnapshot = true
+          console.log('✅ Function works, test snapshot created:', functionTest)
+        }
+        
+      } catch (error) {
+        verificationResults.errors.push(`Verification error: ${error.message}`)
+      }
+      
+      console.log('🔍 Verification complete:', verificationResults)
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          migrationStatus: verificationResults,
+          message: verificationResults.canCreateSnapshot 
+            ? 'Migration successful! Versioning system is ready.' 
+            : 'Migration incomplete. Please run the SQL script again.'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+      
     } else if (action === 'load') {
       // Load user data
       console.log('Loading cloud data for user:', user.id)

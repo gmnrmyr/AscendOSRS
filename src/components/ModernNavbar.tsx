@@ -123,14 +123,14 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
                 <LogOut className="h-4 w-4" />
               </Button>
 
-              {/* Mobile Menu Toggle */}
+              {/* Mobile Menu Toggle - Enhanced */}
               <Button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 variant="ghost"
-                size="sm"
-                className="lg:hidden pixel-button"
+                size="lg"
+                className="lg:hidden pixel-button p-3 ml-2"
               >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isMobileMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
               </Button>
             </div>
           </div>

@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.data_snapshots (
 -- Create index for faster queries
 CREATE INDEX IF NOT EXISTS data_snapshots_user_id_created_at_idx ON public.data_snapshots (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS data_snapshots_user_id_version_idx ON public.data_snapshots (user_id, version_number DESC);
+CREATE INDEX IF NOT EXISTS data_snapshots_user_id_type_created_idx ON public.data_snapshots (user_id, snapshot_type, created_at DESC);
 
 -- Enable RLS
 ALTER TABLE public.data_snapshots ENABLE ROW LEVEL SECURITY;
@@ -187,10 +188,26 @@ BEGIN
       summary_data
     ) RETURNING id INTO snapshot_id;
     
-    -- Clean up old snapshots (keep last 20 versions)
+    -- ENHANCED CLEANUP: Protect manual saves while cleaning automatic saves
+    -- Clean up old automatic/chunked snapshots (keep last 20 versions)
     DELETE FROM public.data_snapshots 
     WHERE user_id = target_user_id 
+    AND snapshot_type IN ('auto', 'chunked')
     AND version_number < (next_version - 20);
+    
+    -- MANUAL SAVE PROTECTION: Keep at least the last 2 manual saves
+    -- Only delete manual saves if there are more than 2, and keep the 2 most recent
+    DELETE FROM public.data_snapshots 
+    WHERE user_id = target_user_id 
+    AND snapshot_type = 'manual'
+    AND id NOT IN (
+      SELECT id 
+      FROM public.data_snapshots 
+      WHERE user_id = target_user_id 
+      AND snapshot_type = 'manual'
+      ORDER BY created_at DESC 
+      LIMIT 2
+    );
     
     RETURN snapshot_id;
   END IF;

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Coffee, Github, ExternalLink, TrendingUp, Shield, Crown, Zap, Star, CheckCircle } from 'lucide-react';
+import { Coffee, Github, ExternalLink, TrendingUp, Shield, Crown, Zap, Star, CheckCircle, Target, Sword, Award, DollarSign } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export function LandingPage() {
@@ -13,7 +13,7 @@ export function LandingPage() {
       <header className="w-full py-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-amber-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <img src="/logo.svg" alt="AscendOSRS" className="h-10 w-10" />
+            <img src="/logo.svg" alt="AscendOSRS - Ultimate OSRS Progress Tracker" className="h-10 w-10" />
             <div>
               <span className="text-2xl font-bold text-gray-900 dark:text-gray-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
                 AscendOSRS
@@ -38,11 +38,11 @@ export function LandingPage() {
           <div className="mb-6">
             <Crown className="h-16 w-16 text-amber-500 mx-auto mb-4" />
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-4" style={{ fontFamily: 'MedievalSharp, cursive' }}>
-              Ascend to OSRS 
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-yellow-500"> Greatness</span>
+              Ultimate OSRS Gear Progression 
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-yellow-500"> Tracker</span>
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              The ultimate progress tracker for Old School RuneScape. Manage multiple accounts, track wealth, set goals, and dominate your OSRS journey.
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-4xl mx-auto">
+              The most comprehensive Old School RuneScape progress tracker. Master your gear progression from bronze to BiS, manage multiple accounts, track wealth, set goals, and dominate your OSRS journey with advanced analytics.
             </p>
           </div>
           
@@ -53,7 +53,7 @@ export function LandingPage() {
               className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-semibold px-8 py-4 text-lg"
             >
               <Zap className="mr-2 h-5 w-5" />
-              Start Tracking Now
+              Start Tracking Progress
             </Button>
             <Button 
               variant="outline" 
@@ -71,7 +71,7 @@ export function LandingPage() {
               <CardContent className="p-6 text-center">
                 <Shield className="h-12 w-12 text-amber-500 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Secure Cloud Storage</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">Your data is safely stored in the cloud with automatic backups and version history.</p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">Your OSRS data is safely stored in the cloud with automatic backups and version history.</p>
               </CardContent>
             </Card>
             
@@ -79,20 +79,149 @@ export function LandingPage() {
               <CardContent className="p-6 text-center">
                 <TrendingUp className="h-12 w-12 text-green-500 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Multi-Account Management</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">Track unlimited characters, bank values, and progress across all your OSRS accounts.</p>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">Track unlimited OSRS characters, bank values, and progress across all your accounts.</p>
               </CardContent>
             </Card>
             
             <Card className="bg-white/50 dark:bg-gray-800/50 border-amber-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
               <CardContent className="p-6 text-center">
                 <Zap className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Live Market Data</h3>
-                <p className="text-gray-600 dark:text-gray-300 text-sm">Real-time OSRS market prices and automated bank value calculations.</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Live OSRS Market Data</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-sm">Real-time OSRS Grand Exchange prices and automated bank value calculations.</p>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
+
+      {/* OSRS Gear Progression Section - NEW SEO CONTENT */}
+      <section className="py-16 px-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              🏆 Complete OSRS Gear Progression System
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-lg max-w-3xl mx-auto mb-8">
+              From F2P bronze armor to endgame Twisted Bow, track every step of your Old School RuneScape gear progression. Our comprehensive database includes every weapon, armor piece, and valuable item in OSRS.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-red-200 dark:border-red-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-300 text-lg">
+                  <Sword className="h-5 w-5" />
+                  Combat Gear
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>• <strong>Weapons:</strong> From bronze sword to Twisted Bow</li>
+                  <li>• <strong>Armor:</strong> Bronze to Bandos, Armadyl, Ancestral</li>
+                  <li>• <strong>Accessories:</strong> Rings, amulets, capes, boots</li>
+                  <li>• <strong>Special Items:</strong> Fire cape, Infernal cape, Void</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-green-200 dark:border-green-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300 text-lg">
+                  <DollarSign className="h-5 w-5" />
+                  Wealth Tracking
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>• <strong>Bank Value:</strong> Real-time Grand Exchange prices</li>
+                  <li>• <strong>Item Collections:</strong> 3rd Age, Gilded, rare items</li>
+                  <li>• <strong>Progress Goals:</strong> Track wealth milestones</li>
+                  <li>• <strong>Portfolio View:</strong> Total net worth across accounts</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-blue-200 dark:border-blue-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300 text-lg">
+                  <Target className="h-5 w-5" />
+                  Goal Setting
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>• <strong>Gear Goals:</strong> Set targets for any OSRS item</li>
+                  <li>• <strong>Priority System:</strong> S+, S, A tier prioritization</li>
+                  <li>• <strong>Time Estimates:</strong> Calculate hours to completion</li>
+                  <li>• <strong>Progress Tracking:</strong> Visual completion indicators</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-purple-200 dark:border-purple-700">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-300 text-lg">
+                  <Award className="h-5 w-5" />
+                  Account Types
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li>• <strong>Regular:</strong> Standard OSRS accounts</li>
+                  <li>• <strong>Ironman:</strong> Self-sufficient gameplay tracking</li>
+                  <li>• <strong>Hardcore:</strong> High-stakes progression</li>
+                  <li>• <strong>Ultimate:</strong> No banking challenge mode</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* OSRS Gear Tiers Breakdown */}
+          <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-8 mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              📈 OSRS Gear Progression Tiers
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center">
+                <div className="bg-yellow-100 dark:bg-yellow-900/30 rounded-lg p-4 mb-4">
+                  <h4 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">🥉 Early Game (0-50M GP)</h4>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">Dragon weapons, Rune armor, basic accessories. Perfect for new players and F2P progression.</p>
+                </div>
+                <ul className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
+                  <li>Dragon scimitar, Dragon crossbow</li>
+                  <li>Rune platebody, Dragon boots</li>
+                  <li>Amulet of glory, Combat bracelet</li>
+                </ul>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-blue-100 dark:bg-blue-900/30 rounded-lg p-4 mb-4">
+                  <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">🥈 Mid Game (50M-500M GP)</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Whips, Barrows armor, God Wars items. Core progression for serious players.</p>
+                </div>
+                <ul className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
+                  <li>Abyssal whip, Trident of the seas</li>
+                  <li>Bandos chestplate, Armadyl crossbow</li>
+                  <li>Primordial boots, Fury amulet</li>
+                </ul>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-purple-100 dark:bg-purple-900/30 rounded-lg p-4 mb-4">
+                  <h4 className="font-bold text-purple-800 dark:text-purple-200 mb-2">🥇 End Game (500M+ GP)</h4>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">Twisted Bow, Scythe, 3rd Age items. Ultimate OSRS progression goals.</p>
+                </div>
+                <ul className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
+                  <li>Twisted Bow, Scythe of Vitur</li>
+                  <li>3rd Age armor, Elder maul</li>
+                  <li>Avernic defender, Infernal cape</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-16 px-6 bg-white/50 dark:bg-gray-800/30">
         <div className="container mx-auto">
@@ -101,81 +230,81 @@ export function LandingPage() {
               Everything You Need to Dominate OSRS
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto">
-              Comprehensive tools for serious OSRS players. Track progress, manage wealth, and optimize your gameplay.
+              Comprehensive tools for serious OSRS players. Track progress, manage wealth, and optimize your gameplay with advanced analytics and real-time data.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <Card className="bg-white/80 dark:bg-gray-800/80 border-amber-200 dark:border-gray-700">
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-amber-200 dark:border-amber-700">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  Multi-Account Mastery
+                  Multi-Account OSRS Management
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Track unlimited characters and account types
+                    Track unlimited OSRS characters and account types
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Real-time stats synchronization from OSRS APIs
+                    Real-time stats synchronization from OSRS Hiscores
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Ironman, Hardcore, and Ultimate account support
+                    Ironman, Hardcore, Ultimate, and Group Ironman support
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Comprehensive bank value tracking
+                    Comprehensive bank value tracking with GE prices
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/80 dark:bg-gray-800/80 border-amber-200 dark:border-gray-700">
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-amber-200 dark:border-amber-700">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  Advanced Goal Setting
+                  Advanced OSRS Goal Setting
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Track 3rd Age, Gilded, and rare item goals
+                    Track 3rd Age, Gilded, and all rare OSRS items
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Time-to-completion calculations
+                    Time-to-completion calculations for any goal
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Priority-based goal management
+                    Priority-based goal management (S+, S, A tiers)
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Automatic price updates from OSRS Wiki
+                    Automatic price updates from OSRS Wiki API
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/80 dark:bg-gray-800/80 border-amber-200 dark:border-gray-700">
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-amber-200 dark:border-amber-700">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  Money Making Intelligence
+                  OSRS Money Making Intelligence
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    300+ money making methods database
+                    300+ OSRS money making methods database
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
@@ -183,21 +312,21 @@ export function LandingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Click intensity and profitability ratings
+                    PvM, Skilling, and Trading method categories
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Character-specific method assignment
+                    Character-specific method assignment and tracking
                   </li>
                 </ul>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/80 dark:bg-gray-800/80 border-amber-200 dark:border-gray-700">
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-amber-200 dark:border-amber-700">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
                   <CheckCircle className="h-5 w-5 text-green-500" />
-                  RuneLite Integration
+                  RuneLite Plugin Integration
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -208,17 +337,178 @@ export function LandingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Automatic item recognition and pricing
+                    Automatic OSRS item recognition and pricing
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Support for both F2P and Members banks
+                    Support for both F2P and Members bank imports
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-500" />
-                    Manual price editing and bulk updates
+                    Manual price editing and bulk update tools
                   </li>
                 </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Plans Section */}
+      <section className="py-16 px-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              💎 Choose Your Adventure
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto mb-4">
+              Free during BETA! Choose the plan that fits your OSRS journey.
+            </p>
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold px-4 py-2">
+              🎉 FREE BETA ACCESS - Limited Time!
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {/* Free Plan */}
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 relative">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100 text-lg">
+                  <Star className="h-5 w-5 text-gray-500" />
+                  Free
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-center mb-6">
+                  <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">$0</div>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">Forever free during BETA</p>
+                </div>
+                <ul className="space-y-3 text-gray-600 dark:text-gray-300 text-sm mb-6">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    All core OSRS tracking features
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Multi-account management
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    RuneLite integration
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-red-500" />
+                    <span className="line-through">No ads (has ads after BETA)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-red-500" />
+                    <span className="line-through">No AI insights</span>
+                  </li>
+                </ul>
+                <Button 
+                  onClick={() => window.location.href = '/auth'} 
+                  className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold"
+                >
+                  Get Started Free
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Premium Plan */}
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-blue-200 dark:border-blue-700 relative transform scale-105">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-bold px-4 py-2">
+                  🔥 MOST POPULAR
+                </Badge>
+              </div>
+              <CardHeader className="pb-3 pt-8">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100 text-lg">
+                  <Crown className="h-5 w-5 text-blue-500" />
+                  Premium
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-center mb-6">
+                  <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">$10</div>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">per month (Free during BETA)</p>
+                </div>
+                <ul className="space-y-3 text-gray-600 dark:text-gray-300 text-sm mb-6">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Everything in Free plan
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <strong>No ads</strong> - Clean interface
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <strong>AI insights</strong> - Smart recommendations
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Priority support
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Advanced analytics
+                  </li>
+                </ul>
+                <Button 
+                  onClick={() => window.location.href = '/auth'} 
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold"
+                >
+                  Choose Premium
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Founders Plan */}
+            <Card className="bg-white/80 dark:bg-gray-800/80 border-purple-200 dark:border-purple-700 relative">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-bold px-4 py-2">
+                  ⚡ FOUNDERS ONLY
+                </Badge>
+              </div>
+              <CardHeader className="pb-3 pt-8">
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100 text-lg">
+                  <Award className="h-5 w-5 text-purple-500" />
+                  Founders
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-center mb-6">
+                  <div className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">$299</div>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm">Lifetime access</p>
+                </div>
+                <ul className="space-y-3 text-gray-600 dark:text-gray-300 text-sm mb-6">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <strong>Lifetime Premium</strong> - Forever access
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <strong>No ads ever</strong> - Clean forever
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <strong>Founder badge</strong> - Exclusive status
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    VIP support access
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Early access to new features
+                  </li>
+                </ul>
+                <Button 
+                  onClick={() => window.location.href = '/auth'} 
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
+                >
+                  Become a Founder
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -313,7 +603,7 @@ export function LandingPage() {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="border-white text-white hover:bg-white/10 hover:text-amber-600 px-8 py-4 text-lg"
+                className="border-white text-black dark:text-white hover:bg-white/20 hover:text-black dark:hover:text-amber-600 px-8 py-4 text-lg"
               >
                 <Star className="mr-2 h-5 w-5" />
                 Learn More
@@ -322,6 +612,8 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+
 
       {/* Footer */}
       <footer className="bg-gray-900 dark:bg-gray-950 text-white py-12">
@@ -332,19 +624,19 @@ export function LandingPage() {
               <span className="text-xl font-bold" style={{ fontFamily: 'MedievalSharp, cursive' }}>
                 AscendOSRS
               </span>
+              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs ml-2">
+                BETA
+              </Badge>
             </div>
             <p className="text-gray-400 mb-6">
-              Ultimate OSRS Progress Tracker
+              Ultimate OSRS Progress Tracker - Currently in Beta
             </p>
             <div className="flex justify-center gap-6 mb-6">
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
                 Features
               </Button>
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                Support
-              </Button>
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                Community
+                Support Us
               </Button>
             </div>
             <div className="text-sm text-gray-500">

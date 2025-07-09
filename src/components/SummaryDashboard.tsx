@@ -1,5 +1,6 @@
 import { SummaryCards } from "./summary/SummaryCards";
 import { ProgressCard } from "./summary/ProgressCard";
+import { Button } from "@/components/ui/button";
 import { DollarSign, Users, Target, Star, Brain, TrendingUp } from "lucide-react";
 
 interface SummaryDashboardProps {
@@ -483,39 +484,65 @@ export function SummaryDashboard({
         </div>
         {purchaseGoals && purchaseGoals.length > 0 ? (
           <div className="space-y-4">
-            {purchaseGoals.slice(0, 5).map((goal, index) => {
-              const targetValue = goal?.targetPrice || goal?.currentPrice || 0;
-              const currentValue = totalGoldValue; // Use gold value for progress
-              const progress = targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0;
-              
-              return (
-                <div key={goal?.id || index} className="space-y-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'Cinzel, serif' }}>
-                      🏆 {goal?.name || 'Unknown Goal'}
-                    </span>
-                    <span className="osrs-badge">
-                      {formatGP(targetValue)} GP
-                    </span>
+            {/* Sort goals by highest price first, then take top 5 */}
+            {[...purchaseGoals]
+              .sort((a, b) => {
+                const aPrice = a?.targetPrice || a?.currentPrice || 0;
+                const bPrice = b?.targetPrice || b?.currentPrice || 0;
+                return bPrice - aPrice; // Descending order (highest first)
+              })
+              .slice(0, 5)
+              .map((goal, index) => {
+                const targetValue = goal?.targetPrice || goal?.currentPrice || 0;
+                const currentValue = totalGoldValue; // Use gold value for progress
+                const progress = targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0;
+                
+                return (
+                  <div key={goal?.id || index} className="space-y-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'Cinzel, serif' }}>
+                        🏆 {goal?.name || 'Unknown Goal'}
+                      </span>
+                      <span className="osrs-badge">
+                        {formatGP(targetValue)} GP
+                      </span>
+                    </div>
+                    <div className="osrs-progress h-3">
+                      <div 
+                        className="osrs-progress-fill" 
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-sm text-amber-600" style={{ fontFamily: 'Cinzel, serif' }}>
+                      <span>{formatGP(currentValue)} / {formatGP(targetValue)} GP</span>
+                      <span className="font-bold">{progress.toFixed(1)}%</span>
+                    </div>
                   </div>
-                  <div className="osrs-progress h-3">
-                    <div 
-                      className="osrs-progress-fill" 
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-sm text-amber-600" style={{ fontFamily: 'Cinzel, serif' }}>
-                    <span>{formatGP(currentValue)} / {formatGP(targetValue)} GP</span>
-                    <span className="font-bold">{progress.toFixed(1)}%</span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
             
             {purchaseGoals.length > 5 && (
-              <p className="text-sm text-amber-600 text-center pt-2 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
-                +{purchaseGoals.length - 5} more goals
-              </p>
+              <div className="text-center pt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // This would typically call a parent function to switch to goals tab
+                    // For now, we'll use a generic click handler that parents can override
+                    if (window.onShowMoreGoals) {
+                      window.onShowMoreGoals();
+                    } else {
+                      // Fallback: scroll to top and hope parent handles tab switching
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  className="border-amber-600 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-semibold"
+                  style={{ fontFamily: 'Cinzel, serif' }}
+                >
+                  <Target className="h-4 w-4 mr-2" />
+                  View All {purchaseGoals.length} Goals ({purchaseGoals.length - 5} more)
+                </Button>
+              </div>
             )}
           </div>
         ) : (

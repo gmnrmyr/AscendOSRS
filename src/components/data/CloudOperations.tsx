@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface CloudOperationsProps {
   characters: any[];
@@ -679,6 +680,65 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* USER GUIDE - Future Improvements Notice */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="text-2xl">📚</div>
+            <div className="flex-1">
+              <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">
+                🧭 Cloud Storage Guide - Multiple Options Available
+              </h4>
+              <p className="text-blue-700 dark:text-blue-300 text-sm mb-3">
+                We provide multiple save/load options to ensure your OSRS data is always secure. Here's what each button does:
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div className="space-y-2">
+                  <div className="bg-blue-100 dark:bg-blue-800/30 rounded p-2">
+                    <div className="font-semibold text-blue-800 dark:text-blue-200">💾 Save Options:</div>
+                    <div className="text-blue-700 dark:text-blue-300 space-y-1 mt-1">
+                      <div>• <strong>Save to Cloud:</strong> Standard save method</div>
+                      <div>• <strong>Save to Cloud 2:</strong> Enhanced validation</div>
+                      <div>• <strong>True Chunked Save:</strong> For large datasets (recommended)</div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-100 dark:bg-green-800/30 rounded p-2">
+                    <div className="font-semibold text-green-800 dark:text-green-200">📥 Load Options:</div>
+                    <div className="text-green-700 dark:text-green-300 space-y-1 mt-1">
+                      <div>• <strong>Load from Cloud:</strong> Restore saved data</div>
+                      <div>• <strong>Recover from Browser:</strong> Emergency recovery</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="bg-purple-100 dark:bg-purple-800/30 rounded p-2">
+                    <div className="font-semibold text-purple-800 dark:text-purple-200">🛡️ Protection Features:</div>
+                    <div className="text-purple-700 dark:text-purple-300 space-y-1 mt-1">
+                      <div>• <strong>Version History:</strong> Browse backups</div>
+                      <div>• <strong>Create Backup:</strong> Manual snapshots</div>
+                      <div>• <strong>Data Protection:</strong> Prevents data loss</div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-amber-100 dark:bg-amber-800/30 rounded p-2">
+                    <div className="font-semibold text-amber-800 dark:text-amber-200">🔮 Coming Soon:</div>
+                    <div className="text-amber-700 dark:text-amber-300 text-xs">
+                      We'll streamline this interface in the final version with fewer, smarter buttons for a cleaner user experience.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-3 p-2 bg-white dark:bg-gray-800/50 rounded border border-blue-200 dark:border-blue-600">
+                <p className="text-blue-800 dark:text-blue-200 text-xs font-medium">
+                  💡 <strong>Quick Start:</strong> Most users should use "True Chunked Save" for saving and "Load from Cloud" for loading. The other buttons are for special cases and testing.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
         {/* Emergency Data Recovery Alert */}
         {(totalBankItems === 0 && characters.length === 0) && (
           <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
@@ -1012,7 +1072,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
                 📜 Version History & Data Recovery
               </DialogTitle>
               <DialogDescription>
-                Choose a previous version to restore. Your data is automatically backed up before each save.
+                Choose a previous version to restore. Manual saves are always protected and kept safe.
               </DialogDescription>
             </DialogHeader>
             
@@ -1029,49 +1089,129 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
                   <p className="text-sm">Backups are created automatically when you save data.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {snapshots.map((snapshot, index) => (
-                    <div key={snapshot.id} className="border rounded-lg p-3 hover:bg-gray-50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">Version {snapshot.version_number}</span>
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              snapshot.snapshot_type === 'manual' ? 'bg-green-100 text-green-700' :
-                              snapshot.snapshot_type === 'auto' ? 'bg-blue-100 text-blue-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
-                              {snapshot.snapshot_type === 'manual' ? '📸 Manual' : 
-                               snapshot.snapshot_type === 'auto' ? '🔄 Auto' : '📦 Chunked'}
-                            </span>
-                            {index === 0 && (
-                              <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700">Latest</span>
-                            )}
-                          </div>
-                          <div className="text-xs text-gray-600 mt-1">
-                            <Clock className="h-3 w-3 inline mr-1" />
-                            {formatDate(snapshot.created_at)}
-                          </div>
-                          {snapshot.data_summary && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              {snapshot.data_summary.totalCharacters || 0} characters, {' '}
-                              {snapshot.data_summary.totalMethods || 0} methods, {' '}
-                              {snapshot.data_summary.totalGoals || 0} goals, {' '}
-                              {snapshot.data_summary.totalBankItems || 0} bank items
+                <div className="space-y-4">
+                  {/* Group snapshots by type */}
+                  {(() => {
+                    const manualSnapshots = snapshots.filter(s => s.snapshot_type === 'manual');
+                    const autoSnapshots = snapshots.filter(s => s.snapshot_type !== 'manual');
+                    
+                    return (
+                      <>
+                        {/* Manual Saves Section */}
+                        {manualSnapshots.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-green-200 dark:border-green-800">
+                              <Database className="h-4 w-4 text-green-600" />
+                              <h4 className="font-semibold text-green-700 dark:text-green-300">
+                                📸 Manual Backups ({manualSnapshots.length})
+                              </h4>
+                              <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 text-xs">
+                                Protected
+                              </Badge>
                             </div>
-                          )}
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => restoreFromSnapshot(snapshot.id)}
-                          disabled={restoringSnapshot}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          {restoringSnapshot ? "Restoring..." : "Restore"}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                            <div className="space-y-2">
+                              {manualSnapshots.map((snapshot, index) => (
+                                <div key={snapshot.id} className="border border-green-200 dark:border-green-800 rounded-lg p-3 hover:bg-green-50 dark:hover:bg-green-900/20">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium">Version {snapshot.version_number}</span>
+                                        <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                                          📸 Manual
+                                        </span>
+                                        {index === 0 && (
+                                          <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Latest</span>
+                                        )}
+                                      </div>
+                                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                        <Clock className="h-3 w-3 inline mr-1" />
+                                        {formatDate(snapshot.created_at)}
+                                      </div>
+                                      
+                                      {snapshot.data_summary && (
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                          {snapshot.data_summary.totalCharacters || 0} characters, {' '}
+                                          {snapshot.data_summary.totalMethods || 0} methods, {' '}
+                                          {snapshot.data_summary.totalGoals || 0} goals, {' '}
+                                          {snapshot.data_summary.totalBankItems || 0} bank items
+                                        </div>
+                                      )}
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => restoreFromSnapshot(snapshot.id)}
+                                      disabled={restoringSnapshot}
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                      {restoringSnapshot ? "Restoring..." : "Restore"}
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Automatic Saves Section */}
+                        {autoSnapshots.length > 0 && (
+                          <div>
+                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-blue-200 dark:border-blue-800">
+                              <History className="h-4 w-4 text-blue-600" />
+                              <h4 className="font-semibold text-blue-700 dark:text-blue-300">
+                                🔄 Automatic Backups ({autoSnapshots.length})
+                              </h4>
+                              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 text-xs">
+                                Auto-cleanup
+                              </Badge>
+                            </div>
+                            <div className="space-y-2">
+                              {autoSnapshots.map((snapshot, index) => (
+                                <div key={snapshot.id} className="border border-blue-200 dark:border-blue-800 rounded-lg p-3 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium">Version {snapshot.version_number}</span>
+                                        <span className={`text-xs px-2 py-1 rounded ${
+                                          snapshot.snapshot_type === 'auto' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
+                                          'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'
+                                        }`}>
+                                          {snapshot.snapshot_type === 'auto' ? '🔄 Auto' : '📦 Chunked'}
+                                        </span>
+                                        {index === 0 && manualSnapshots.length === 0 && (
+                                          <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Latest</span>
+                                        )}
+                                      </div>
+                                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                        <Clock className="h-3 w-3 inline mr-1" />
+                                        {formatDate(snapshot.created_at)}
+                                      </div>
+                                      
+                                      {snapshot.data_summary && (
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                          {snapshot.data_summary.totalCharacters || 0} characters, {' '}
+                                          {snapshot.data_summary.totalMethods || 0} methods, {' '}
+                                          {snapshot.data_summary.totalGoals || 0} goals, {' '}
+                                          {snapshot.data_summary.totalBankItems || 0} bank items
+                                        </div>
+                                      )}
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => restoreFromSnapshot(snapshot.id)}
+                                      disabled={restoringSnapshot}
+                                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                      {restoringSnapshot ? "Restoring..." : "Restore"}
+                                    </Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
             </ScrollArea>

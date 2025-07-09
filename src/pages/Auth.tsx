@@ -129,21 +129,77 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 flex items-center justify-center p-4"
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
          style={{
-           backgroundImage: `
-             radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.1) 0%, transparent 50%),
-             radial-gradient(circle at 80% 20%, rgba(160, 82, 45, 0.1) 0%, transparent 50%),
-             url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d2691e' fill-opacity='0.03'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20.5h2V20h18v2H22v18h-2v-20zM0 18h18v2H0v-2zm22 2h18v2H22v-2z'/%3E%3C/g%3E%3C/svg%3E")
-           `
+           background: `
+             linear-gradient(135deg, 
+               #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #94a3b8 75%, #64748b 100%
+             )
+           `,
          }}>
-      <Card className="w-full max-w-md osrs-card">
+      
+      {/* Dark mode background override */}
+      <div className="absolute inset-0 hidden dark:block"
+           style={{
+             background: `
+               linear-gradient(135deg, 
+                 #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%
+               )
+             `,
+           }}>
+      </div>
+
+      {/* Pixel Grid Pattern */}
+      <div className="absolute inset-0 opacity-20"
+           style={{
+             backgroundImage: `
+               url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Crect x='0' y='0' width='30' height='30'/%3E%3Crect x='30' y='30' width='30' height='30'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+             `,
+           }}>
+      </div>
+
+      {/* Brutalist Geometric Shapes */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Top Left Triangle */}
+        <div className="absolute -top-20 -left-20 w-40 h-40 bg-amber-500/10 dark:bg-amber-400/20 transform rotate-45"></div>
+        
+        {/* Top Right Square */}
+        <div className="absolute top-10 right-10 w-24 h-24 bg-gray-700/10 dark:bg-gray-300/20 transform rotate-12"></div>
+        
+        {/* Bottom Left Circle */}
+        <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-blue-500/10 dark:bg-blue-400/20 rounded-full"></div>
+        
+        {/* Bottom Right Rectangle */}
+        <div className="absolute bottom-20 right-20 w-20 h-40 bg-purple-500/10 dark:bg-purple-400/20 transform -rotate-12"></div>
+        
+        {/* Center Background Elements */}
+        <div className="absolute top-1/4 left-1/4 w-16 h-16 bg-green-500/10 dark:bg-green-400/20 transform rotate-45"></div>
+        <div className="absolute bottom-1/4 right-1/3 w-12 h-12 bg-red-500/10 dark:bg-red-400/20 rounded-full"></div>
+      </div>
+
+      {/* Pixel Art Styled Logo Background */}
+      <div className="absolute top-20 left-1/2 transform -translate-x-1/2">
+        <div className="text-6xl font-bold text-amber-600/20 dark:text-amber-400/30 select-none" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+          ⚔️
+        </div>
+      </div>
+
+      {/* Main Auth Card */}
+      <Card className="w-full max-w-md osrs-card relative z-10 shadow-2xl backdrop-blur-sm">
         <CardHeader className="space-y-1">
           <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold text-amber-800" style={{ fontFamily: 'Cinzel, serif' }}>
-              ⚔️ OSRS Dashboard
-            </h1>
-            <p className="text-amber-600 mt-2">Track your Old School RuneScape progress</p>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <img src="/logo.svg" alt="AscendOSRS" className="h-8 w-8" />
+              <h1 className="text-3xl font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                AscendOSRS
+              </h1>
+            </div>
+            <p className="text-amber-600 dark:text-amber-400 mt-2">Track your Old School RuneScape progress</p>
+            <div className="mt-2">
+              <span className="inline-block bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                BETA ACCESS
+              </span>
+            </div>
           </div>
         </CardHeader>
         
@@ -152,11 +208,11 @@ const Auth = () => {
             <TabsList className="grid w-full grid-cols-2 osrs-tabs">
               <TabsTrigger value="signin" className="osrs-tab">
                 <LogIn className="h-4 w-4 mr-2" />
-                Sign In
+                Login
               </TabsTrigger>
               <TabsTrigger value="signup" className="osrs-tab">
                 <UserPlus className="h-4 w-4 mr-2" />
-                Sign Up
+                Register
               </TabsTrigger>
             </TabsList>
 
@@ -198,7 +254,7 @@ const Auth = () => {
                   ) : (
                     <LogIn className="h-4 w-4 mr-2" />
                   )}
-                  Sign In
+                  Login
                 </Button>
               </form>
             </TabsContent>
@@ -255,7 +311,7 @@ const Auth = () => {
                   ) : (
                     <UserPlus className="h-4 w-4 mr-2" />
                   )}
-                  Sign Up
+                  Register
                 </Button>
               </form>
             </TabsContent>

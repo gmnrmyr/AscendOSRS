@@ -6,6 +6,8 @@
 - **DO NOT REMOVE ANY FEATURES** - Only add new functionality
 - **DO NOT LOSE USER DATA** - Preserve all existing user inputs
 - **MAINTAIN HIGH CODE QUALITY** - Refactor only if necessary and safe
+- **FOCUS ON ADDING NEW FEATURES** - Do not remove any features unless it is absolutely necessary.
+- **TAKE NOTES WHEN POSSIBLE** - Write down notes in the codebase (requested by the client or present in this document if clear)
 
 ---
 
@@ -375,3 +377,23 @@ The app has evolved into a robust, reliable tool for OSRS wealth management. Rec
 ---
 
 *This comprehensive roadmap combines all development requirements, current status, and future plans into one organized document. Price accuracy is acknowledged as an ongoing improvement area with realistic expectations, while focusing resources on high-impact SaaS business model implementation and content expansion features.*
+
+
+
+-------------
+NEW:
+AscendOsrs. Name has been properly implemented, although we will still be working on the branding and design.
+
+-------------------------
+
+Backup save is great, we need to add a small functionality: It always has to keep at least 1 or 2 manual saves. Never erase the last 2 manual saves.. keep the automatic saves the same as It is, they are great :) you can separate them if you want in the backup save menu! (Manuals, automatics or something, as long you dont change any functionality or design.
+
+- navbar on mobile, not showing dropdown
+
+--------
+
+- i can add gmail since ive added it on my other app (numoraq)
+
+- see if dev friends (thiaguin and Denis) can help with Properly integrate, test and deploy payment systems for premium users which we will be pivoting to soon.
+
+-------------------------

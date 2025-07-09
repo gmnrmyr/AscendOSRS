@@ -222,3 +222,6 @@
 ---
 
 *This roadmap represents the evolution of AscendOSRS from a functional tracker to a professional SaaS platform. The app has achieved excellent stability and user experience, with a clear path toward business growth and technical excellence. All core functionality is preserved while new features enhance the overall value proposition for OSRS players and altscape enthusiasts.*
+
+---
+https://www.youtube.com/watch?v=I7CFD99sp1g <-- see vid for payment system integration.

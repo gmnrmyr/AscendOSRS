@@ -397,3 +397,5 @@ Backup save is great, we need to add a small functionality: It always has to kee
 - see if dev friends (thiaguin and Denis) can help with Properly integrate, test and deploy payment systems for premium users which we will be pivoting to soon.
 
 -------------------------
+Add more info about gear progression tool on the landing page. we need great indexing and SEO.
+-------

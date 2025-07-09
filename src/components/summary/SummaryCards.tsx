@@ -50,7 +50,7 @@ export function SummaryCards({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-yellow-800 dark:text-yellow-200 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>🪙 Gold Sum</p>
-            <p className="text-3xl font-bold text-yellow-900 dark:text-yellow-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
               {formatGP(totalGoldValue)} GP
             </p>
           </div>

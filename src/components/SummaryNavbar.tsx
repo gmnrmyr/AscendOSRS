@@ -130,34 +130,34 @@ export function SummaryNavbar() {
         <Card className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800 shadow-md">
           <div className="p-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-700">
+              <div className="flex items-center space-x-2 sm:space-x-6 flex-wrap">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
+                  <span className="text-xs sm:text-sm font-medium text-green-700">
                     {formatGP(currentGPHour)}/hr
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 hidden sm:inline">
                     ({activeMethodsCount} assigned)
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-700">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
+                  <span className="text-xs sm:text-sm font-medium text-blue-700">
                     {activeCharacters.length} chars
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-yellow-700">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
+                  <span className="text-xs sm:text-sm font-medium text-yellow-700">
                     {formatGP(totalGoldValue)} GP
                   </span>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Target className="h-4 w-4 text-purple-600" />
-                  <span className="text-sm font-medium text-purple-700">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
+                  <span className="text-xs sm:text-sm font-medium text-purple-700">
                     {formatGP(totalGoalsValue)} goals
                   </span>
                 </div>
@@ -167,12 +167,12 @@ export function SummaryNavbar() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="h-6 w-6 p-0"
+                className="h-10 w-10 sm:h-8 sm:w-8 p-2 sm:p-1 hover:bg-amber-100 dark:hover:bg-amber-800/20 ml-2"
               >
                 {isExpanded ? (
-                  <ChevronUp className="h-4 w-4" />
+                  <ChevronUp className="h-6 w-6 sm:h-5 sm:w-5" />
                 ) : (
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="h-6 w-6 sm:h-5 sm:w-5" />
                 )}
               </Button>
             </div>

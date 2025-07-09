@@ -33,34 +33,34 @@ export function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-6">
+      <section className="py-12 sm:py-20 px-4 sm:px-6">
         <div className="container mx-auto text-center">
-          <div className="mb-6">
-            <Crown className="h-16 w-16 text-amber-500 mx-auto mb-4" />
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-4" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+          <div className="mb-6 sm:mb-8">
+            <Crown className="h-12 sm:h-16 w-12 sm:w-16 text-amber-500 mx-auto mb-4" />
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-4 px-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
               Ultimate OSRS Gear Progression 
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-yellow-500"> Tracker</span>
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-4xl mx-auto">
-              The most comprehensive Old School RuneScape progress tracker. Master your gear progression from bronze to BiS, manage multiple accounts, track wealth, set goals, and dominate your OSRS journey with advanced analytics.
+            <p className="text-base sm:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 max-w-4xl mx-auto px-2">
+              The most comprehensive Old School RuneScape progress tracker for altscape enthusiasts. Master your gear progression from bronze to BiS, manage multiple accounts, track wealth across all your alts, set goals, and dominate your OSRS altscape journey with advanced analytics.
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-4">
             <Button 
               onClick={() => window.location.href = '/auth'} 
               size="lg"
-              className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-semibold px-8 py-4 text-lg"
+              className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
             >
-              <Zap className="mr-2 h-5 w-5" />
+              <Zap className="mr-2 h-4 sm:h-5 w-4 sm:w-5" />
               Start Tracking Progress
             </Button>
             <Button 
               variant="outline" 
               size="lg"
-              className="border-amber-700 text-amber-800 dark:text-amber-400 hover:bg-amber-100 hover:text-amber-900 dark:hover:bg-amber-950 px-8 py-4 text-lg"
+              className="border-amber-700 text-amber-800 dark:text-amber-400 hover:bg-amber-100 hover:text-amber-900 dark:hover:bg-amber-950 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
             >
-              <Star className="mr-2 h-5 w-5" />
+              <Star className="mr-2 h-4 sm:h-5 w-4 sm:w-5" />
               View Features
             </Button>
           </div>
@@ -102,7 +102,7 @@ export function LandingPage() {
               🏆 Complete OSRS Gear Progression System
             </h2>
             <p className="text-gray-600 dark:text-gray-300 text-lg max-w-3xl mx-auto mb-8">
-              From F2P bronze armor to endgame Twisted Bow, track every step of your Old School RuneScape gear progression. Our comprehensive database includes every weapon, armor piece, and valuable item in OSRS.
+              From F2P bronze armor to endgame Twisted Bow, track every step of your Old School RuneScape gear progression across all your altscape accounts. Our comprehensive database includes every weapon, armor piece, and valuable item in OSRS for the ultimate altscape experience.
             </p>
           </div>
 
@@ -176,12 +176,12 @@ export function LandingPage() {
             </Card>
           </div>
 
-          {/* OSRS Gear Tiers Breakdown */}
+          {/* OSRS Gear Tiers Breakdown - Enhanced 4-Tier System */}
           <div className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-8 mb-8">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center" style={{ fontFamily: 'MedievalSharp, cursive' }}>
-              📈 OSRS Gear Progression Tiers
+              📈 OSRS Gear Progression Tiers - Complete Altscape Guide
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="bg-yellow-100 dark:bg-yellow-900/30 rounded-lg p-4 mb-4">
                   <h4 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">🥉 Early Game (0-50M GP)</h4>
@@ -197,7 +197,7 @@ export function LandingPage() {
               <div className="text-center">
                 <div className="bg-blue-100 dark:bg-blue-900/30 rounded-lg p-4 mb-4">
                   <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">🥈 Mid Game (50M-500M GP)</h4>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">Whips, Barrows armor, God Wars items. Core progression for serious players.</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Whips, Barrows armor, God Wars items. Core progression for serious altscape players.</p>
                 </div>
                 <ul className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
                   <li>Abyssal whip, Trident of the seas</li>
@@ -208,13 +208,25 @@ export function LandingPage() {
               
               <div className="text-center">
                 <div className="bg-purple-100 dark:bg-purple-900/30 rounded-lg p-4 mb-4">
-                  <h4 className="font-bold text-purple-800 dark:text-purple-200 mb-2">🥇 End Game (500M+ GP)</h4>
-                  <p className="text-sm text-purple-700 dark:text-purple-300">Twisted Bow, Scythe, 3rd Age items. Ultimate OSRS progression goals.</p>
+                  <h4 className="font-bold text-purple-800 dark:text-purple-200 mb-2">🥇 End Game (500M-20B GP)</h4>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">Twisted Bow, Scythe, 3rd Age items, high-end raids gear. Ultimate OSRS progression goals for serious players.</p>
                 </div>
                 <ul className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
                   <li>Twisted Bow, Scythe of Vitur</li>
-                  <li>3rd Age armor, Elder maul</li>
-                  <li>Avernic defender, Infernal cape</li>
+                  <li>3rd Age items, Avernic defender</li>
+                  <li>Infernal cape, Torva armor</li>
+                </ul>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-gradient-to-br from-pink-100 to-rose-100 dark:from-pink-900/30 dark:to-rose-900/30 rounded-lg p-4 mb-4">
+                  <h4 className="font-bold text-pink-800 dark:text-pink-200 mb-2">👑 Fashionscape (20B+ GP)</h4>
+                  <p className="text-sm text-pink-700 dark:text-pink-300">Complete 3rd Age sets, green stacks of rare items, ultimate altscape flex. The pinnacle of OSRS wealth.</p>
+                </div>
+                <ul className="text-xs space-y-1 text-gray-600 dark:text-gray-400">
+                  <li>Full 3rd Age sets, Green stacks</li>
+                  <li>1000+ Party hats, Rare collections</li>
+                  <li>Complete rare item collections</li>
                 </ul>
               </div>
             </div>
@@ -589,7 +601,7 @@ export function LandingPage() {
               Ready to Ascend?
             </h2>
             <p className="text-xl text-white/90 mb-8">
-              Join thousands of OSRS players who are already dominating their progress with AscendOSRS.
+              Join thousands of OSRS players and altscape enthusiasts who are already dominating their progress with AscendOSRS.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 

@@ -103,21 +103,32 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
+      // Get the current origin and ensure it's properly formatted
+      const currentOrigin = window.location.origin;
+      const redirectUrl = `${currentOrigin}/`;
+      
+      console.log('🔐 Google Sign In - Redirect URL:', redirectUrl);
+      console.log('🔐 Current origin:', currentOrigin);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: redirectUrl
         }
       });
 
       if (error) {
+        console.error('❌ Google Sign In Error:', error);
         toast({
           title: "Google Sign In Failed",
           description: error.message,
           variant: "destructive"
         });
+      } else {
+        console.log('✅ Google Sign In initiated successfully');
       }
     } catch (error) {
+      console.error('❌ Unexpected error during Google Sign In:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",

@@ -40,7 +40,13 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-additional_redirect_urls = ["https://9df9fce3-3938-41fe-9b5b-d6d3b7ef4c4f.lovableproject.com/"]
+additional_redirect_urls = [
+  "https://9df9fce3-3938-41fe-9b5b-d6d3b7ef4c4f.lovableproject.com/",
+  "http://localhost:3000/",
+  "http://localhost:8080/",
+  "https://localhost:3000/",
+  "https://localhost:8080/"
+]
 
 [auth.email]
 enable_signup = true

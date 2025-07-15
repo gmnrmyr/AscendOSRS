@@ -188,6 +188,7 @@ AscendOSRS is the ultimate OSRS progress tracker for "altscape" enthusiasts. It 
 - Advanced Filters and Search
 - PWA (Progressive Web App)
 - Easy onboarding with demo acc edits
+- Track + chart of money sums over time (total bank value and total gold+plats) (from saved data once a day, make the chart dynamic and update daily)
 - Mobile Support
 
 ### Phase 3: 🌐 Scaling

@@ -123,6 +123,7 @@
 - **Account Type Support**: Regular, Ironman, Ultimate Ironman, Hardcore Ironman, Group Ironman
 - **Manual Name Changes**: Allow users to manually change character names after addition
 - **Real-time Stats**: Enhanced synchronization from OSRS Hiscores
+- **Save/Load System**: Manual needs to always save 3/4 at least. and its ereasing them, plus earasing some of user's data or changing them.
 
 ### **CSV Import & RuneLite Integration**
 - **Enhanced Format Support**: Full RuneLite "Data Exporter" plugin CSV format support ✅

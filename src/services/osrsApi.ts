@@ -1,5 +1,27 @@
-
 import { PlayerStats } from '@/types';
+
+export interface OSRSItem {
+  id: number;
+  name: string;
+  icon: string;
+  value: number;
+  high: number;
+  low: number;
+  current_price?: number;
+  today_trend?: string;
+}
+
+export interface MoneyMakingGuide {
+  id: string;
+  name: string;
+  profit: number;
+  skill: string;
+  requirements: string;
+  description: string;
+  category: 'combat' | 'skilling' | 'bossing' | 'other';
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  membership: 'f2p' | 'p2p';
+}
 
 class OSRSApiService {
   private readonly baseUrl = 'https://secure.runescape.com/m=hiscore_oldschool';
@@ -32,7 +54,6 @@ class OSRSApiService {
         'User-Agent': this.userAgent,
         ...options.headers,
       },
-      // Remove timeout property - it's not valid in fetch
     };
 
     const mergedOptions = { ...defaultOptions, ...options };
@@ -311,6 +332,145 @@ class OSRSApiService {
     } catch (error) {
       console.error('Error fetching item prices:', error);
       return {};
+    }
+  }
+
+  async fetchPopularItems(): Promise<OSRSItem[]> {
+    // Return mock popular items for now
+    return [
+      { id: 995, name: "Coins", icon: "", value: 1, high: 1, low: 1, current_price: 1, today_trend: "neutral" },
+      { id: 20997, name: "Twisted bow", icon: "", value: 1200000000, high: 1300000000, low: 1100000000, current_price: 1200000000, today_trend: "positive" },
+      { id: 11832, name: "Bandos chestplate", icon: "", value: 25000000, high: 26000000, low: 24000000, current_price: 25000000, today_trend: "negative" }
+    ];
+  }
+
+  async searchItems(query: string): Promise<OSRSItem[]> {
+    // Mock search implementation
+    const items = await this.fetchPopularItems();
+    return items.filter(item => 
+      item.name.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+
+  async fetchSingleItemPrice(itemId: number): Promise<number> {
+    try {
+      const prices = await this.fetchItemPrices();
+      const itemData = prices[itemId.toString()];
+      return itemData?.high || itemData?.low || 0;
+    } catch (error) {
+      console.error(`Error fetching price for item ${itemId}:`, error);
+      return 0;
+    }
+  }
+
+  getItemIcon(itemId: number): string {
+    return `https://oldschool.runescape.wiki/images/thumb/${itemId}.png/32px-${itemId}.png`;
+  }
+
+  getItemIdByName(itemName: string): number | null {
+    // Simple item name to ID mapping
+    const itemMap: Record<string, number> = {
+      "coins": 995,
+      "twisted bow": 20997,
+      "bandos chestplate": 11832,
+      "dragon claws": 13652,
+      "abyssal whip": 4151
+    };
+    return itemMap[itemName.toLowerCase()] || null;
+  }
+
+  getEstimatedItemValue(itemName: string): number {
+    // Simple estimation logic
+    if (itemName.toLowerCase().includes('bow')) return 1000000;
+    if (itemName.toLowerCase().includes('sword')) return 500000;
+    if (itemName.toLowerCase().includes('coin')) return 1;
+    return Math.floor(Math.random() * 100000) + 1000;
+  }
+
+  async getDefaultMoneyMakers(): Promise<MoneyMakingGuide[]> {
+    return [
+      {
+        id: "vorkath",
+        name: "Vorkath",
+        profit: 4000000,
+        skill: "Combat",
+        requirements: "Dragon Slayer II, high combat stats",
+        description: "High-level dragon boss with consistent drops",
+        category: "bossing",
+        difficulty: 4,
+        membership: "p2p"
+      },
+      {
+        id: "zulrah",
+        name: "Zulrah",
+        profit: 3500000,
+        skill: "Combat",
+        requirements: "Regicide quest, high combat stats",
+        description: "Snake boss with valuable unique drops",
+        category: "bossing", 
+        difficulty: 5,
+        membership: "p2p"
+      }
+    ];
+  }
+
+  async searchMoneyMakers(query: string): Promise<MoneyMakingGuide[]> {
+    const methods = await this.getDefaultMoneyMakers();
+    return methods.filter(method => 
+      method.name.toLowerCase().includes(query.toLowerCase()) ||
+      method.description.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+
+  async parseBankCSV(csvData: string): Promise<Array<{name: string; quantity: number; value: number}>> {
+    try {
+      // Try to parse as JSON first (RuneLite format)
+      try {
+        const jsonData = JSON.parse(csvData);
+        if (Array.isArray(jsonData)) {
+          return jsonData.map(item => ({
+            name: item.name || 'Unknown Item',
+            quantity: parseInt(item.quantity) || 1,
+            value: this.getEstimatedItemValue(item.name || 'Unknown Item')
+          }));
+        }
+      } catch (e) {
+        // Not JSON, try CSV
+      }
+
+      // Parse as CSV
+      const lines = csvData.trim().split('\n');
+      if (lines.length < 2) {
+        throw new Error('Invalid CSV format');
+      }
+
+      const headers = lines[0].toLowerCase().split(',');
+      const nameIndex = headers.findIndex(h => h.includes('name'));
+      const quantityIndex = headers.findIndex(h => h.includes('quantity'));
+
+      if (nameIndex === -1 || quantityIndex === -1) {
+        throw new Error('Missing required columns: name, quantity');
+      }
+
+      const items = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',');
+        if (values.length > Math.max(nameIndex, quantityIndex)) {
+          const name = values[nameIndex]?.trim() || 'Unknown Item';
+          const quantity = parseInt(values[quantityIndex]) || 1;
+          
+          items.push({
+            name,
+            quantity,
+            value: this.getEstimatedItemValue(name)
+          });
+        }
+      }
+
+      return items;
+    } catch (error) {
+      console.error('Error parsing bank CSV:', error);
+      throw new Error(`Failed to parse bank data: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 

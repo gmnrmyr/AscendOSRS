@@ -10,29 +10,23 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-amber-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex flex-col">
       {/* Modern Header */}
-      <header className="w-full py-4 sm:py-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-amber-200 dark:border-gray-700 sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            <img src="/logo.svg" alt="AscendOSRS - Ultimate OSRS Progress Tracker" className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" />
-            <div className="min-w-0">
-              <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                <span className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate" style={{ fontFamily: 'MedievalSharp, cursive' }}>
-                  AscendOSRS
-                </span>
-                <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs flex-shrink-0">
-                  BETA
-                </Badge>
-              </div>
+      <header className="w-full py-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-amber-200 dark:border-gray-700 sticky top-0 z-50">
+        <div className="container mx-auto flex items-center justify-between px-6">
+          <div className="flex items-center gap-3">
+            <img src="/logo.svg" alt="AscendOSRS - Ultimate OSRS Progress Tracker" className="h-10 w-10" />
+            <div>
+              <span className="text-2xl font-bold text-gray-900 dark:text-gray-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                AscendOSRS
+              </span>
+              <Badge className="ml-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs">
+                BETA
+              </Badge>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Button 
-              onClick={() => window.location.href = '/auth'} 
-              className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-semibold text-xs sm:text-sm px-3 py-2 sm:px-4 sm:py-2"
-            >
-              <span className="hidden sm:inline">Get Started Free</span>
-              <span className="sm:hidden">Get Started<br />Free</span>
+            <Button onClick={() => window.location.href = '/auth'} className="bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white font-semibold">
+              Get Started Free
             </Button>
           </div>
         </div>
@@ -630,6 +624,8 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+
 
       {/* Footer */}
       <footer className="bg-gray-900 dark:bg-gray-950 text-white py-12">

@@ -1,3 +1,4 @@
+
 import { PlayerStats } from '@/types';
 
 export interface OSRSItem {
@@ -15,11 +16,14 @@ export interface MoneyMakingGuide {
   id: string;
   name: string;
   profit: number;
+  gpHour?: number; // Added for compatibility
   skill: string;
   requirements: string;
   description: string;
+  notes?: string; // Added for compatibility
   category: 'combat' | 'skilling' | 'bossing' | 'other';
   difficulty: 1 | 2 | 3 | 4 | 5;
+  clickIntensity?: 1 | 2 | 3 | 4 | 5; // Added for compatibility
   membership: 'f2p' | 'p2p';
 }
 
@@ -393,23 +397,71 @@ class OSRSApiService {
         id: "vorkath",
         name: "Vorkath",
         profit: 4000000,
+        gpHour: 4000000, // Include both for compatibility
         skill: "Combat",
         requirements: "Dragon Slayer II, high combat stats",
         description: "High-level dragon boss with consistent drops",
+        notes: "High-level dragon boss with consistent drops", // Include both for compatibility
         category: "bossing",
         difficulty: 4,
+        clickIntensity: 4, // Include both for compatibility
         membership: "p2p"
       },
       {
         id: "zulrah",
         name: "Zulrah",
         profit: 3500000,
+        gpHour: 3500000, // Include both for compatibility
         skill: "Combat",
         requirements: "Regicide quest, high combat stats",
         description: "Snake boss with valuable unique drops",
+        notes: "Snake boss with valuable unique drops", // Include both for compatibility
         category: "bossing", 
         difficulty: 5,
+        clickIntensity: 5, // Include both for compatibility
         membership: "p2p"
+      },
+      {
+        id: "blast-furnace",
+        name: "Blast Furnace",
+        profit: 1500000,
+        gpHour: 1500000,
+        skill: "Smithing",
+        requirements: "60+ Smithing, coal bag recommended",
+        description: "Efficient smithing method using the Blast Furnace",
+        notes: "Efficient smithing method using the Blast Furnace",
+        category: "skilling",
+        difficulty: 2,
+        clickIntensity: 2,
+        membership: "p2p"
+      },
+      {
+        id: "green-dragons",
+        name: "Green Dragons",
+        profit: 800000,
+        gpHour: 800000,
+        skill: "Combat",
+        requirements: "40+ Combat stats",
+        description: "Killing green dragons for hides and bones",
+        notes: "Killing green dragons for hides and bones",
+        category: "combat",
+        difficulty: 2,
+        clickIntensity: 3,
+        membership: "f2p"
+      },
+      {
+        id: "mining-iron",
+        name: "Mining Iron Ore",
+        profit: 200000,
+        gpHour: 200000,
+        skill: "Mining",
+        requirements: "15+ Mining",
+        description: "Mining iron ore for consistent profit",
+        notes: "Mining iron ore for consistent profit",
+        category: "skilling",
+        difficulty: 1,
+        clickIntensity: 1,
+        membership: "f2p"
       }
     ];
   }

@@ -72,7 +72,19 @@ export function useAppData() {
         if (parsed.characters) setCharacters(parsed.characters);
         if (parsed.moneyMethods) setMoneyMethods(parsed.moneyMethods);
         if (parsed.purchaseGoals) setPurchaseGoals(parsed.purchaseGoals);
-        if (parsed.bankData) setBankData(parsed.bankData);
+        if (parsed.bankData) {
+          // Fix: Ensure all bank items have valid categories
+          const fixedBankData: Record<string, BankItem[]> = {};
+          Object.keys(parsed.bankData).forEach(character => {
+            fixedBankData[character] = parsed.bankData[character].map((item: any) => ({
+              ...item,
+              category: ['stackable', 'gear', 'materials', 'other'].includes(item.category) 
+                ? item.category 
+                : 'stackable' as const
+            }));
+          });
+          setBankData(fixedBankData);
+        }
         if (parsed.hoursPerDay) setHoursPerDay(parsed.hoursPerDay);
       } catch (error) {
         console.error('Error loading saved data:', error);

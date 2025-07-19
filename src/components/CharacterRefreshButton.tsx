@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertCircle, CheckCircle2 } from "lucide-react";
@@ -166,9 +165,9 @@ export function CharacterRefreshButton({ character, onUpdate }: CharacterRefresh
       console.log(`📡 API response received in ${fetchTime}ms:`, playerStats);
       
       if (playerStats) {
-        // Enhanced validation with detailed logging - Fix: Convert numbers to strings
-        const combatLevel = Math.max(3, Math.min(126, parseInt(String(playerStats.combat_level)) || 3));
-        const totalLevel = Math.max(32, Math.min(2277, parseInt(String(playerStats.total_level)) || 32));
+        // Enhanced validation with detailed logging
+        const combatLevel = Math.max(3, Math.min(126, parseInt(playerStats.combat_level) || 3));
+        const totalLevel = Math.max(32, Math.min(2277, parseInt(playerStats.total_level) || 32));
         
         console.log('✅ Validated levels:', { 
           original: { combat: playerStats.combat_level, total: playerStats.total_level },

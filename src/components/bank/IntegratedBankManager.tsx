@@ -153,13 +153,13 @@ export function IntegratedBankManager({
     try {
       const jsonData = JSON.parse(csvData);
       if (Array.isArray(jsonData)) {
-        // Handle OSRS bank export JSON format - Fix: Ensure category is a valid type
+        // Handle OSRS bank export JSON format
         newItems = jsonData.map(item => ({
           id: Date.now().toString() + Math.random(),
           name: item.name || 'Unknown Item',
           quantity: parseInt(item.quantity) || 0,
           estimatedPrice: 0, // Will be looked up later
-          category: 'stackable' as const, // Fix: Explicitly type as valid BankItem category
+          category: 'stackable',
           character: selectedCharacter
         })).filter(item => item.name && item.quantity > 0);
       }
@@ -189,7 +189,7 @@ export function IntegratedBankManager({
               name,
               quantity,
               estimatedPrice: price,
-              category: 'stackable' as const, // Fix: Explicitly type as valid BankItem category
+              category: 'stackable',
               character: selectedCharacter
             });
           }

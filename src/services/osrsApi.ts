@@ -1,544 +1,1475 @@
+import { OSRSItem, MoneyMakingGuide, PlayerStats } from "@/types";
 
-import { PlayerStats } from '@/types';
+const API_BASE_URL = 'https://prices.runescape.wiki/api/v1/osrs/latest';
+const WIKI_API_BASE_URL = 'https://oldschool.runescape.wiki/api.php';
+const TEMPLE_OSRS_API = 'https://templeosrs.com/api/player_stats.php';
+const GE_API_BASE = 'https://secure.runescape.com/m=itemdb_oldschool/api/catalogue/detail.json';
 
-export interface OSRSItem {
-  id: number;
-  name: string;
-  icon: string;
-  value: number;
-  high: number;
-  low: number;
-  current_price?: number;
-  today_trend?: string;
-}
-
-export interface MoneyMakingGuide {
-  id: string;
-  name: string;
-  profit: number;
-  gpHour?: number; // Added for compatibility
-  skill: string;
-  requirements: string;
-  description: string;
-  notes?: string; // Added for compatibility
-  category: 'combat' | 'skilling' | 'bossing' | 'other';
-  difficulty: 1 | 2 | 3 | 4 | 5;
-  clickIntensity?: 1 | 2 | 3 | 4 | 5; // Added for compatibility
-  membership: 'f2p' | 'p2p';
-}
-
-class OSRSApiService {
-  private readonly baseUrl = 'https://secure.runescape.com/m=hiscore_oldschool';
-  private readonly wikiApiUrl = 'https://prices.runescape.wiki/api/v1/osrs';
-  private readonly userAgent = 'AscendOSRS-PriceTracker/1.0 (Contact: admin@ascendosrs.com)';
-  
-  // Cache for API responses to avoid rate limiting
-  private cache: Map<string, { data: any; timestamp: number }> = new Map();
-  private readonly cacheTimeout = 60000; // 1 minute cache
-
-  private isCacheValid(timestamp: number): boolean {
-    return Date.now() - timestamp < this.cacheTimeout;
-  }
-
-  private getCachedData<T>(key: string): T | null {
-    const cached = this.cache.get(key);
-    if (cached && this.isCacheValid(cached.timestamp)) {
-      return cached.data;
-    }
-    return null;
-  }
-
-  private setCachedData(key: string, data: any): void {
-    this.cache.set(key, { data, timestamp: Date.now() });
-  }
-
-  async fetchWithRetry(url: string, options: RequestInit = {}, retries = 3): Promise<Response> {
-    const defaultOptions: RequestInit = {
-      headers: {
-        'User-Agent': this.userAgent,
-        ...options.headers,
-      },
-    };
-
-    const mergedOptions = { ...defaultOptions, ...options };
-
-    for (let i = 0; i < retries; i++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-        const response = await fetch(url, {
-          ...mergedOptions,
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        return response;
-      } catch (error) {
-        console.warn(`Attempt ${i + 1} failed:`, error);
-        if (i === retries - 1) throw error;
-        
-        // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-      }
-    }
+export const osrsApi = {
+  fetchPlayerStats: async (playerName: string): Promise<PlayerStats | null> => {
+    console.log(`Fetching stats for player: ${playerName}`);
     
-    throw new Error('All retry attempts failed');
-  }
-
-  async fetchPlayerStats(username: string): Promise<PlayerStats | null> {
-    if (!username?.trim()) {
-      throw new Error('Username is required');
+    if (!playerName || playerName.trim().length === 0) {
+      console.error('Player name is required');
+      return null;
     }
 
-    const cleanUsername = username.trim().replace(/\s+/g, ' ');
-    const cacheKey = `player-stats-${cleanUsername.toLowerCase()}`;
+    const cleanPlayerName = playerName.trim();
     
-    // Check cache first
-    const cached = this.getCachedData<PlayerStats>(cacheKey);
-    if (cached) {
-      console.log(`Using cached data for ${cleanUsername}`);
-      return cached;
-    }
-
-    console.log(`Fetching fresh data for ${cleanUsername}`);
-
     try {
-      // Try multiple API endpoints for better success rate
-      const endpoints = [
-        `${this.baseUrl}/index_lite.ws?player=${encodeURIComponent(cleanUsername)}`,
-        `${this.baseUrl}.json?player=${encodeURIComponent(cleanUsername)}`,
+      // Try multiple APIs for better success rate
+      let stats: PlayerStats | null = null;
+
+      // 1. Try TempleOSRS API first (most reliable for detailed stats)
+      console.log('Trying TempleOSRS API...');
+      stats = await osrsApi.fetchFromTempleOSRS(cleanPlayerName);
+      if (stats) {
+        console.log('Successfully fetched from TempleOSRS');
+        return stats;
+      }
+
+      // 2. Try WiseOldMan API as backup
+      console.log('Trying WiseOldMan API...');
+      stats = await osrsApi.fetchFromWiseOldMan(cleanPlayerName);
+      if (stats) {
+        console.log('Successfully fetched from WiseOldMan');
+        return stats;
+      }
+
+      // 3. Try official OSRS hiscores as final fallback
+      console.log('Trying official OSRS hiscores...');
+      stats = await osrsApi.fetchFromOfficialHiscores(cleanPlayerName);
+      if (stats) {
+        console.log('Successfully fetched from official hiscores');
+        return stats;
+      }
+
+      console.error('All APIs failed to fetch player stats');
+      return null;
+      
+    } catch (error) {
+      console.error('Error fetching player stats:', error);
+      return null;
+    }
+  },
+
+  fetchFromTempleOSRS: async (playerName: string): Promise<PlayerStats | null> => {
+    try {
+      const templeUrl = `${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`;
+      const response = await fetch(templeUrl, {
+        headers: {
+          'User-Agent': 'AscendOSRS (Contact: user@example.com)',
+        },
+        timeout: 10000
+      });
+      
+      if (!response.ok) {
+        console.log(`TempleOSRS API returned ${response.status}`);
+        return null;
+      }
+
+      const data = await response.json();
+      console.log('TempleOSRS response:', data);
+      
+      if (data && data.data && !data.error) {
+        // Parse account type more accurately
+        let accountType = 'main';
+        const gameMode = data.data.Game_mode || '';
+        if (gameMode.toLowerCase().includes('ironman')) {
+          accountType = 'ironman';
+        } else if (gameMode.toLowerCase().includes('hardcore')) {
+          accountType = 'hardcore';
+        } else if (gameMode.toLowerCase().includes('ultimate')) {
+          accountType = 'ultimate';
+        }
+
+        // Validate and clamp all values to reasonable OSRS ranges
+        const combatLevel = Math.max(3, Math.min(126, parseInt(data.data.Combat_level || data.data.combat_level) || 3));
+        const totalLevel = Math.max(32, Math.min(2277, parseInt(data.data.Overall || data.data.total_level) || 32));
+
+        // Additional validation
+        if (combatLevel < 3 || combatLevel > 126 || totalLevel < 32 || totalLevel > 2277) {
+          console.warn(`Invalid levels from TempleOSRS: CB ${combatLevel}, Total ${totalLevel}`);
+          return null;
+        }
+
+        console.log(`TempleOSRS validated stats: CB ${combatLevel}, Total ${totalLevel}`);
+
+        return {
+          combat_level: combatLevel,
+          total_level: totalLevel,
+          account_type: accountType,
+          username: playerName,
+          // Additional stats if available with validation
+          attack: Math.max(1, Math.min(99, parseInt(data.data.Attack) || 1)),
+          defence: Math.max(1, Math.min(99, parseInt(data.data.Defence) || 1)),
+          strength: Math.max(1, Math.min(99, parseInt(data.data.Strength) || 1)),
+          hitpoints: Math.max(10, Math.min(99, parseInt(data.data.Hitpoints) || 10)),
+          ranged: Math.max(1, Math.min(99, parseInt(data.data.Ranged) || 1)),
+          prayer: Math.max(1, Math.min(99, parseInt(data.data.Prayer) || 1)),
+          magic: Math.max(1, Math.min(99, parseInt(data.data.Magic) || 1)),
+          cooking: Math.max(1, Math.min(99, parseInt(data.data.Cooking) || 1)),
+          woodcutting: Math.max(1, Math.min(99, parseInt(data.data.Woodcutting) || 1)),
+          fletching: Math.max(1, Math.min(99, parseInt(data.data.Fletching) || 1)),
+          fishing: Math.max(1, Math.min(99, parseInt(data.data.Fishing) || 1)),
+          firemaking: Math.max(1, Math.min(99, parseInt(data.data.Firemaking) || 1)),
+          crafting: Math.max(1, Math.min(99, parseInt(data.data.Crafting) || 1)),
+          smithing: Math.max(1, Math.min(99, parseInt(data.data.Smithing) || 1)),
+          mining: Math.max(1, Math.min(99, parseInt(data.data.Mining) || 1)),
+          herblore: Math.max(1, Math.min(99, parseInt(data.data.Herblore) || 1)),
+          agility: Math.max(1, Math.min(99, parseInt(data.data.Agility) || 1)),
+          thieving: Math.max(1, Math.min(99, parseInt(data.data.Thieving) || 1)),
+          slayer: Math.max(1, Math.min(99, parseInt(data.data.Slayer) || 1)),
+          farming: Math.max(1, Math.min(99, parseInt(data.data.Farming) || 1)),
+          runecraft: Math.max(1, Math.min(99, parseInt(data.data.Runecraft) || 1)),
+          hunter: Math.max(1, Math.min(99, parseInt(data.data.Hunter) || 1)),
+          construction: Math.max(1, Math.min(99, parseInt(data.data.Construction) || 1))
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('TempleOSRS API error:', error);
+      return null;
+    }
+  },
+
+  fetchFromWiseOldMan: async (playerName: string): Promise<PlayerStats | null> => {
+    try {
+      const womUrl = `https://api.wiseoldman.net/v2/players/${encodeURIComponent(playerName)}`;
+      const response = await fetch(womUrl, {
+        headers: {
+          'User-Agent': 'AscendOSRS (Contact: user@example.com)',
+        },
+        timeout: 10000
+      });
+      
+      if (!response.ok) {
+        console.log(`WiseOldMan API returned ${response.status}`);
+        return null;
+      }
+
+      const data = await response.json();
+      console.log('WiseOldMan response:', data);
+      
+      if (data && data.latestSnapshot && data.latestSnapshot.data) {
+        const stats = data.latestSnapshot.data;
+        
+        // Parse account type
+        let accountType = 'main';
+        const playerType = data.type || '';
+        if (playerType.toLowerCase().includes('ironman')) {
+          accountType = 'ironman';
+        } else if (playerType.toLowerCase().includes('hardcore')) {
+          accountType = 'hardcore';
+        } else if (playerType.toLowerCase().includes('ultimate')) {
+          accountType = 'ultimate';
+        }
+
+        // Validate and clamp values
+        const combatLevel = Math.max(3, Math.min(126, parseInt(data.combatLevel) || 3));
+        const totalLevel = Math.max(32, Math.min(2277, parseInt(stats.overall?.level) || 32));
+
+        // Additional validation
+        if (combatLevel < 3 || combatLevel > 126 || totalLevel < 32 || totalLevel > 2277) {
+          console.warn(`Invalid levels from WiseOldMan: CB ${combatLevel}, Total ${totalLevel}`);
+          return null;
+        }
+
+        console.log(`WiseOldMan validated stats: CB ${combatLevel}, Total ${totalLevel}`);
+
+        return {
+          combat_level: combatLevel,
+          total_level: totalLevel,
+          account_type: accountType,
+          username: playerName,
+          attack: Math.max(1, Math.min(99, parseInt(stats.attack?.level) || 1)),
+          defence: Math.max(1, Math.min(99, parseInt(stats.defence?.level) || 1)),
+          strength: Math.max(1, Math.min(99, parseInt(stats.strength?.level) || 1)),
+          hitpoints: Math.max(10, Math.min(99, parseInt(stats.hitpoints?.level) || 10)),
+          ranged: Math.max(1, Math.min(99, parseInt(stats.ranged?.level) || 1)),
+          prayer: Math.max(1, Math.min(99, parseInt(stats.prayer?.level) || 1)),
+          magic: Math.max(1, Math.min(99, parseInt(stats.magic?.level) || 1)),
+          cooking: Math.max(1, Math.min(99, parseInt(stats.cooking?.level) || 1)),
+          woodcutting: Math.max(1, Math.min(99, parseInt(stats.woodcutting?.level) || 1)),
+          fletching: Math.max(1, Math.min(99, parseInt(stats.fletching?.level) || 1)),
+          fishing: Math.max(1, Math.min(99, parseInt(stats.fishing?.level) || 1)),
+          firemaking: Math.max(1, Math.min(99, parseInt(stats.firemaking?.level) || 1)),
+          crafting: Math.max(1, Math.min(99, parseInt(stats.crafting?.level) || 1)),
+          smithing: Math.max(1, Math.min(99, parseInt(stats.smithing?.level) || 1)),
+          mining: Math.max(1, Math.min(99, parseInt(stats.mining?.level) || 1)),
+          herblore: Math.max(1, Math.min(99, parseInt(stats.herblore?.level) || 1)),
+          agility: Math.max(1, Math.min(99, parseInt(stats.agility?.level) || 1)),
+          thieving: Math.max(1, Math.min(99, parseInt(stats.thieving?.level) || 1)),
+          slayer: Math.max(1, Math.min(99, parseInt(stats.slayer?.level) || 1)),
+          farming: Math.max(1, Math.min(99, parseInt(stats.farming?.level) || 1)),
+          runecraft: Math.max(1, Math.min(99, parseInt(stats.runecraft?.level) || 1)),
+          hunter: Math.max(1, Math.min(99, parseInt(stats.hunter?.level) || 1)),
+          construction: Math.max(1, Math.min(99, parseInt(stats.construction?.level) || 1))
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('WiseOldMan API error:', error);
+      return null;
+    }
+  },
+
+  fetchFromOfficialHiscores: async (playerName: string): Promise<PlayerStats | null> => {
+    try {
+      // Try different hiscore endpoints for different account types
+      const hiscoreEndpoints = [
+        'https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws',
+        'https://secure.runescape.com/m=hiscore_oldschool_ironman/index_lite.ws',
+        'https://secure.runescape.com/m=hiscore_oldschool_hardcore_ironman/index_lite.ws',
+        'https://secure.runescape.com/m=hiscore_oldschool_ultimate/index_lite.ws'
       ];
 
-      let lastError: Error | null = null;
-      
-      for (const endpoint of endpoints) {
-        try {
-          console.log(`Trying endpoint: ${endpoint}`);
-          
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      const accountTypes = ['main', 'ironman', 'hardcore', 'ultimate'];
 
-          const response = await fetch(endpoint, {
+      for (let i = 0; i < hiscoreEndpoints.length; i++) {
+        const endpoint = hiscoreEndpoints[i];
+        const accountType = accountTypes[i];
+        
+        try {
+          const hiscoreUrl = `${endpoint}?player=${encodeURIComponent(playerName)}`;
+          const response = await fetch(hiscoreUrl, {
             headers: {
-              'User-Agent': this.userAgent,
+              'User-Agent': 'AscendOSRS (Contact: user@example.com)',
             },
-            signal: controller.signal
+            timeout: 10000
           });
           
-          clearTimeout(timeoutId);
-
           if (!response.ok) {
-            if (response.status === 404) {
-              console.log(`Player ${cleanUsername} not found on hiscores`);
-              return null;
+            console.log(`Hiscore API (${accountType}) returned ${response.status}`);
+            continue;
+          }
+
+          const text = await response.text();
+          const lines = text.split('\n').filter(line => line.trim());
+          
+          if (lines.length < 24) { // Need at least 24 lines for all skills
+            console.log(`Invalid hiscore format for ${accountType} account - only ${lines.length} lines`);
+            continue;
+          }
+
+          // Parse all skill levels with better validation
+          const skillLevels = lines.slice(0, 24).map((line, index) => {
+            const parts = line.split(',');
+            if (parts.length < 3) {
+              console.warn(`Invalid skill line ${index}: ${line}`);
+              return { rank: -1, level: 1, experience: 0 };
             }
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            
+            const rank = parseInt(parts[0]) || -1;
+            const level = Math.max(1, Math.min(99, parseInt(parts[1]) || 1));
+            const experience = Math.max(0, parseInt(parts[2]) || 0);
+            
+            return { rank, level, experience };
+          });
+
+          // Validate skill levels make sense
+          const totalLevel = skillLevels[0].level;
+          if (totalLevel < 32 || totalLevel > 2277) {
+            console.warn(`Invalid total level: ${totalLevel}, skipping ${accountType} hiscores`);
+            continue;
           }
 
-          const contentType = response.headers.get('content-type') || '';
-          let data: any;
+          // Get individual combat stats with validation
+          const attack = Math.max(1, Math.min(99, skillLevels[1].level));
+          const defence = Math.max(1, Math.min(99, skillLevels[2].level));
+          const strength = Math.max(1, Math.min(99, skillLevels[3].level));
+          const hitpoints = Math.max(10, Math.min(99, skillLevels[4].level));
+          const ranged = Math.max(1, Math.min(99, skillLevels[5].level));
+          const prayer = Math.max(1, Math.min(99, skillLevels[6].level));
+          const magic = Math.max(1, Math.min(99, skillLevels[7].level));
 
-          if (contentType.includes('application/json')) {
-            data = await response.json();
-          } else {
-            // Parse CSV format
-            const text = await response.text();
-            data = this.parseHiscoresCsv(text, cleanUsername);
+          // Calculate combat level using accurate OSRS formula with validation
+          const baseCombat = (attack + strength) * 0.325;
+          const defenceCombat = defence * 0.325;
+          const hitpointsCombat = hitpoints * 0.25;
+          const prayerCombat = Math.floor(prayer / 2) * 0.25;
+          const rangedCombat = ranged * 0.325;
+          const magicCombat = magic * 0.325;
+          
+          const meleeCombat = baseCombat + defenceCombat + hitpointsCombat + prayerCombat;
+          const rangedCombatTotal = rangedCombat + defenceCombat + hitpointsCombat + prayerCombat;
+          const magicCombatTotal = magicCombat + defenceCombat + hitpointsCombat + prayerCombat;
+          
+          const rawCombatLevel = Math.max(meleeCombat, rangedCombatTotal, magicCombatTotal);
+          const combatLevel = Math.max(3, Math.min(126, Math.floor(rawCombatLevel) + 1));
+
+          // Final validation of calculated values
+          if (combatLevel < 3 || combatLevel > 126) {
+            console.warn(`Invalid combat level calculated: ${combatLevel}, skipping`);
+            continue;
           }
 
-          if (data) {
-            const stats = this.normalizePlayerStats(data, cleanUsername);
-            this.setCachedData(cacheKey, stats);
-            console.log(`Successfully fetched stats for ${cleanUsername}:`, stats);
-            return stats;
-          }
+          console.log(`Successfully parsed ${accountType} hiscores:`, {
+            combatLevel,
+            totalLevel,
+            attack, defence, strength, hitpoints, ranged, prayer, magic
+          });
+
+          return {
+            combat_level: combatLevel,
+            total_level: totalLevel,
+            account_type: accountType,
+            username: playerName,
+            attack: attack,
+            defence: defence,
+            strength: strength,
+            hitpoints: hitpoints,
+            ranged: ranged,
+            prayer: prayer,
+            magic: magic,
+            cooking: Math.max(1, Math.min(99, skillLevels[8].level)),
+            woodcutting: Math.max(1, Math.min(99, skillLevels[9].level)),
+            fletching: Math.max(1, Math.min(99, skillLevels[10].level)),
+            fishing: Math.max(1, Math.min(99, skillLevels[11].level)),
+            firemaking: Math.max(1, Math.min(99, skillLevels[12].level)),
+            crafting: Math.max(1, Math.min(99, skillLevels[13].level)),
+            smithing: Math.max(1, Math.min(99, skillLevels[14].level)),
+            mining: Math.max(1, Math.min(99, skillLevels[15].level)),
+            herblore: Math.max(1, Math.min(99, skillLevels[16].level)),
+            agility: Math.max(1, Math.min(99, skillLevels[17].level)),
+            thieving: Math.max(1, Math.min(99, skillLevels[18].level)),
+            slayer: Math.max(1, Math.min(99, skillLevels[19].level)),
+            farming: Math.max(1, Math.min(99, skillLevels[20].level)),
+            runecraft: Math.max(1, Math.min(99, skillLevels[21].level)),
+            hunter: Math.max(1, Math.min(99, skillLevels[22].level)),
+            construction: Math.max(1, Math.min(99, skillLevels[23].level))
+          };
         } catch (error) {
-          console.warn(`Endpoint ${endpoint} failed:`, error);
-          lastError = error as Error;
+          console.log(`Error fetching from ${accountType} hiscores:`, error);
           continue;
         }
       }
 
-      throw lastError || new Error('All endpoints failed');
-      
+      return null;
     } catch (error) {
-      console.error(`Failed to fetch stats for ${cleanUsername}:`, error);
-      
-      if (error instanceof Error) {
-        if (error.message.includes('404') || error.message.includes('not found')) {
-          return null;
-        }
-        throw error;
-      }
-      
-      throw new Error(`Failed to fetch player stats: ${error}`);
+      console.error('Official hiscores API error:', error);
+      return null;
     }
-  }
+  },
 
-  private parseHiscoresCsv(csvText: string, username: string): any {
-    const lines = csvText.trim().split('\n');
-    if (lines.length < 24) {
-      throw new Error('Invalid hiscores data format');
-    }
-
-    // Parse skills (first 24 lines)
-    const skills = lines.slice(0, 24).map(line => {
-      const [rank, level, xp] = line.split(',').map(val => parseInt(val) || -1);
-      return { rank, level, xp };
-    });
-
-    // Calculate combat level
-    const attack = skills[1]?.level || 1;
-    const defence = skills[2]?.level || 1;
-    const strength = skills[3]?.level || 1;
-    const hitpoints = skills[4]?.level || 10;
-    const ranged = skills[5]?.level || 1;
-    const prayer = skills[6]?.level || 1;
-    const magic = skills[7]?.level || 1;
-
-    const combatLevel = this.calculateCombatLevel(attack, defence, strength, hitpoints, ranged, prayer, magic);
+  searchOSRSItems: async (query: string): Promise<any[]> => {
+    console.log(`Searching OSRS items for: ${query}`);
     
-    // Calculate total level
-    const totalLevel = skills.slice(1).reduce((sum, skill) => sum + (skill.level > 0 ? skill.level : 1), 0);
-
-    return {
-      combat_level: combatLevel,
-      total_level: totalLevel,
-      username,
-      skills,
-      // Individual skills
-      attack,
-      defence,
-      strength,
-      hitpoints,
-      ranged,
-      prayer,
-      magic,
-      cooking: skills[8]?.level || 1,
-      woodcutting: skills[9]?.level || 1,
-      fletching: skills[10]?.level || 1,
-      fishing: skills[11]?.level || 1,
-      firemaking: skills[12]?.level || 1,
-      crafting: skills[13]?.level || 1,
-      smithing: skills[14]?.level || 1,
-      mining: skills[15]?.level || 1,
-      herblore: skills[16]?.level || 1,
-      agility: skills[17]?.level || 1,
-      thieving: skills[18]?.level || 1,
-      slayer: skills[19]?.level || 1,
-      farming: skills[20]?.level || 1,
-      runecraft: skills[21]?.level || 1,
-      hunter: skills[22]?.level || 1,
-      construction: skills[23]?.level || 1,
-    };
-  }
-
-  private calculateCombatLevel(attack: number, defence: number, strength: number, hitpoints: number, ranged: number, prayer: number, magic: number): number {
-    const base = 0.25 * (defence + hitpoints + Math.floor(prayer / 2));
-    const melee = 0.325 * (attack + strength);
-    const range = 0.325 * Math.floor(ranged * 1.5);
-    const mage = 0.325 * Math.floor(magic * 1.5);
-    
-    return Math.floor(base + Math.max(melee, range, mage));
-  }
-
-  private normalizePlayerStats(data: any, username: string): PlayerStats {
-    // Handle different data formats
-    let combatLevel = data.combat_level || data.combatLevel || 3;
-    let totalLevel = data.total_level || data.totalLevel || 32;
-    let accountType = data.account_type || data.accountType || 'regular';
-
-    // Ensure valid ranges
-    combatLevel = Math.max(3, Math.min(126, parseInt(String(combatLevel)) || 3));
-    totalLevel = Math.max(32, Math.min(2277, parseInt(String(totalLevel)) || 32));
-
-    // Detect account type from various sources
-    if (typeof accountType === 'string') {
-      const type = accountType.toLowerCase();
-      if (type.includes('ultimate') || type.includes('uim')) {
-        accountType = 'ultimate';
-      } else if (type.includes('hardcore') || type.includes('hcim')) {
-        accountType = 'hardcore';
-      } else if (type.includes('ironman') || type.includes('iron')) {
-        accountType = 'ironman';
-      } else {
-        accountType = 'regular';
-      }
-    }
-
-    return {
-      combat_level: combatLevel,
-      total_level: totalLevel,
-      account_type: accountType,
-      username,
-      // Include individual skills if available
-      attack: data.attack,
-      defence: data.defence,
-      strength: data.strength,
-      hitpoints: data.hitpoints,
-      ranged: data.ranged,
-      prayer: data.prayer,
-      magic: data.magic,
-      cooking: data.cooking,
-      woodcutting: data.woodcutting,
-      fletching: data.fletching,
-      fishing: data.fishing,
-      firemaking: data.firemaking,
-      crafting: data.crafting,
-      smithing: data.smithing,
-      mining: data.mining,
-      herblore: data.herblore,
-      agility: data.agility,
-      thieving: data.thieving,
-      slayer: data.slayer,
-      farming: data.farming,
-      runecraft: data.runecraft,
-      hunter: data.hunter,
-      construction: data.construction,
-    };
-  }
-
-  async fetchItemPrices(): Promise<Record<string, any>> {
-    const cacheKey = 'item-prices';
-    const cached = this.getCachedData<Record<string, any>>(cacheKey);
-    if (cached) {
-      return cached;
-    }
-
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      if (!query || query.length < 2) return [];
 
-      const response = await fetch(`${this.wikiApiUrl}/latest`, {
-        headers: {
-          'User-Agent': this.userAgent,
-        },
-        signal: controller.signal
+      // Search Wiki for items with better filtering
+      const params = new URLSearchParams({
+        action: 'opensearch',
+        search: query,
+        limit: '10',
+        namespace: '0',
+        format: 'json'
       });
-      
-      clearTimeout(timeoutId);
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch item prices: ${response.status}`);
+      const response = await fetch(`${WIKI_API_BASE_URL}?${params.toString()}`);
+      const data = await response.json();
+      
+      if (!data || !Array.isArray(data) || data.length < 2) {
+        console.log('No search results from Wiki API');
+        return [];
       }
 
-      const data = await response.json();
-      const prices = data.data || {};
-      
-      this.setCachedData(cacheKey, prices);
-      return prices;
+      const [, titles, , urls] = data;
+      const items = [];
+
+      for (let i = 0; i < Math.min(titles.length, 10); i++) {
+        const title = titles[i];
+        
+        // Filter out non-item pages more effectively
+        if (!title || 
+            title.includes('Quest') || 
+            title.includes('Guide') || 
+            title.includes('Update') || 
+            title.includes('Category') ||
+            title.includes('Template') || 
+            title.includes('User:') ||
+            title.includes('Talk:') ||
+            title.includes('File:') ||
+            title.includes('List of') ||
+            title.includes('History of')) {
+          continue;
+        }
+        
+        try {
+          // Get item ID from wiki page
+          const itemId = await osrsApi.getItemIdByName(title);
+          let currentPrice = 0;
+          let itemIcon = null;
+          
+          if (itemId) {
+            currentPrice = await osrsApi.fetchSingleItemPrice(itemId) || 0;
+            itemIcon = `https://oldschool.runescape.wiki/images/thumb/${itemId}.png/32px-${itemId}.png`;
+          }
+          
+          items.push({
+            id: itemId || Date.now() + i,
+            name: title,
+            subtitle: currentPrice > 0 ? `${currentPrice.toLocaleString()} GP` : 'OSRS Item',
+            icon: itemIcon || '',
+            value: currentPrice,
+            category: 'item'
+          });
+        } catch (error) {
+          console.error(`Error processing item ${title}:`, error);
+          // Still include the item even if price/icon fails
+          items.push({
+            id: Date.now() + i,
+            name: title,
+            subtitle: 'OSRS Item',
+            icon: '',
+            value: 0,
+            category: 'item'
+          });
+        }
+      }
+
+      console.log(`Found ${items.length} OSRS items`);
+      return items;
     } catch (error) {
-      console.error('Error fetching item prices:', error);
-      return {};
+      console.error('Error searching OSRS items:', error);
+      return [];
     }
-  }
+  },
 
-  async fetchPopularItems(): Promise<OSRSItem[]> {
-    // Return mock popular items for now
-    return [
-      { id: 995, name: "Coins", icon: "", value: 1, high: 1, low: 1, current_price: 1, today_trend: "neutral" },
-      { id: 20997, name: "Twisted bow", icon: "", value: 1200000000, high: 1300000000, low: 1100000000, current_price: 1200000000, today_trend: "positive" },
-      { id: 11832, name: "Bandos chestplate", icon: "", value: 25000000, high: 26000000, low: 24000000, current_price: 25000000, today_trend: "negative" }
-    ];
-  }
-
-  async searchItems(query: string): Promise<OSRSItem[]> {
-    // Mock search implementation
-    const items = await this.fetchPopularItems();
-    return items.filter(item => 
-      item.name.toLowerCase().includes(query.toLowerCase())
-    );
-  }
-
-  async fetchSingleItemPrice(itemId: number): Promise<number> {
+  fetchMoneyMakingMethods: async (query?: string): Promise<MoneyMakingGuide[]> => {
+    console.log(`Fetching money making methods, query: ${query}`);
+    
     try {
-      const prices = await this.fetchItemPrices();
-      const itemData = prices[itemId.toString()];
-      return itemData?.high || itemData?.low || 0;
+      // Get local methods first
+      const localMethods = osrsApi.getDefaultMoneyMakers();
+      
+      // Try to fetch from OSRS Wiki money making guide
+      const wikiMethods = await osrsApi.fetchWikiMoneyMethods();
+      
+      // Combine and filter
+      const allMethods = [...localMethods, ...wikiMethods];
+      
+      if (!query) {
+        return allMethods;
+      }
+
+      const lowerQuery = query.toLowerCase();
+      return allMethods.filter(method =>
+        method.name.toLowerCase().includes(lowerQuery) ||
+        method.category.toLowerCase().includes(lowerQuery) ||
+        method.description?.toLowerCase().includes(lowerQuery)
+      );
     } catch (error) {
-      console.error(`Error fetching price for item ${itemId}:`, error);
-      return 0;
+      console.error('Error fetching money making methods:', error);
+      return osrsApi.getDefaultMoneyMakers();
     }
-  }
+  },
 
-  getItemIcon(itemId: number): string {
-    return `https://oldschool.runescape.wiki/images/thumb/${itemId}.png/32px-${itemId}.png`;
-  }
+  fetchWikiMoneyMethods: async (): Promise<MoneyMakingGuide[]> => {
+    try {
+      console.log('Fetching money making methods from OSRS Wiki...');
+      
+      // Search for money making guide pages
+      const searchParams = new URLSearchParams({
+        action: 'query',
+        format: 'json',
+        list: 'search',
+        srsearch: 'money making guide',
+        srlimit: '20',
+        srnamespace: '0'
+      });
 
-  getItemIdByName(itemName: string): number | null {
-    // Simple item name to ID mapping
-    const itemMap: Record<string, number> = {
-      "coins": 995,
-      "twisted bow": 20997,
-      "bandos chestplate": 11832,
-      "dragon claws": 13652,
-      "abyssal whip": 4151
-    };
-    return itemMap[itemName.toLowerCase()] || null;
-  }
+      const searchResponse = await fetch(`${WIKI_API_BASE_URL}?${searchParams.toString()}`);
+      const searchData = await searchResponse.json();
+      
+      if (!searchData.query?.search) {
+        return [];
+      }
 
-  getEstimatedItemValue(itemName: string): number {
-    // Simple estimation logic
-    if (itemName.toLowerCase().includes('bow')) return 1000000;
-    if (itemName.toLowerCase().includes('sword')) return 500000;
-    if (itemName.toLowerCase().includes('coin')) return 1;
-    return Math.floor(Math.random() * 100000) + 1000;
-  }
+      const methods: MoneyMakingGuide[] = [];
+      
+      for (const page of searchData.query.search.slice(0, 10)) {
+        if (page.title && 
+            page.title.includes('Money making guide') && 
+            !page.title.includes('Free-to-play')) {
+          
+          const methodName = page.title.replace('Money making guide/', '').replace('Money making guide', '').trim();
+          if (methodName && methodName.length > 0) {
+            methods.push({
+              id: `wiki-${page.pageid}`,
+              name: methodName,
+              category: 'other' as const,
+              gpHour: 500000, // Default estimate
+              clickIntensity: 3 as const,
+              requirements: 'See OSRS Wiki for details',
+              notes: `From OSRS Wiki: ${page.title}`,
+              profit: 500000,
+              difficulty: 'Medium',
+              description: page.snippet?.replace(/<[^>]*>/g, '') || methodName,
+              membership: 'p2p'
+            });
+          }
+        }
+      }
+      
+      console.log(`Fetched ${methods.length} methods from Wiki`);
+      return methods;
+    } catch (error) {
+      console.error('Error fetching Wiki money methods:', error);
+      return [];
+    }
+  },
 
-  async getDefaultMoneyMakers(): Promise<MoneyMakingGuide[]> {
+  fetchSingleItemPrice: async (itemId: string | number): Promise<number | null> => {
+    try {
+      const numericId = typeof itemId === 'string' ? parseInt(itemId) : itemId;
+      if (isNaN(numericId)) return null;
+
+      console.log(`Fetching price for item ID: ${numericId}`);
+
+      // Try Wiki prices API first
+      const response = await fetch(API_BASE_URL);
+      if (response.ok) {
+        const data = await response.json();
+        const itemData = data.data?.[numericId.toString()];
+        
+        if (itemData && (itemData.high || itemData.low)) {
+          const price = itemData.high || itemData.low;
+          console.log(`Found price from Wiki API: ${price}`);
+          return price;
+        }
+      }
+
+      // Fallback to GE API
+      try {
+        const geResponse = await fetch(`${GE_API_BASE}?item=${numericId}`);
+        if (geResponse.ok) {
+          const geData = await geResponse.json();
+          if (geData?.item?.current?.price) {
+            const priceStr = geData.item.current.price.replace(/,/g, '');
+            let price = 0;
+            
+            if (priceStr.includes('k')) {
+              price = parseFloat(priceStr) * 1000;
+            } else if (priceStr.includes('m')) {
+              price = parseFloat(priceStr) * 1000000;
+            } else if (priceStr.includes('b')) {
+              price = parseFloat(priceStr) * 1000000000;
+            } else {
+              price = parseInt(priceStr) || 0;
+            }
+            
+            if (price > 0) {
+              console.log(`Found price from GE API: ${price}`);
+              return price;
+            }
+          }
+        }
+      } catch (geError) {
+        console.error('GE API error:', geError);
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error fetching single item price:', error);
+      return null;
+    }
+  },
+
+  getItemIcon: async (itemId: string | number): Promise<string | null> => {
+    try {
+      const numericId = typeof itemId === 'string' ? parseInt(itemId) : itemId;
+      if (isNaN(numericId)) return null;
+      
+      return `https://oldschool.runescape.wiki/images/thumb/${numericId}.png/32px-${numericId}.png`;
+    } catch (error) {
+      console.error('Error getting item icon:', error);
+      return null;
+    }
+  },
+
+  getItemIdByName: async (itemName: string): Promise<number | null> => {
+    try {
+      // Search Wiki API for item page ID
+      const params = new URLSearchParams({
+        action: 'query',
+        format: 'json',
+        titles: itemName,
+        prop: 'info'
+      });
+
+      const response = await fetch(`${WIKI_API_BASE_URL}?${params.toString()}`);
+      const data = await response.json();
+      
+      if (data.query?.pages) {
+        const pages = Object.values(data.query.pages) as any[];
+        const page = pages[0];
+        if (page && !page.missing && page.pageid) {
+          return page.pageid;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting item ID by name:', error);
+      return null;
+    }
+  },
+
+  getDefaultMoneyMakers: (): MoneyMakingGuide[] => {
     return [
+      // === HIGHEST TIER BOSSING ===
+      {
+        id: "tob",
+        name: "Theatre of Blood",
+        category: "bossing" as const,
+        gpHour: 6000000,
+        clickIntensity: 5 as const,
+        requirements: "Very high combat stats, team coordination, expensive gear",
+        notes: "Highest tier PvM content, requires experienced team",
+        profit: 6000000,
+        difficulty: "Very High",
+        description: "Highest tier PvM content with best rewards",
+        membership: "p2p"
+      },
+      {
+        id: "cox",
+        name: "Chambers of Xeric (Raids)",
+        category: "bossing" as const,
+        gpHour: 4500000,
+        clickIntensity: 5 as const,
+        requirements: "High combat stats, raid experience, good gear",
+        notes: "Raid content with valuable unique drops",
+        profit: 4500000,
+        difficulty: "Very High",
+        description: "First raid in OSRS with unique rewards",
+        membership: "p2p"
+      },
+      {
+        id: "toa",
+        name: "Tombs of Amascut",
+        category: "bossing" as const,
+        gpHour: 5500000,
+        clickIntensity: 5 as const,
+        requirements: "Beneath Cursed Sands quest, high combat stats, good gear",
+        notes: "Newest raid with masori and lightbearer drops",
+        profit: 5500000,
+        difficulty: "Very High",
+        description: "Desert raid with unique rewards",
+        membership: "p2p"
+      },
+
+      // === HIGH TIER BOSSING ===
       {
         id: "vorkath",
         name: "Vorkath",
+        category: "bossing" as const,
+        gpHour: 4000000,
+        clickIntensity: 4 as const,
+        requirements: "Dragon Slayer II, high combat stats, good gear",
+        notes: "Consistent high-level boss with good drops",
         profit: 4000000,
-        gpHour: 4000000, // Include both for compatibility
-        skill: "Combat",
-        requirements: "Dragon Slayer II, high combat stats",
-        description: "High-level dragon boss with consistent drops",
-        notes: "High-level dragon boss with consistent drops", // Include both for compatibility
-        category: "bossing",
-        difficulty: 4,
-        clickIntensity: 4, // Include both for compatibility
+        difficulty: "High",
+        description: "Consistent high-level boss with good drops",
         membership: "p2p"
       },
       {
         id: "zulrah",
         name: "Zulrah",
+        category: "bossing" as const,
+        gpHour: 3500000,
+        clickIntensity: 5 as const,
+        requirements: "Regicide quest, high magic/ranged, good gear",
+        notes: "Requires memorizing rotations but very profitable",
         profit: 3500000,
-        gpHour: 3500000, // Include both for compatibility
-        skill: "Combat",
-        requirements: "Regicide quest, high combat stats",
-        description: "Snake boss with valuable unique drops",
-        notes: "Snake boss with valuable unique drops", // Include both for compatibility
-        category: "bossing", 
-        difficulty: 5,
-        clickIntensity: 5, // Include both for compatibility
+        difficulty: "Very High",
+        description: "Requires memorizing rotations but very profitable",
         membership: "p2p"
       },
       {
-        id: "blast-furnace",
-        name: "Blast Furnace",
-        profit: 1500000,
+        id: "hydra",
+        name: "Alchemical Hydra",
+        category: "bossing" as const,
+        gpHour: 3800000,
+        clickIntensity: 4 as const,
+        requirements: "95 Slayer, Kebos Lowlands diary, good gear",
+        notes: "Slayer boss with valuable drops including claws",
+        profit: 3800000,
+        difficulty: "High",
+        description: "Slayer boss with valuable drops including claws",
+        membership: "p2p"
+      },
+      {
+        id: "cerberus",
+        name: "Cerberus",
+        category: "bossing" as const,
+        gpHour: 2800000,
+        clickIntensity: 4 as const,
+        requirements: "91 Slayer, good melee gear, prayer potions",
+        notes: "Slayer boss that drops primordial, pegasian, eternal crystals",
+        profit: 2800000,
+        difficulty: "High",
+        description: "Slayer boss that drops primordial, pegasian, eternal crystals",
+        membership: "p2p"
+      },
+      {
+        id: "nightmare",
+        name: "The Nightmare",
+        category: "bossing" as const,
+        gpHour: 3200000,
+        clickIntensity: 5 as const,
+        requirements: "High combat stats, team coordination, expensive gear",
+        notes: "Group boss with very rare but valuable drops",
+        profit: 3200000,
+        difficulty: "Very High",
+        description: "Group boss with very rare but valuable drops",
+        membership: "p2p"
+      },
+      {
+        id: "nex",
+        name: "Nex",
+        category: "bossing" as const,
+        gpHour: 4200000,
+        clickIntensity: 5 as const,
+        requirements: "The Frozen Door miniquest, very high combat stats, expensive gear",
+        notes: "Ancient Prison boss with virtus and zaryte drops",
+        profit: 4200000,
+        difficulty: "Very High",
+        description: "Ancient Prison boss with virtus and zaryte drops",
+        membership: "p2p"
+      },
+
+      // === MEDIUM TIER BOSSING ===
+      {
+        id: "bandos",
+        name: "General Graardor (Bandos)",
+        category: "bossing" as const,
+        gpHour: 2200000,
+        clickIntensity: 3 as const,
+        requirements: "70+ combat stats, good gear, team recommended",
+        notes: "GWD boss that drops bandos armor pieces",
+        profit: 2200000,
+        difficulty: "Medium",
+        description: "GWD boss that drops bandos armor pieces",
+        membership: "p2p"
+      },
+      {
+        id: "armadyl",
+        name: "Kree'arra (Armadyl)",
+        category: "bossing" as const,
+        gpHour: 2000000,
+        clickIntensity: 4 as const,
+        requirements: "70+ ranged, good ranged gear, team recommended",
+        notes: "GWD boss that drops armadyl armor and crossbow",
+        profit: 2000000,
+        difficulty: "Medium",
+        description: "GWD boss that drops armadyl armor and crossbow",
+        membership: "p2p"
+      },
+      {
+        id: "saradomin",
+        name: "Commander Zilyana (Saradomin)",
+        category: "bossing" as const,
+        gpHour: 1800000,
+        clickIntensity: 3 as const,
+        requirements: "70+ combat stats, good gear, team recommended",
+        notes: "GWD boss that drops saradomin sword and ACB",
+        profit: 1800000,
+        difficulty: "Medium",
+        description: "GWD boss that drops saradomin sword and ACB",
+        membership: "p2p"
+      },
+      {
+        id: "zamorak",
+        name: "K'ril Tsutsaroth (Zamorak)",
+        category: "bossing" as const,
+        gpHour: 1600000,
+        clickIntensity: 3 as const,
+        requirements: "70+ combat stats, good gear, team recommended",
+        notes: "GWD boss that drops zamorakian spear and staff of the dead",
+        profit: 1600000,
+        difficulty: "Medium",
+        description: "GWD boss that drops zamorakian spear and staff of the dead",
+        membership: "p2p"
+      },
+      {
+        id: "corporeal-beast",
+        name: "Corporeal Beast",
+        category: "bossing" as const,
+        gpHour: 2500000,
+        clickIntensity: 4 as const,
+        requirements: "Summer's End quest, high combat stats, team coordination",
+        notes: "Group boss that drops spirit shields and elysian sigil",
+        profit: 2500000,
+        difficulty: "High",
+        description: "Group boss that drops spirit shields and elysian sigil",
+        membership: "p2p"
+      },
+
+      // === COMBAT (NON-BOSS) ===
+      {
+        id: "brutal-black-dragons",
+        name: "Brutal Black Dragons",
+        category: "combat" as const,
+        gpHour: 1000000,
+        clickIntensity: 3 as const,
+        requirements: "High ranged level, good ranged gear",
+        notes: "Very consistent money maker",
+        profit: 1000000,
+        difficulty: "Medium",
+        description: "Very consistent money maker",
+        membership: "p2p"
+      },
+      {
+        id: "rune-dragons",
+        name: "Rune Dragons",
+        category: "combat" as const,
+        gpHour: 1200000,
+        clickIntensity: 4 as const,
+        requirements: "Dragon Slayer II, high stats, good gear",
+        notes: "Higher intensity but better gp/hr than brutal blacks",
+        profit: 1200000,
+        difficulty: "High",
+        description: "Higher intensity but better gp/hr than brutal blacks",
+        membership: "p2p"
+      },
+      {
+        id: "gargoyles",
+        name: "Gargoyles",
+        category: "combat" as const,
+        gpHour: 567000,
+        clickIntensity: 3 as const,
+        requirements: "75 Slayer, rock hammer or gargoyle smash",
+        notes: "Good slayer task money, very afk",
+        profit: 567000,
+        difficulty: "Medium",
+        description: "Good slayer task money, very afk",
+        membership: "p2p"
+      },
+      {
+        id: "kurasks",
+        name: "Kurasks",
+        category: "combat" as const,
+        gpHour: 400000,
+        clickIntensity: 2 as const,
+        requirements: "70 Slayer, leaf-bladed weapons",
+        notes: "Very afk slayer task",
+        profit: 400000,
+        difficulty: "Low",
+        description: "Very afk slayer task",
+        membership: "p2p"
+      },
+      {
+        id: "demonic-gorillas",
+        name: "Demonic Gorillas",
+        category: "combat" as const,
         gpHour: 1500000,
-        skill: "Smithing",
-        requirements: "60+ Smithing, coal bag recommended",
-        description: "Efficient smithing method using the Blast Furnace",
-        notes: "Efficient smithing method using the Blast Furnace",
-        category: "skilling",
-        difficulty: 2,
-        clickIntensity: 2,
+        clickIntensity: 4 as const,
+        requirements: "Monkey Madness II, high combat stats, good gear",
+        notes: "Drops zenyte shards for jewelry",
+        profit: 1500000,
+        difficulty: "High",
+        description: "Drops zenyte shards for jewelry",
+        membership: "p2p"
+      },
+      {
+        id: "skeletal-wyverns",
+        name: "Skeletal Wyverns",
+        category: "combat" as const,
+        gpHour: 600000,
+        clickIntensity: 2 as const,
+        requirements: "72 Slayer, elemental/mind shield, ranged gear",
+        notes: "Drops granite legs and draconic visage",
+        profit: 600000,
+        difficulty: "Medium",
+        description: "Drops granite legs and draconic visage",
+        membership: "p2p"
+      },
+      {
+        id: "revenants",
+        name: "Revenants",
+        category: "combat" as const,
+        gpHour: 2000000,
+        clickIntensity: 4 as const,
+        requirements: "Medium combat stats, wilderness survival skills",
+        notes: "High risk/reward in wilderness, drops ancient artifacts",
+        profit: 2000000,
+        difficulty: "High",
+        description: "High risk/reward in wilderness, drops ancient artifacts",
         membership: "p2p"
       },
       {
         id: "green-dragons",
         name: "Green Dragons",
-        profit: 800000,
+        category: "combat" as const,
+        gpHour: 400000,
+        clickIntensity: 3 as const,
+        requirements: "Medium combat stats, wilderness survival",
+        notes: "Classic wilderness money maker, watch for PKers",
+        profit: 400000,
+        difficulty: "Medium",
+        description: "Classic wilderness money maker, watch for PKers",
+        membership: "p2p"
+      },
+
+      // === SKILLING - RUNECRAFTING ===
+      {
+        id: "runecrafting-natures",
+        name: "Nature Runes via Abyss",
+        category: "skilling" as const,
+        gpHour: 1500000,
+        clickIntensity: 4 as const,
+        requirements: "44 Runecrafting, Enter the Abyss miniquest",
+        notes: "High profit but requires attention",
+        profit: 1500000,
+        difficulty: "High",
+        description: "High profit but requires attention",
+        membership: "p2p"
+      },
+      {
+        id: "runecrafting-astral",
+        name: "Astral Runes",
+        category: "skilling" as const,
+        gpHour: 1200000,
+        clickIntensity: 3 as const,
+        requirements: "40 Runecrafting, Lunar Diplomacy quest",
+        notes: "Good profit and xp, less competitive than natures",
+        profit: 1200000,
+        difficulty: "Medium",
+        description: "Good profit and xp, less competitive than natures",
+        membership: "p2p"
+      },
+      {
+        id: "runecrafting-law",
+        name: "Law Runes",
+        category: "skilling" as const,
         gpHour: 800000,
-        skill: "Combat",
-        requirements: "40+ Combat stats",
-        description: "Killing green dragons for hides and bones",
-        notes: "Killing green dragons for hides and bones",
-        category: "combat",
-        difficulty: 2,
-        clickIntensity: 3,
+        clickIntensity: 3 as const,
+        requirements: "54 Runecrafting, balloon transport system",
+        notes: "Decent profit, good for lower levels",
+        profit: 800000,
+        difficulty: "Medium",
+        description: "Decent profit, good for lower levels",
+        membership: "p2p"
+      },
+      {
+        id: "runecrafting-blood",
+        name: "Blood Runes",
+        category: "skilling" as const,
+        gpHour: 600000,
+        clickIntensity: 1 as const,
+        requirements: "77 Runecrafting, access to Zeah",
+        notes: "Very AFK, good for long-term profit",
+        profit: 600000,
+        difficulty: "Low",
+        description: "Very AFK, good for long-term profit",
+        membership: "p2p"
+      },
+      {
+        id: "runecrafting-wrath",
+        name: "Wrath Runes",
+        category: "skilling" as const,
+        gpHour: 1800000,
+        clickIntensity: 4 as const,
+        requirements: "95 Runecrafting, Dragon Slayer II",
+        notes: "Highest profit runecrafting method",
+        profit: 1800000,
+        difficulty: "High",
+        description: "Highest profit runecrafting method",
+        membership: "p2p"
+      },
+
+      // === SKILLING - FARMING ===
+      {
+        id: "herb-runs",
+        name: "Herb Runs (Ranarr)",
+        category: "skilling" as const,
+        gpHour: 2000000,
+        clickIntensity: 3 as const,
+        requirements: "32 Farming, access to herb patches",
+        notes: "Hourly runs, very profitable over time",
+        profit: 2000000,
+        difficulty: "Medium",
+        description: "Hourly runs, very profitable over time",
+        membership: "p2p"
+      },
+      {
+        id: "tree-runs",
+        name: "Tree Runs",
+        category: "skilling" as const,
+        gpHour: 500000,
+        clickIntensity: 2 as const,
+        requirements: "15+ Farming, access to tree patches",
+        notes: "Daily runs for farming xp and profit",
+        profit: 500000,
+        difficulty: "Low",
+        description: "Daily runs for farming xp and profit",
+        membership: "p2p"
+      },
+      {
+        id: "fruit-tree-runs",
+        name: "Fruit Tree Runs",
+        category: "skilling" as const,
+        gpHour: 300000,
+        clickIntensity: 2 as const,
+        requirements: "27+ Farming, access to fruit tree patches",
+        notes: "Daily runs, good farming xp",
+        profit: 300000,
+        difficulty: "Low",
+        description: "Daily runs, good farming xp",
+        membership: "p2p"
+      },
+
+      // === SKILLING - SMITHING ===
+      {
+        id: "blast-furnace-gold",
+        name: "Blast Furnace Gold Bars",
+        category: "skilling" as const,
+        gpHour: 800000,
+        clickIntensity: 3 as const,
+        requirements: "40 Smithing, goldsmith gauntlets recommended",
+        notes: "Good smithing xp and profit",
+        profit: 800000,
+        difficulty: "Medium",
+        description: "Good smithing xp and profit",
+        membership: "p2p"
+      },
+      {
+        id: "blast-furnace-steel",
+        name: "Blast Furnace Steel Bars",
+        category: "skilling" as const,
+        gpHour: 600000,
+        clickIntensity: 3 as const,
+        requirements: "30 Smithing, coal bag recommended",
+        notes: "Good profit for mid-level smithing",
+        profit: 600000,
+        difficulty: "Medium",
+        description: "Good profit for mid-level smithing",
+        membership: "p2p"
+      },
+      {
+        id: "blast-furnace-mithril",
+        name: "Blast Furnace Mithril Bars",
+        category: "skilling" as const,
+        gpHour: 700000,
+        clickIntensity: 3 as const,
+        requirements: "50 Smithing, coal bag recommended",
+        notes: "Higher level smithing profit",
+        profit: 700000,
+        difficulty: "Medium",
+        description: "Higher level smithing profit",
+        membership: "p2p"
+      },
+      {
+        id: "cannonballs",
+        name: "Cannonballs",
+        category: "skilling" as const,
+        gpHour: 150000,
+        clickIntensity: 1 as const,
+        requirements: "Dwarf Cannon quest, 35 Smithing",
+        notes: "Very AFK money making method",
+        profit: 150000,
+        difficulty: "Very Low",
+        description: "Very AFK money making method",
+        membership: "p2p"
+      },
+
+      // === SKILLING - COOKING ===
+      {
+        id: "cooking-karambwans",
+        name: "Cooking Karambwans",
+        category: "skilling" as const,
+        gpHour: 400000,
+        clickIntensity: 2 as const,
+        requirements: "30 Cooking, Tai Bwo Wannai Trio quest",
+        notes: "AFK cooking with decent profit",
+        profit: 400000,
+        difficulty: "Low",
+        description: "AFK cooking with decent profit",
+        membership: "p2p"
+      },
+      {
+        id: "cooking-wines",
+        name: "Making Wines",
+        category: "skilling" as const,
+        gpHour: 200000,
+        clickIntensity: 2 as const,
+        requirements: "35 Cooking",
+        notes: "No cooking level required, instant process",
+        profit: 200000,
+        difficulty: "Very Low",
+        description: "No cooking level required, instant process",
+        membership: "p2p"
+      },
+
+      // === SKILLING - FLETCHING ===
+      {
+        id: "fletching-darts",
+        name: "Fletching Darts",
+        category: "skilling" as const,
+        gpHour: 300000,
+        clickIntensity: 2 as const,
+        requirements: "10+ Fletching",
+        notes: "AFK fletching with decent profit",
+        profit: 300000,
+        difficulty: "Low",
+        description: "AFK fletching with decent profit",
+        membership: "p2p"
+      },
+      {
+        id: "fletching-bolts",
+        name: "Fletching Bolts",
+        category: "skilling" as const,
+        gpHour: 250000,
+        clickIntensity: 2 as const,
+        requirements: "9+ Fletching",
+        notes: "Good profit for low level fletching",
+        profit: 250000,
+        difficulty: "Low",
+        description: "Good profit for low level fletching",
+        membership: "p2p"
+      },
+
+      // === SKILLING - CRAFTING ===
+      {
+        id: "crafting-battlestaves",
+        name: "Crafting Battlestaves",
+        category: "skilling" as const,
+        gpHour: 500000,
+        clickIntensity: 2 as const,
+        requirements: "58+ Crafting",
+        notes: "Daily shop runs for orb supplies",
+        profit: 500000,
+        difficulty: "Medium",
+        description: "Daily shop runs for orb supplies",
+        membership: "p2p"
+      },
+      {
+        id: "crafting-dhide",
+        name: "Crafting D'hide Bodies",
+        category: "skilling" as const,
+        gpHour: 350000,
+        clickIntensity: 2 as const,
+        requirements: "77+ Crafting",
+        notes: "Good crafting xp and profit",
+        profit: 350000,
+        difficulty: "Medium",
+        description: "Good crafting xp and profit",
+        membership: "p2p"
+      },
+
+      // === SKILLING - HUNTER ===
+      {
+        id: "hunter-chinchompas",
+        name: "Chinchompas",
+        category: "skilling" as const,
+        gpHour: 800000,
+        clickIntensity: 3 as const,
+        requirements: "53+ Hunter",
+        notes: "Good profit and hunter xp",
+        profit: 800000,
+        difficulty: "Medium",
+        description: "Good profit and hunter xp",
+        membership: "p2p"
+      },
+      {
+        id: "hunter-red-chinchompas",
+        name: "Red Chinchompas",
+        category: "skilling" as const,
+        gpHour: 1200000,
+        clickIntensity: 4 as const,
+        requirements: "63+ Hunter, wilderness survival",
+        notes: "Higher profit but in wilderness",
+        profit: 1200000,
+        difficulty: "High",
+        description: "Higher profit but in wilderness",
+        membership: "p2p"
+      },
+
+      // === SKILLING - MINING ===
+      {
+        id: "mining-amethyst",
+        name: "Mining Amethyst",
+        category: "skilling" as const,
+        gpHour: 400000,
+        clickIntensity: 1 as const,
+        requirements: "92 Mining",
+        notes: "Very AFK mining method",
+        profit: 400000,
+        difficulty: "Low",
+        description: "Very AFK mining method",
+        membership: "p2p"
+      },
+      {
+        id: "mining-volcanic-ash",
+        name: "Mining Volcanic Ash",
+        category: "skilling" as const,
+        gpHour: 300000,
+        clickIntensity: 2 as const,
+        requirements: "22 Mining, access to Fossil Island",
+        notes: "Used for ultracompost, decent profit",
+        profit: 300000,
+        difficulty: "Low",
+        description: "Used for ultracompost, decent profit",
+        membership: "p2p"
+      },
+
+      // === SKILLING - WOODCUTTING ===
+      {
+        id: "woodcutting-yews",
+        name: "Yew Trees",
+        category: "skilling" as const,
+        gpHour: 200000,
+        clickIntensity: 1 as const,
+        requirements: "60 Woodcutting",
+        notes: "Classic AFK money maker",
+        profit: 200000,
+        difficulty: "Very Low",
+        description: "Classic AFK money maker",
+        membership: "p2p"
+      },
+      {
+        id: "woodcutting-magic",
+        name: "Magic Trees",
+        category: "skilling" as const,
+        gpHour: 350000,
+        clickIntensity: 1 as const,
+        requirements: "75 Woodcutting",
+        notes: "Higher level AFK woodcutting",
+        profit: 350000,
+        difficulty: "Low",
+        description: "Higher level AFK woodcutting",
+        membership: "p2p"
+      },
+
+      // === FREE-TO-PLAY METHODS ===
+      {
+        id: "f2p-smithing-rune",
+        name: "Smithing Rune Items (F2P)",
+        category: "skilling" as const,
+        gpHour: 300000,
+        clickIntensity: 2 as const,
+        requirements: "85+ Smithing",
+        notes: "F2P smithing profit",
+        profit: 300000,
+        difficulty: "Medium",
+        description: "F2P smithing profit",
         membership: "f2p"
       },
       {
-        id: "mining-iron",
-        name: "Mining Iron Ore",
-        profit: 200000,
-        gpHour: 200000,
-        skill: "Mining",
-        requirements: "15+ Mining",
-        description: "Mining iron ore for consistent profit",
-        notes: "Mining iron ore for consistent profit",
-        category: "skilling",
-        difficulty: 1,
-        clickIntensity: 1,
+        id: "f2p-high-alching",
+        name: "High Level Alchemy (F2P)",
+        category: "skilling" as const,
+        gpHour: 100000,
+        clickIntensity: 3 as const,
+        requirements: "55 Magic",
+        notes: "Classic F2P magic training with profit",
+        profit: 100000,
+        difficulty: "Low",
+        description: "Classic F2P magic training with profit",
         membership: "f2p"
+      },
+      {
+        id: "f2p-wine-making",
+        name: "Wine Making (F2P)",
+        category: "skilling" as const,
+        gpHour: 150000,
+        clickIntensity: 2 as const,
+        requirements: "35 Cooking",
+        notes: "F2P cooking profit method",
+        profit: 150000,
+        difficulty: "Low",
+        description: "F2P cooking profit method",
+        membership: "f2p"
+      },
+      {
+        id: "f2p-cowhides",
+        name: "Collecting Cowhides (F2P)",
+        category: "skilling" as const,
+        gpHour: 80000,
+        clickIntensity: 2 as const,
+        requirements: "Low combat stats",
+        notes: "Classic F2P beginner money maker",
+        profit: 80000,
+        difficulty: "Very Low",
+        description: "Classic F2P beginner money maker",
+        membership: "f2p"
+      },
+
+      // === MISCELLANEOUS ===
+      {
+        id: "shop-runs",
+        name: "Shop Runs",
+        category: "other" as const,
+        gpHour: 500000,
+        clickIntensity: 2 as const,
+        requirements: "Access to various shops",
+        notes: "Daily shop stock buying for resale",
+        profit: 500000,
+        difficulty: "Low",
+        description: "Daily shop stock buying for resale",
+        membership: "p2p"
+      },
+      {
+        id: "flipping",
+        name: "Grand Exchange Flipping",
+        category: "other" as const,
+        gpHour: 1000000,
+        clickIntensity: 2 as const,
+        requirements: "Starting capital, market knowledge",
+        notes: "Buy low, sell high on GE",
+        profit: 1000000,
+        difficulty: "Medium",
+        description: "Buy low, sell high on GE",
+        membership: "p2p"
+      },
+      {
+        id: "treasure-trails",
+        name: "Treasure Trails",
+        category: "other" as const,
+        gpHour: 600000,
+        clickIntensity: 3 as const,
+        requirements: "Various quest/skill requirements",
+        notes: "Clue scrolls for rare rewards",
+        profit: 600000,
+        difficulty: "Medium",
+        description: "Clue scrolls for rare rewards",
+        membership: "p2p"
       }
     ];
-  }
+  },
 
-  async searchMoneyMakers(query: string): Promise<MoneyMakingGuide[]> {
-    const methods = await this.getDefaultMoneyMakers();
-    return methods.filter(method => 
-      method.name.toLowerCase().includes(query.toLowerCase()) ||
-      method.description.toLowerCase().includes(query.toLowerCase())
-    );
-  }
-
-  async parseBankCSV(csvData: string): Promise<Array<{name: string; quantity: number; value: number}>> {
+  getEstimatedItemValue: async (itemName: string): Promise<number | null> => {
     try {
-      // Try to parse as JSON first (RuneLite format)
-      try {
-        const jsonData = JSON.parse(csvData);
-        if (Array.isArray(jsonData)) {
-          return jsonData.map(item => ({
-            name: item.name || 'Unknown Item',
-            quantity: parseInt(item.quantity) || 1,
-            value: this.getEstimatedItemValue(item.name || 'Unknown Item')
-          }));
-        }
-      } catch (e) {
-        // Not JSON, try CSV
+      const itemId = await osrsApi.getItemIdByName(itemName);
+      if (itemId) {
+        return await osrsApi.fetchSingleItemPrice(itemId);
       }
-
-      // Parse as CSV
-      const lines = csvData.trim().split('\n');
-      if (lines.length < 2) {
-        throw new Error('Invalid CSV format');
-      }
-
-      const headers = lines[0].toLowerCase().split(',');
-      const nameIndex = headers.findIndex(h => h.includes('name'));
-      const quantityIndex = headers.findIndex(h => h.includes('quantity'));
-
-      if (nameIndex === -1 || quantityIndex === -1) {
-        throw new Error('Missing required columns: name, quantity');
-      }
-
-      const items = [];
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',');
-        if (values.length > Math.max(nameIndex, quantityIndex)) {
-          const name = values[nameIndex]?.trim() || 'Unknown Item';
-          const quantity = parseInt(values[quantityIndex]) || 1;
-          
-          items.push({
-            name,
-            quantity,
-            value: this.getEstimatedItemValue(name)
-          });
-        }
-      }
-
-      return items;
+      return null;
     } catch (error) {
-      console.error('Error parsing bank CSV:', error);
-      throw new Error(`Failed to parse bank data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Error getting estimated item value:', error);
+      return null;
     }
-  }
+  },
 
-  // Clear cache (useful for testing or manual refresh)
-  clearCache(): void {
-    this.cache.clear();
-    console.log('API cache cleared');
-  }
+  getItemDetails: async (itemName: string): Promise<OSRSItem> => {
+    const params = new URLSearchParams({
+      action: 'query',
+      format: 'json',
+      titles: itemName,
+      prop: 'pageimages|extracts',
+      piprop: 'original',
+      exintro: 'true',
+      explaintext: 'true',
+    });
 
-  // Get cache stats
-  getCacheStats(): { size: number; keys: string[] } {
-    return {
-      size: this.cache.size,
-      keys: Array.from(this.cache.keys())
-    };
-  }
-}
+    const url = `${WIKI_API_BASE_URL}?${params.toString()}`;
 
-export const osrsApi = new OSRSApiService();
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const pageId = Object.keys(data.query?.pages || {})[0];
+      const page = data.query?.pages?.[pageId];
+
+      if (!page || page.missing !== undefined) {
+        throw new Error(`Item "${itemName}" not found on the OSRS Wiki.`);
+      }
+
+      const pageIdValue = (page && typeof page.pageid === 'number') ? page.pageid : 0;
+      let currentPrice = 0;
+      let iconUrl = null;
+      
+      if (pageIdValue > 0) {
+        currentPrice = (await osrsApi.fetchSingleItemPrice(pageIdValue)) || 0;
+        iconUrl = (await osrsApi.getItemIcon(pageIdValue)) || null;
+      }
+
+      return {
+        pageId: pageIdValue,
+        title: (page && typeof page.title === 'string') ? page.title : itemName,
+        imageUrl: (page && page.original && typeof page.original.source === 'string') ? page.original.source : null,
+        extract: (page && typeof page.extract === 'string') ? page.extract : null,
+        id: pageIdValue,
+        name: (page && typeof page.title === 'string') ? page.title : itemName,
+        current_price: currentPrice,
+        icon: (page && page.original && typeof page.original.source === 'string') ? page.original.source : iconUrl
+      };
+    } catch (error) {
+      console.error('Error fetching item details from OSRS Wiki:', error);
+      throw error;
+    }
+  },
+
+  searchItems: async (query: string): Promise<OSRSItem[]> => {
+    try {
+      return await osrsApi.searchOSRSItems(query);
+    } catch (error) {
+      console.error('Error searching items:', error);
+      return [];
+    }
+  },
+
+  getMoneyMakingMethods: async (query?: string): Promise<MoneyMakingGuide[]> => {
+    return osrsApi.fetchMoneyMakingMethods(query);
+  },
+
+  searchMoneyMakers: async (query: string): Promise<MoneyMakingGuide[]> => {
+    return osrsApi.getMoneyMakingMethods(query);
+  },
+
+  fetchPopularItems: async (): Promise<OSRSItem[]> => {
+    const popularItems = [
+      'Twisted bow', 'Scythe of vitur', 'Dragon claws', 'Abyssal whip',
+      'Bandos chestplate', 'Armadyl crossbow', 'Primordial boots', 'Dragon hunter lance'
+    ];
+
+    const items: OSRSItem[] = [];
+    for (const itemName of popularItems) {
+      try {
+        const item = await osrsApi.getItemDetails(itemName);
+        items.push(item);
+      } catch (error) {
+        console.error(`Failed to fetch ${itemName}:`, error);
+      }
+    }
+    return items;
+  },
+
+  parseBankCSV: async (csvText: string): Promise<Array<{ name: string; quantity: number; value: number }>> => {
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+
+    const nameIndex = headers.indexOf('name') || headers.indexOf('item');
+    const quantityIndex = headers.indexOf('quantity') || headers.indexOf('qty');
+    const valueIndex = headers.indexOf('value') || headers.indexOf('price');
+
+    if (nameIndex === -1 || quantityIndex === -1) {
+      throw new Error('CSV must have name and quantity columns');
+    }
+
+    const items = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(v => v.trim());
+      if (values.length >= 2) {
+        const name = values[nameIndex] || '';
+        const quantity = parseInt(values[quantityIndex]) || 0;
+        const value = valueIndex !== -1 ? parseInt(values[valueIndex]) || 0 : 0;
+
+        if (name && quantity > 0) {
+          items.push({ name, quantity, value });
+        }
+      }
+    }
+
+    return items;
+  }
+};
+
+export type { OSRSItem, MoneyMakingGuide, PlayerStats };

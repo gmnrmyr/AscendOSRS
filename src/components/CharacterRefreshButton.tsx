@@ -166,8 +166,8 @@ export function CharacterRefreshButton({ character, onUpdate }: CharacterRefresh
       
       if (playerStats) {
         // Enhanced validation with detailed logging
-        const combatLevel = Math.max(3, Math.min(126, parseInt(playerStats.combat_level) || 3));
-        const totalLevel = Math.max(32, Math.min(2277, parseInt(playerStats.total_level) || 32));
+        const combatLevel = Math.max(3, Math.min(126, parseInt(String(playerStats.combat_level)) || 3));
+        const totalLevel = Math.max(32, Math.min(2277, parseInt(String(playerStats.total_level)) || 32));
         
         console.log('✅ Validated levels:', { 
           original: { combat: playerStats.combat_level, total: playerStats.total_level },

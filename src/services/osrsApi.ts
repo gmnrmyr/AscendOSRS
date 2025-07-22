@@ -56,12 +56,17 @@ export const osrsApi = {
   fetchFromTempleOSRS: async (playerName: string): Promise<PlayerStats | null> => {
     try {
       const templeUrl = `${TEMPLE_OSRS_API}?player=${encodeURIComponent(playerName)}`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
       const response = await fetch(templeUrl, {
         headers: {
           'User-Agent': 'AscendOSRS (Contact: user@example.com)',
         },
-        timeout: 10000
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         console.log(`TempleOSRS API returned ${response.status}`);
@@ -137,12 +142,17 @@ export const osrsApi = {
   fetchFromWiseOldMan: async (playerName: string): Promise<PlayerStats | null> => {
     try {
       const womUrl = `https://api.wiseoldman.net/v2/players/${encodeURIComponent(playerName)}`;
+      const controller2 = new AbortController();
+      const timeoutId2 = setTimeout(() => controller2.abort(), 10000);
+      
       const response = await fetch(womUrl, {
         headers: {
           'User-Agent': 'AscendOSRS (Contact: user@example.com)',
         },
-        timeout: 10000
+        signal: controller2.signal
       });
+      
+      clearTimeout(timeoutId2);
       
       if (!response.ok) {
         console.log(`WiseOldMan API returned ${response.status}`);
@@ -234,12 +244,17 @@ export const osrsApi = {
         
         try {
           const hiscoreUrl = `${endpoint}?player=${encodeURIComponent(playerName)}`;
+          const controller3 = new AbortController();
+          const timeoutId3 = setTimeout(() => controller3.abort(), 10000);
+          
           const response = await fetch(hiscoreUrl, {
             headers: {
               'User-Agent': 'AscendOSRS (Contact: user@example.com)',
             },
-            timeout: 10000
+            signal: controller3.signal
           });
+          
+          clearTimeout(timeoutId3);
           
           if (!response.ok) {
             console.log(`Hiscore API (${accountType}) returned ${response.status}`);

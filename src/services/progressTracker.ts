@@ -50,9 +50,11 @@ export class ProgressTracker {
   // Fetch user's snapshots from the existing data_snapshots table
   static async getUserSnapshots(): Promise<ProgressSnapshot[]> {
     try {
-      // Use raw SQL query since data_snapshots might not be in the generated types yet
       const { data, error } = await supabase
-        .rpc('get_user_snapshots_for_progress');
+        .from('data_snapshots')
+        .select('id, created_at, snapshot_data')
+        .eq('snapshot_type', 'user_data')
+        .order('created_at', { ascending: true });
 
       if (error) {
         console.error('Error fetching snapshots:', error);
@@ -66,7 +68,6 @@ export class ProgressTracker {
       }));
     } catch (error) {
       console.error('Error loading progress snapshots:', error);
-      // Fallback: return empty array for now
       return [];
     }
   }

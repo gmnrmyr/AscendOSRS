@@ -529,8 +529,8 @@ export function SummaryDashboard({
                   onClick={() => {
                     // This would typically call a parent function to switch to goals tab
                     // For now, we'll use a generic click handler that parents can override
-                    if ((window as any).onShowMoreGoals) {
-                      (window as any).onShowMoreGoals();
+                    if (window.onShowMoreGoals) {
+                      window.onShowMoreGoals();
                     } else {
                       // Fallback: scroll to top and hope parent handles tab switching
                       window.scrollTo({ top: 0, behavior: 'smooth' });

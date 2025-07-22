@@ -4,7 +4,7 @@ import { osrsWikiApi } from '../osrsWikiApi';
 
 export const moneyMakingApi = {
   async searchMoneyMakers(query: string): Promise<MoneyMakingGuide[]> {
-    const methods = await osrsWikiApi.searchMoneyMakingMethods(query);
+    const methods = osrsWikiApi.searchMoneyMakingMethods(query);
     return methods.map(method => ({
       id: method.name.toLowerCase().replace(/\s+/g, '-'),
       name: method.name,
@@ -19,7 +19,7 @@ export const moneyMakingApi = {
   },
 
   async getDefaultMoneyMakers(): Promise<MoneyMakingGuide[]> {
-    const methods = await osrsWikiApi.getMoneyMakingMethods();
+    const methods = osrsWikiApi.getMoneyMakingMethods();
     return methods.map(method => ({
       id: method.name.toLowerCase().replace(/\s+/g, '-'),
       name: method.name,

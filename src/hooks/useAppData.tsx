@@ -93,7 +93,7 @@ export function useAppData() {
           setCharacters(Array.isArray(cloudData.characters) ? cloudData.characters : []);
           setMoneyMethods(Array.isArray(cloudData.moneyMethods) ? cloudData.moneyMethods : []);
           setPurchaseGoals(Array.isArray(cloudData.purchaseGoals) ? cloudData.purchaseGoals : []);
-          setBankData(cloudData.bankData && typeof cloudData.bankData === 'object' ? cloudData.bankData as Record<string, BankItem[]> : {});
+          setBankData(cloudData.bankData && typeof cloudData.bankData === 'object' ? cloudData.bankData : {});
           setHoursPerDay(typeof cloudData.hoursPerDay === 'number' ? cloudData.hoursPerDay : 10);
           console.log('Cloud data loaded and state replaced.');
           setHasLoadedCloudData(true);

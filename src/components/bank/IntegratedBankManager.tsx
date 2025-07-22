@@ -159,7 +159,7 @@ export function IntegratedBankManager({
           name: item.name || 'Unknown Item',
           quantity: parseInt(item.quantity) || 0,
           estimatedPrice: 0, // Will be looked up later
-          category: 'stackable' as const,
+          category: 'stackable',
           character: selectedCharacter
         })).filter(item => item.name && item.quantity > 0);
       }

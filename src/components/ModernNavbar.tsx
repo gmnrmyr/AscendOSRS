@@ -26,7 +26,6 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
     { id: "methods", label: "Methods" },
     { id: "goals", label: "Goals" },
     { id: "bank", label: "Bank" },
-    { id: "progress", label: "Progress" },
     { id: "data", label: "Data" },
   ];
 

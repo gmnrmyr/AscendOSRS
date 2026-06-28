@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { uid } from "@/lib/utils";
 import { useAppState } from "@/components/AppStateProvider";
 
 export function CharacterForm() {
@@ -25,7 +26,7 @@ export function CharacterForm() {
     if (newCharacter.name) {
       const character = {
         ...newCharacter,
-        id: crypto.randomUUID(),
+        id: uid(),
         isActive: true
       };
       setCharacters([...characters, character]);

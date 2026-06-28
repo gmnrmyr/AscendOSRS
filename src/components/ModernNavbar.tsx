@@ -100,28 +100,33 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
             {/* User Section */}
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              
-              <div className="hidden sm:flex items-center gap-2">
-                <Avatar className="h-8 w-8 border-2 border-gray-900 dark:border-gray-100">
-                  <AvatarFallback className="bg-green-500 text-white font-bold">
-                    {getUserInitials(user?.email || '')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden md:block">
-                  <Badge className="pixel-badge text-xs">
-                    {user?.email}
-                  </Badge>
-                </div>
-              </div>
-              
-              <Button
-                onClick={handleSignOut}
-                variant="ghost"
-                size="sm"
-                className="pixel-button hidden sm:flex"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
+
+              {/* Local-first: bloco de usuário/logout só aparece se houver sessão (nuvem desativada por padrão) */}
+              {user && (
+                <>
+                  <div className="hidden sm:flex items-center gap-2">
+                    <Avatar className="h-8 w-8 border-2 border-gray-900 dark:border-gray-100">
+                      <AvatarFallback className="bg-green-500 text-white font-bold">
+                        {getUserInitials(user?.email || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="hidden md:block">
+                      <Badge className="pixel-badge text-xs">
+                        {user?.email}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    size="sm"
+                    className="pixel-button hidden sm:flex"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
 
               {/* Mobile Menu Toggle - Enhanced */}
               <Button
@@ -153,27 +158,29 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
                 </Button>
               ))}
               
-              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8 border-2 border-gray-900 dark:border-gray-100">
-                    <AvatarFallback className="bg-green-500 text-white font-bold">
-                      {getUserInitials(user?.email || '')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Badge className="pixel-badge text-xs">
-                    {user?.email}
-                  </Badge>
+              {user && (
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8 border-2 border-gray-900 dark:border-gray-100">
+                      <AvatarFallback className="bg-green-500 text-white font-bold">
+                        {getUserInitials(user?.email || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Badge className="pixel-badge text-xs">
+                      {user?.email}
+                    </Badge>
+                  </div>
+                  <Button
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    size="sm"
+                    className="pixel-button"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </Button>
                 </div>
-                <Button
-                  onClick={handleSignOut}
-                  variant="ghost"
-                  size="sm"
-                  className="pixel-button"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </Button>
-              </div>
+              )}
             </div>
           </div>
         )}

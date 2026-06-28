@@ -3,6 +3,7 @@ import React from 'react';
 import { Character, BankItem } from '@/hooks/useAppData';
 import { IntegratedBankManager } from '@/components/bank/IntegratedBankManager';
 import { BankSummary } from '@/components/bank/BankSummary';
+import { BankOverview } from '@/components/bank/BankOverview';
 
 interface BankTrackerProps {
   characters: Character[];
@@ -19,11 +20,16 @@ export function BankTracker({
 }: BankTrackerProps) {
   return (
     <div className="space-y-6">
-      <BankSummary 
+      <BankSummary
         characters={characters}
         bankData={bankData}
       />
-      
+
+      <BankOverview
+        characters={characters}
+        bankData={bankData}
+      />
+
       <IntegratedBankManager
         characters={characters}
         bankData={bankData}

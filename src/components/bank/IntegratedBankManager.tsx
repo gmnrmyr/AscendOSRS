@@ -8,12 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Trash2, Plus, Upload, RefreshCw, Coins, Edit, Save, X, ChevronDown, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Trash2, Plus, Upload, RefreshCw, Coins, Edit, Save, X, ChevronDown, ChevronRight, AlertTriangle, ExternalLink } from 'lucide-react';
 import { Character, BankItem } from '@/hooks/useAppData';
 import { useCharacterRefresh } from '@/hooks/useCharacterRefresh';
 import { EnhancedBankManager } from './EnhancedBankManager';
 import { formatGoldValue } from '@/lib/utils';
-import { valueExport, type ExportItem } from '@/services/priceEngine';
+import { valueExport, ensurePrices, priceOf, type ExportItem } from '@/services/priceEngine';
 
 const VALUABLE_ITEMS_THRESHOLD = 10; // Show top 10 most valuable items when collapsed
 
@@ -149,8 +149,38 @@ export function IntegratedBankManager({
   };
 
   const [isImporting, setIsImporting] = useState(false);
+  const [isPricing, setIsPricing] = useState(false);
 
   const cleanName = (name: string) => (name || 'Unknown Item').replace(/\s*\(Members\)\s*$/i, '').trim();
+
+  // Reprecifica o banco do char selecionado com o preço GE ao vivo, usando o osrsId salvo no import.
+  // Itens sem osrsId (adicionados à mão / CSV sem id) mantêm o preço manual.
+  const handleRefreshPrices = async () => {
+    if (!selectedCharacter || characterBankItems.length === 0) return;
+    setIsPricing(true);
+    try {
+      await ensurePrices(true); // force = busca /latest fresco (ignora cache de 10min)
+      let repriced = 0;
+      const updatedItems = characterBankItems.map((item) => {
+        if (!item.osrsId) return item;
+        const unit = priceOf(item.osrsId);
+        if (unit > 0 && unit !== item.estimatedPrice) repriced++;
+        return unit > 0 ? { ...item, estimatedPrice: unit } : item;
+      });
+      setBankData({ ...bankData, [selectedCharacter]: updatedItems });
+      const withId = characterBankItems.filter((i) => i.osrsId).length;
+      const manual = characterBankItems.length - withId;
+      alert(
+        `Preços atualizados (GE ao vivo): ${repriced} itens mudaram de preço.` +
+        (manual > 0 ? `\n${manual} itens sem id (manuais) foram mantidos.` : '')
+      );
+    } catch (error) {
+      console.error('Falha ao reprecificar:', error);
+      alert('Falha ao buscar preços ao vivo. Veja o console.');
+    } finally {
+      setIsPricing(false);
+    }
+  };
 
   // Lê o JSON do RuneLite Data Exporter ([{id,quantity,name}]) e valoriza por id com preço GE ao vivo.
   const parseAndValue = async (raw: string): Promise<BankItem[]> => {
@@ -350,9 +380,21 @@ export function IntegratedBankManager({
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 <span>Bank Items</span>
-                <span className="text-lg text-green-600 font-bold">
-                  {formatGoldValue(displayedItems.reduce((sum, item) => sum + (Math.floor(item.quantity) * item.estimatedPrice), 0))}
-                </span>
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={handleRefreshPrices}
+                    size="sm"
+                    variant="outline"
+                    disabled={isPricing || characterBankItems.length === 0}
+                    title="Reprecifica os itens importados com o preço GE ao vivo (OSRS Wiki)"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isPricing ? 'animate-spin' : ''}`} />
+                    {isPricing ? 'Atualizando…' : 'Atualizar preços'}
+                  </Button>
+                  <span className="text-lg text-green-600 font-bold">
+                    {formatGoldValue(displayedItems.reduce((sum, item) => sum + (Math.floor(item.quantity) * item.estimatedPrice), 0))}
+                  </span>
+                </div>
               </CardTitle>
             </CardHeader>
             
@@ -367,7 +409,20 @@ export function IntegratedBankManager({
                       <CardContent className="p-0">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h4 className="font-medium">{item.name}</h4>
+                            <div className="flex items-center gap-1.5">
+                              <h4 className="font-medium">{item.name}</h4>
+                              {item.osrsId && (
+                                <a
+                                  href={`https://prices.runescape.wiki/osrs/item/${item.osrsId}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  title="Ver preço/gráfico na OSRS Wiki (mesma fonte do app)"
+                                  className="text-muted-foreground hover:text-foreground"
+                                >
+                                  <ExternalLink className="h-3.5 w-3.5" />
+                                </a>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground">
                               Quantity: {Math.floor(item.quantity).toLocaleString()}
                             </p>

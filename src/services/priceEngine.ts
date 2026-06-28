@@ -40,6 +40,9 @@ type MappingArr = Array<{ id: number; name: string }>;
 
 let priceMapMem: Map<number, number> | null = null;
 let nameMapMem: Map<number, string> | null = null;
+let nameToIdMem: Map<string, number> | null = null; // nome normalizado -> id (resolução de goals por nome)
+
+const normName = (s: string) => (s || '').trim().toLowerCase().replace(/\s*\(members\)\s*$/i, '');
 
 // Preço unitário (gp) de um item, em gp. Coins=1, Plat token=1000, sem preço=0.
 function unitPrice(id: number, latest: LatestData): number {
@@ -67,7 +70,12 @@ export async function ensurePrices(force = false): Promise<{ priceById: Map<numb
   }
 
   const nameById = new Map<number, string>();
-  for (const it of mapping) nameById.set(it.id, it.name);
+  const nameToId = new Map<string, number>();
+  for (const it of mapping) {
+    nameById.set(it.id, it.name);
+    const key = normName(it.name);
+    if (!nameToId.has(key)) nameToId.set(key, it.id); // 1º id ganha (item base)
+  }
 
   const priceById = new Map<number, number>();
   for (const id of Object.keys(latest)) priceById.set(Number(id), unitPrice(Number(id), latest));
@@ -76,6 +84,7 @@ export async function ensurePrices(force = false): Promise<{ priceById: Map<numb
 
   priceMapMem = priceById;
   nameMapMem = nameById;
+  nameToIdMem = nameToId;
   return { priceById, nameById };
 }
 
@@ -84,6 +93,27 @@ export function priceOf(id: number): number {
   if (id === COINS_ID) return 1;
   if (id === PLAT_TOKEN_ID) return 1000;
   return priceMapMem?.get(id) ?? 0;
+}
+
+// Resolve o id de um item pelo nome (exato -> começa-com -> contém). Pra goals sem id confiável.
+export function idByName(name: string): number | null {
+  if (!nameToIdMem) return null;
+  const key = normName(name);
+  if (nameToIdMem.has(key)) return nameToIdMem.get(key)!;
+  let best: number | null = null;
+  for (const [k, id] of nameToIdMem) {
+    if (k.startsWith(key)) { if (best === null || id < best) best = id; }
+  }
+  if (best !== null) return best;
+  for (const [k, id] of nameToIdMem) {
+    if (k.includes(key)) { if (best === null || id < best) best = id; }
+  }
+  return best;
+}
+
+// URL da imagem (sprite) do item por id — Weirdgloop (mesma org da OSRS Wiki).
+export function itemImageUrl(id: number): string {
+  return `https://chisel.weirdgloop.org/static/img/osrs-sprite/${id}.png`;
 }
 
 export interface ExportItem { id: number; quantity: number; name: string; }

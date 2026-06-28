@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { uid } from "@/lib/utils";
 import { ItemSearchInput } from "./ItemSearchInput";
 
 interface GoalFormProps {
@@ -44,7 +45,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     if (newGoal.name) {
       const goal = {
         ...newGoal,
-        id: crypto.randomUUID()
+        id: uid()
       };
       setGoals([...goals, goal]);
       setNewGoal({

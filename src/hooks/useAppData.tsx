@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDataPersistence } from './useDataPersistence';
-import { useAuth } from './useAuth';
+import { loadServerData, saveServerData } from '@/services/localStore';
 import { 
   getDefaultCharacters, 
   getDefaultMoneyMethods, 
@@ -56,64 +56,75 @@ interface BankItem {
 }
 
 export function useAppData() {
-  const { user } = useAuth();
   const [characters, setCharacters] = useState<Character[]>(getDefaultCharacters());
   const [moneyMethods, setMoneyMethods] = useState<MoneyMethod[]>(getDefaultMoneyMethods());
   const [purchaseGoals, setPurchaseGoals] = useState<PurchaseGoal[]>(getDefaultPurchaseGoals());
   const [bankData, setBankData] = useState<Record<string, BankItem[]>>(getDefaultBankData());
   const [hoursPerDay, setHoursPerDay] = useState(10);
-  const [hasLoadedCloudData, setHasLoadedCloudData] = useState(false);
+  // Gate de salvamento: só persiste DEPOIS do load inicial, pra não gravar
+  // defaults vazios por cima do save do disco.
+  const [loaded, setLoaded] = useState(false);
 
-  // Load data from localStorage on component mount
-  useEffect(() => {
-    const savedData = localStorage.getItem('osrs-dashboard-data');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        if (parsed.characters) setCharacters(parsed.characters);
-        if (parsed.moneyMethods) setMoneyMethods(parsed.moneyMethods);
-        if (parsed.purchaseGoals) setPurchaseGoals(parsed.purchaseGoals);
-        if (parsed.bankData) setBankData(parsed.bankData);
-        if (parsed.hoursPerDay) setHoursPerDay(parsed.hoursPerDay);
-      } catch (error) {
-        console.error('Error loading saved data:', error);
+  const applyData = (d: any) => {
+    if (Array.isArray(d.characters)) setCharacters(d.characters);
+    if (Array.isArray(d.moneyMethods)) setMoneyMethods(d.moneyMethods);
+    if (Array.isArray(d.purchaseGoals)) setPurchaseGoals(d.purchaseGoals);
+    if (d.bankData && typeof d.bankData === 'object') {
+      // Saneamento: descarta bankData de chars que não existem mais (lixo órfão)
+      const validNames = new Set((Array.isArray(d.characters) ? d.characters : []).map((c: any) => c.name));
+      const clean: Record<string, BankItem[]> = {};
+      for (const [name, items] of Object.entries(d.bankData as Record<string, BankItem[]>)) {
+        if (validNames.size === 0 || validNames.has(name)) clean[name] = items;
       }
+      setBankData(clean);
     }
+    if (typeof d.hoursPerDay === 'number') setHoursPerDay(d.hoursPerDay);
+  };
+
+  // Load inicial (local-first): o disco do Mac (server) é a fonte de verdade.
+  // Ordem: server -> senão localStorage (e migra pro server) -> senão defaults.
+  useEffect(() => {
+    let cancelled = false;
+
+    const readLocal = () => {
+      try {
+        const raw = localStorage.getItem('osrs-dashboard-data');
+        return raw ? JSON.parse(raw) : null;
+      } catch { return null; }
+    };
+
+    (async () => {
+      const local = readLocal();
+      try {
+        const server = await loadServerData();
+        if (cancelled) return;
+        if (server) {
+          applyData(server); // disco ganha (compartilhado entre origins, sobrevive a limpar cache)
+        } else if (local) {
+          applyData(local);            // primeira vez: migra o que já existia no browser
+          try { await saveServerData(local); } catch (e) { console.error('Migração pro disco falhou:', e); }
+        }
+        // senão: mantém os defaults já no estado
+      } catch (e) {
+        // server offline -> não perde nada, usa o cache local
+        console.warn('Persistência local (server) indisponível, usando localStorage:', e);
+        if (local && !cancelled) applyData(local);
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+
+    return () => { cancelled = true; };
   }, []);
 
-  // Auto-load from cloud when user logs in
-  useEffect(() => {
-    if (user && !hasLoadedCloudData) {
-      const loadCloudData = async () => {
-        try {
-          console.log('Auto-loading cloud data for authenticated user...');
-          const { CloudDataService } = await import('@/services/cloudDataService');
-          const cloudData = await CloudDataService.loadUserData();
-
-          // Strictly REPLACE all state with cloud data (no merging, no patching, no duplication)
-          setCharacters(Array.isArray(cloudData.characters) ? cloudData.characters : []);
-          setMoneyMethods(Array.isArray(cloudData.moneyMethods) ? cloudData.moneyMethods : []);
-          setPurchaseGoals(Array.isArray(cloudData.purchaseGoals) ? cloudData.purchaseGoals : []);
-          setBankData(cloudData.bankData && typeof cloudData.bankData === 'object' ? cloudData.bankData : {});
-          setHoursPerDay(typeof cloudData.hoursPerDay === 'number' ? cloudData.hoursPerDay : 10);
-          console.log('Cloud data loaded and state replaced.');
-          setHasLoadedCloudData(true);
-        } catch (error) {
-          console.error('Auto-load from cloud failed:', error);
-          setHasLoadedCloudData(true); // Still mark as attempted to avoid infinite retries
-        }
-      };
-      loadCloudData();
-    }
-  }, [user, hasLoadedCloudData]);
-
-  // Use persistence hook for auto-saving
+  // Use persistence hook for auto-saving (só depois do load inicial)
   useDataPersistence({
     characters,
     moneyMethods,
     purchaseGoals,
     bankData,
-    hoursPerDay
+    hoursPerDay,
+    enabled: loaded
   });
 
   const setAllData = (data: {

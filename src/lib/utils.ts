@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// ID único que funciona em QUALQUER contexto. crypto.randomUUID() só existe em
+// secure context (HTTPS ou localhost) — pela LAN via http://IP ele é undefined e
+// quebrava o "adicionar" (char/item/method/goal). Este fallback nunca quebra.
+export function uid(): string {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID()
+    }
+  } catch { /* contexto não-seguro: cai pro fallback */ }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 export function parseGoldInput(input: string): number {
   if (!input) return 0;
   

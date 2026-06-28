@@ -1,7 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, DollarSign, Target, Hash, Star } from "lucide-react";
+
+const PRIORITIES = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'] as const;
 
 interface GoalCardProps {
   goal: any;
@@ -86,15 +89,43 @@ export function GoalCard({
             </Button>
           )}
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Badge className={(getPriorityColor || getPriorityColorDefault)(goal.priority)}>
-            <Star className="h-3 w-3 mr-1" />
-            {goal.priority}
-          </Badge>
+        <div className="flex gap-2 flex-wrap items-center">
+          <Select
+            value={goal.priority}
+            onValueChange={(v) => onUpdate && onUpdate(goal.id, 'priority', v)}
+          >
+            <SelectTrigger
+              className={`h-7 w-[72px] gap-1 border px-2 py-0 text-xs font-semibold focus:ring-1 ${(getPriorityColor || getPriorityColorDefault)(goal.priority)}`}
+              title="Escolher prioridade"
+            >
+              <Star className="h-3 w-3" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRIORITIES.map((p) => (
+                <SelectItem key={p} value={p}>{p}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Badge className={(getCategoryColor || getCategoryColorDefault)(goal.category)}>
             {goal.category}
           </Badge>
+          {typeof goal.importance === 'number' && (
+            <Badge
+              title={goal.importanceReason || ''}
+              className={
+                goal.importance >= 80 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                : goal.importance >= 50 ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                : 'bg-gray-100 text-gray-700 border border-gray-300'
+              }
+            >
+              ⚡ {goal.importance}
+            </Badge>
+          )}
         </div>
+        {goal.importanceReason && (
+          <p className="text-xs text-muted-foreground">{goal.importanceReason}</p>
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center gap-2 text-sm text-gray-600">

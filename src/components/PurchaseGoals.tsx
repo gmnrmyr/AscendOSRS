@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Target, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { osrsApi } from "@/services/osrsApi";
+import { ensurePrices, priceOf, idByName, itemImageUrl } from "@/services/priceEngine";
 import { GoalForm } from "./goals/GoalForm";
 import { GoalFilters } from "./goals/GoalFilters";
 import { GoalCard } from "./goals/GoalCard";
@@ -37,25 +38,58 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const [showFilters, setShowFilters] = useState(false);
   
   const { toast } = useToast();
-  const { isRefreshing, metadata, refreshItems } = useItemsRefresh();
+  const { metadata } = useItemsRefresh();
+  const [isPricing, setIsPricing] = useState(false);
+  const repricedRef = useRef(false);
 
-  // Auto-save goals whenever they change
-  useEffect(() => {
-    localStorage.setItem('purchaseGoals', JSON.stringify(goals));
-  }, [goals]);
+  // NOTE: removido o localStorage paralelo ('purchaseGoals') — os goals são geridos
+  // pelo estado global (useAppData -> disco no Mac). Aquele storage causava preço velho.
 
-  // Load goals from localStorage on component mount
-  useEffect(() => {
-    const savedGoals = localStorage.getItem('purchaseGoals');
-    if (savedGoals) {
-      try {
-        const parsedGoals = JSON.parse(savedGoals);
-        setGoals(parsedGoals);
-      } catch (error) {
-        console.error('Error parsing saved goals:', error);
+  // Reprecifica os goals com o preço GE ao vivo (motor local-first).
+  // Resolve por itemId; se o id falhar (ex: id velho/errado), cai pra busca por nome.
+  const repriceGoals = async (force = false) => {
+    if (goals.length === 0) return;
+    setIsPricing(true);
+    try {
+      await ensurePrices(force);
+      let changed = 0;
+      const updated = goals.map((goal) => {
+        let id = goal.itemId && goal.itemId > 0 ? goal.itemId : 0;
+        let price = id ? priceOf(id) : 0;
+        if (!price) {
+          const byName = idByName(goal.name);
+          if (byName) { id = byName; price = priceOf(byName); }
+        }
+        if (!id) return goal;
+        const next: any = { ...goal, itemId: id, imageUrl: itemImageUrl(id) };
+        if (price) {
+          // se o target nunca foi customizado (vazio ou == preço antigo), acompanha o mercado
+          const targetUncustomized = !goal.targetPrice || goal.targetPrice === goal.currentPrice;
+          if (price !== goal.currentPrice) changed++;
+          next.currentPrice = price;
+          if (targetUncustomized) next.targetPrice = price;
+        }
+        return next;
+      });
+      setGoals(updated);
+      if (force) {
+        toast({ title: "Preços atualizados", description: `${changed} goals reprecificados (GE ao vivo)` });
       }
+    } catch (error) {
+      console.error('Falha ao reprecificar goals:', error);
+      if (force) toast({ title: "Erro", description: "Falha ao buscar preços ao vivo", variant: "destructive" });
+    } finally {
+      setIsPricing(false);
     }
-  }, []);
+  };
+
+  // Reprecifica uma vez ao abrir a aba (preços ao vivo, com imagem).
+  useEffect(() => {
+    if (repricedRef.current || goals.length === 0) return;
+    repricedRef.current = true;
+    repriceGoals(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goals.length]);
 
   // Default popular OSRS purchase goals with correct item IDs
   const defaultGoals = [
@@ -294,8 +328,9 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     return amount.toLocaleString();
   };
 
+  // Valor do goal = preço de mercado ao vivo × quantidade (o target é só a meta, mostrada à parte)
   const getTotalCost = (goal: PurchaseGoal) => {
-    return (goal.targetPrice || goal.currentPrice) * goal.quantity;
+    return (goal.currentPrice || goal.targetPrice || 0) * goal.quantity;
   };
 
   // Filtering and sorting logic
@@ -369,11 +404,11 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={refreshItems}
-              disabled={isRefreshing}
+              onClick={() => repriceGoals(true)}
+              disabled={isPricing}
             >
               <TrendingUp className="h-4 w-4 mr-1" />
-              {isRefreshing ? 'Updating...' : 'Update Prices'}
+              {isPricing ? 'Atualizando...' : 'Atualizar preços'}
             </Button>
             {goals.length === 0 && (
               <Button
@@ -400,8 +435,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           setSortOrder={setSortOrder}
           showFilters={showFilters}
           setShowFilters={setShowFilters}
-          onRefreshPrices={refreshItems}
-          isRefreshing={isRefreshing}
+          onRefreshPrices={() => repriceGoals(true)}
+          isRefreshing={isPricing}
           goalsCount={goals.length}
         />
 

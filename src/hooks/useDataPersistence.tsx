@@ -1,6 +1,5 @@
-
 import { useEffect } from 'react';
-import { useAuth } from "@/hooks/useAuth";
+import { saveServerData } from '@/services/localStore';
 
 interface AppData {
   characters: any[];
@@ -8,44 +7,36 @@ interface AppData {
   purchaseGoals: any[];
   bankData: Record<string, any[]>;
   hoursPerDay: number;
+  enabled?: boolean; // só salva depois do load inicial (evita gravar defaults por cima do disco)
 }
 
 export function useDataPersistence(data: AppData) {
-  const { user } = useAuth();
+  const enabled = data.enabled ?? true;
 
-  // Save data to localStorage whenever state changes
-  useEffect(() => {
-    const dataToSave = {
-      characters: data.characters,
-      moneyMethods: data.moneyMethods,
-      purchaseGoals: data.purchaseGoals,
-      bankData: data.bankData,
-      hoursPerDay: data.hoursPerDay
-    };
-    localStorage.setItem('osrs-dashboard-data', JSON.stringify(dataToSave));
-  }, [data.characters, data.moneyMethods, data.purchaseGoals, data.bankData, data.hoursPerDay]);
+  const snapshot = {
+    characters: data.characters,
+    moneyMethods: data.moneyMethods,
+    purchaseGoals: data.purchaseGoals,
+    bankData: data.bankData,
+    hoursPerDay: data.hoursPerDay,
+  };
 
-  // Auto-save to cloud for authenticated users (debounced)
+  // Cache rápido no localStorage (fallback se o server estiver offline)
   useEffect(() => {
-    if (!user) return;
-    
+    if (!enabled) return;
+    localStorage.setItem('osrs-dashboard-data', JSON.stringify(snapshot));
+  }, [enabled, data.characters, data.moneyMethods, data.purchaseGoals, data.bankData, data.hoursPerDay]);
+
+  // Fonte de verdade: salva em disco no Mac (debounced). Funciona de qualquer origin.
+  useEffect(() => {
+    if (!enabled) return;
     const timeoutId = setTimeout(async () => {
       try {
-        console.log('Auto-saving to cloud...');
-        const { CloudDataService } = await import('@/services/cloudDataService');
-        await CloudDataService.saveUserData(
-          data.characters,
-          data.moneyMethods,
-          data.purchaseGoals,
-          data.bankData,
-          data.hoursPerDay
-        );
-        console.log('Auto-save to cloud completed');
+        await saveServerData(snapshot);
       } catch (error) {
-        console.error('Auto-save to cloud failed:', error);
+        console.error('Falha ao salvar no disco (server). Mantido no localStorage.', error);
       }
-    }, 2000); // 2 second debounce
-
+    }, 1000); // 1s debounce
     return () => clearTimeout(timeoutId);
-  }, [user, data.characters, data.moneyMethods, data.purchaseGoals, data.bankData, data.hoursPerDay]);
+  }, [enabled, data.characters, data.moneyMethods, data.purchaseGoals, data.bankData, data.hoursPerDay]);
 }

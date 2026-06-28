@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, DollarSign, Users, Target, Coins } from "lucide-react";
+import { ChevronDown, ChevronUp, DollarSign, Users, Target, Coins, Landmark } from "lucide-react";
 import { useAppState } from "@/components/AppStateProvider";
 
-export function SummaryNavbar() {
+export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => void }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -55,8 +55,10 @@ export function SummaryNavbar() {
   // Calculate total bank value across all characters (including coins and plat tokens as raw GP)
   const getTotalBankValue = () => {
     // First try to calculate from bank items
+    const validNames = new Set(characters.map((c) => c.name));
     let totalFromItems = 0;
     for (const [character, items] of Object.entries(bankData)) {
+      if (!validNames.has(character)) continue; // ignora lixo de chars removidos
       for (const item of items) {
         if (item.name && item.name.toLowerCase().includes('coin')) {
           totalFromItems += item.quantity || 0;
@@ -79,8 +81,10 @@ export function SummaryNavbar() {
 
   // Calculate total gold value (coins + plat tokens) across all characters
   const getTotalGoldValue = () => {
+    const validNames = new Set(characters.map((c) => c.name));
     let total = 0;
     for (const [character, items] of Object.entries(bankData)) {
+      if (!validNames.has(character)) continue; // ignora lixo de chars removidos
       for (const item of items) {
         if (item.name && item.name.toLowerCase().includes('coin')) {
           total += item.quantity || 0;
@@ -154,7 +158,19 @@ export function SummaryNavbar() {
                     {formatGP(totalGoldValue)} GP
                   </span>
                 </div>
-                
+
+                <button
+                  type="button"
+                  onClick={() => onTabChange?.('bank')}
+                  title="Ver banco detalhado"
+                  className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+                >
+                  <Landmark className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
+                  <span className="text-xs sm:text-sm font-medium text-orange-700">
+                    {formatGP(totalBankValue)} bank
+                  </span>
+                </button>
+
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
                   <span className="text-xs sm:text-sm font-medium text-purple-700">

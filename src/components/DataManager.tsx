@@ -1,5 +1,6 @@
 
-import { CloudOperations } from "@/components/data/CloudOperations";
+// Local-first: nuvem desativada. Backup é via Local Export/Import (JSON) + localStorage.
+// import { CloudOperations } from "@/components/data/CloudOperations";
 import { LocalOperations } from "@/components/data/LocalOperations";
 import { DataSummary } from "@/components/data/DataSummary";
 
@@ -43,15 +44,7 @@ export function DataManager({
         <p className="text-amber-600">Export, import, and manage your OSRS dashboard data</p>
       </div>
 
-      {/* Cloud Operations */}
-      <CloudOperations
-        characters={characters}
-        moneyMethods={moneyMethods}
-        purchaseGoals={purchaseGoals}
-        bankData={bankData}
-        hoursPerDay={hoursPerDay}
-        setAllData={setAllData}
-      />
+      {/* Cloud Operations desativado no modo local-first (sem login) */}
 
       {/* Local Export/Import */}
       <LocalOperations

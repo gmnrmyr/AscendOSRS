@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { uid } from "@/lib/utils";
 
 interface BankItemFormProps {
   characters: any[];
@@ -25,7 +26,7 @@ export function BankItemForm({ characters, onAddItem }: BankItemFormProps) {
     if (newItem.name && newItem.character) {
       const item = {
         ...newItem,
-        id: crypto.randomUUID()
+        id: uid()
       };
       onAddItem(item);
       setNewItem({

@@ -26,3 +26,6 @@ dist-ssr
 # Dados reais dos bancos (local-only, nao versionar)
 prototype/fixtures/
 .env.local
+
+# Save local do dashboard (local-first, fica só no Mac)
+data/

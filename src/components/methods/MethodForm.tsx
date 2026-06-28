@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { uid } from "@/lib/utils";
 import { useAppState } from "@/components/AppStateProvider";
 
 interface MethodFormProps {
@@ -29,7 +30,7 @@ export function MethodForm({ characters }: MethodFormProps) {
     if (newMethod.name && newMethod.character) {
       const method = {
         ...newMethod,
-        id: crypto.randomUUID()
+        id: uid()
       };
       setMoneyMethods([...moneyMethods, method]);
       setNewMethod({

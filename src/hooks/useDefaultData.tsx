@@ -48,68 +48,49 @@ export const getDefaultCharacters = (): Character[] => [
     id: "1",
     name: "Lazy Priest",
     type: "main" as const,
-    combatLevel: 126,
-    totalLevel: 2100,
-    bank: 500000000,
-    notes: "Main account for high-level PvM content",
+    combatLevel: 3,
+    totalLevel: 32,
+    bank: 0,
+    notes: "Main — bank importado do RuneLite Data Exporter",
     isActive: true,
     platTokens: 0
   },
   {
-    id: "2", 
-    name: "High Priest",
+    id: "2",
+    name: "CafeEcigarro",
     type: "alt" as const,
-    combatLevel: 100,
-    totalLevel: 1500,
-    bank: 50000000,
-    notes: "Alt for money making and skilling",
+    combatLevel: 3,
+    totalLevel: 32,
+    bank: 0,
+    notes: "Alt",
+    isActive: true,
+    platTokens: 0
+  },
+  {
+    id: "3",
+    name: "Lazy Wyverns",
+    type: "alt" as const,
+    combatLevel: 3,
+    totalLevel: 32,
+    bank: 0,
+    notes: "Alt",
+    isActive: true,
+    platTokens: 0
+  },
+  {
+    id: "4",
+    name: "Lazy Jr",
+    type: "alt" as const,
+    combatLevel: 3,
+    totalLevel: 32,
+    bank: 0,
+    notes: "Alt",
     isActive: true,
     platTokens: 0
   }
 ];
 
-export const getDefaultMoneyMethods = (): MoneyMethod[] => [
-  {
-    id: "1",
-    name: "Brutal Black Dragons",
-    character: "Lazy Priest",
-    gpHour: 1000000,
-    clickIntensity: 3 as const,
-    requirements: "Tbow, high range level",
-    notes: "Very consistent money maker",
-    category: "combat" as const
-  },
-  {
-    id: "2",
-    name: "Rune Dragons", 
-    character: "Lazy Priest",
-    gpHour: 1200000,
-    clickIntensity: 4 as const,
-    requirements: "High stats, good gear",
-    notes: "Higher intensity but better gp/hr",
-    category: "combat" as const
-  },
-  {
-    id: "3",
-    name: "Cannonballs",
-    character: "High Priest", 
-    gpHour: 150000,
-    clickIntensity: 1 as const,
-    requirements: "Dwarf Cannon quest, 35 smithing",
-    notes: "Very AFK money making",
-    category: "skilling" as const
-  },
-  {
-    id: "4",
-    name: "Gargoyles",
-    character: "Lazy Priest",
-    gpHour: 567000, 
-    clickIntensity: 3 as const,
-    requirements: "High slayer, good gear",
-    notes: "Good slayer task money",
-    category: "combat" as const
-  }
-];
+export const getDefaultMoneyMethods = (): MoneyMethod[] => [];
 
 export const getDefaultPurchaseGoals = (): PurchaseGoal[] => [
   // S+ Tier - Ultimate Goals
@@ -301,65 +282,6 @@ export const getDefaultPurchaseGoals = (): PurchaseGoal[] => [
   }
 ];
 
-export const getDefaultBankData = (): Record<string, BankItem[]> => ({
-  "Lazy Priest": [
-    {
-      id: "1",
-      name: "Coins",
-      quantity: 500000000,
-      estimatedPrice: 1,
-      category: "stackable" as const,
-      character: "Lazy Priest"
-    },
-    {
-      id: "2",
-      name: "Prayer Potions(4)",
-      quantity: 1000,
-      estimatedPrice: 12000,
-      category: "stackable" as const,
-      character: "Lazy Priest"
-    },
-    {
-      id: "3",
-      name: "Super Combat Potions(4)",
-      quantity: 500,
-      estimatedPrice: 15000,
-      category: "stackable" as const,
-      character: "Lazy Priest"
-    },
-    {
-      id: "4",
-      name: "Bandos Chestplate",
-      quantity: 1,
-      estimatedPrice: 25000000,
-      category: "gear" as const,
-      character: "Lazy Priest"
-    }
-  ],
-  "High Priest": [
-    {
-      id: "5",
-      name: "Coins", 
-      quantity: 50000000,
-      estimatedPrice: 1,
-      category: "stackable" as const,
-      character: "High Priest"
-    },
-    {
-      id: "6",
-      name: "Steel Bars",
-      quantity: 10000,
-      estimatedPrice: 500,
-      category: "materials" as const,
-      character: "High Priest"
-    },
-    {
-      id: "7",
-      name: "Cannonballs",
-      quantity: 50000,
-      estimatedPrice: 180,
-      category: "stackable" as const,
-      character: "High Priest"
-    }
-  ]
-});
+// Banco começa vazio — os dados reais vêm do import do RuneLite Data Exporter.
+// (antes tinha itens de exemplo fake que se misturavam ao bank real e poluíam o overview)
+export const getDefaultBankData = (): Record<string, BankItem[]> => ({});

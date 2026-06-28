@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3001; // Different port from Vite
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // bancos grandes (milhares de itens × vários chars)
 
 // API endpoints
 const DUMP_URL = 'https://prices.runescape.wiki/api/v1/osrs/mapping';
@@ -108,6 +108,41 @@ app.post('/api/refresh-items', async (req, res) => {
   }
 });
 
+// ============================================================
+//  Persistência local (local-first): salva o dashboard num arquivo
+//  em disco no Mac (data/dashboard.json). Funciona igual de qualquer
+//  origin (localhost ou IP da LAN) porque o proxy /api roda no Mac.
+//  É a fonte de verdade; o localStorage do browser vira só cache.
+// ============================================================
+const DATA_DIR = path.join(__dirname, 'data');
+const SAVE_FILE = path.join(DATA_DIR, 'dashboard.json');
+
+app.get('/api/data', async (req, res) => {
+  try {
+    const raw = await fs.readFile(SAVE_FILE, 'utf-8');
+    res.status(200).json(JSON.parse(raw));
+  } catch (err) {
+    if (err.code === 'ENOENT') return res.status(200).json(null); // ainda não salvou nada
+    console.error('Erro lendo save:', err);
+    res.status(500).json({ error: 'Failed to read save' });
+  }
+});
+
+app.post('/api/data', async (req, res) => {
+  try {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    const payload = { ...req.body, savedAt: new Date().toISOString() };
+    // escreve atômico: tmp + rename, pra não corromper se cair no meio
+    const tmp = SAVE_FILE + '.tmp';
+    await fs.writeFile(tmp, JSON.stringify(payload, null, 2));
+    await fs.rename(tmp, SAVE_FILE);
+    res.status(200).json({ ok: true, savedAt: payload.savedAt });
+  } catch (err) {
+    console.error('Erro salvando save:', err);
+    res.status(500).json({ error: 'Failed to write save' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-}); 
+});

@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Dados reais dos bancos (local-only, nao versionar)
+prototype/fixtures/
+.env.local

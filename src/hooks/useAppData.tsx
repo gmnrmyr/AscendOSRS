@@ -47,6 +47,7 @@ interface PurchaseGoal {
 
 interface BankItem {
   id: string;
+  osrsId?: number; // item id real do OSRS (do Data Exporter) — permite re-precificar
   name: string;
   quantity: number;
   estimatedPrice: number;

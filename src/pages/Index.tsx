@@ -49,9 +49,7 @@ const IndexContent = () => {
 };
 
 const Index = () => {
-  const { user, loading } = useAuth();
-  if (loading) return null;
-  if (!user) return <LandingPage />;
+  // Local-first: sem login. App roda 100% local (localStorage). Auth/nuvem desativados.
   return <IndexContent />;
 };
 

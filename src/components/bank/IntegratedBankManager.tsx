@@ -13,6 +13,7 @@ import { Character, BankItem } from '@/hooks/useAppData';
 import { useCharacterRefresh } from '@/hooks/useCharacterRefresh';
 import { EnhancedBankManager } from './EnhancedBankManager';
 import { formatGoldValue } from '@/lib/utils';
+import { valueExport, type ExportItem } from '@/services/priceEngine';
 
 const VALUABLE_ITEMS_THRESHOLD = 10; // Show top 10 most valuable items when collapsed
 
@@ -147,65 +148,70 @@ export function IntegratedBankManager({
     setEditingPrice('');
   };
 
-  const parseCSVData = (csvData: string): BankItem[] => {
-    let newItems: BankItem[] = [];
-    
-    try {
-      const jsonData = JSON.parse(csvData);
-      if (Array.isArray(jsonData)) {
-        // Handle OSRS bank export JSON format
-        newItems = jsonData.map(item => ({
+  const [isImporting, setIsImporting] = useState(false);
+
+  const cleanName = (name: string) => (name || 'Unknown Item').replace(/\s*\(Members\)\s*$/i, '').trim();
+
+  // Lê o JSON do RuneLite Data Exporter ([{id,quantity,name}]) e valoriza por id com preço GE ao vivo.
+  const parseAndValue = async (raw: string): Promise<BankItem[]> => {
+    // Formato preferido: JSON do Data Exporter (traz id real -> preço automático)
+    let parsed: any = null;
+    try { parsed = JSON.parse(raw); } catch { /* tenta CSV abaixo */ }
+
+    if (Array.isArray(parsed)) {
+      const exportItems: ExportItem[] = parsed
+        .map((it) => ({ id: Number(it.id), quantity: parseInt(it.quantity) || 0, name: it.name || '' }))
+        .filter((it) => it.quantity > 0 && Number.isFinite(it.id));
+
+      const { valued } = await valueExport(exportItems);
+      return valued.map((v) => ({
+        id: Date.now().toString() + Math.random(),
+        osrsId: v.id,
+        name: cleanName(v.name),
+        quantity: v.quantity,
+        estimatedPrice: v.unit,
+        category: 'stackable' as const,
+        character: selectedCharacter,
+      }));
+    }
+
+    // Fallback CSV manual (name,quantity,value) — preço da coluna value (ou 0)
+    const lines = raw.trim().split('\n');
+    const headers = lines[0].split(',').map((h) => h.trim().toLowerCase());
+    const idx = (...names: string[]) => names.map((n) => headers.indexOf(n)).find((i) => i !== -1) ?? -1;
+    const nameIndex = idx('name', 'item');
+    const quantityIndex = idx('quantity', 'qty');
+    const valueIndex = idx('value', 'price');
+    if (nameIndex === -1 || quantityIndex === -1) {
+      throw new Error('Data must be valid JSON or CSV with name and quantity columns');
+    }
+    const items: BankItem[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map((v) => v.trim());
+      const name = values[nameIndex] || '';
+      const quantity = parseInt(values[quantityIndex]) || 0;
+      const price = valueIndex !== -1 ? parseInt(values[valueIndex]) || 0 : 0;
+      if (name && quantity > 0) {
+        items.push({
           id: Date.now().toString() + Math.random(),
-          name: item.name || 'Unknown Item',
-          quantity: parseInt(item.quantity) || 0,
-          estimatedPrice: 0, // Will be looked up later
+          name: cleanName(name),
+          quantity,
+          estimatedPrice: price,
           category: 'stackable',
-          character: selectedCharacter
-        })).filter(item => item.name && item.quantity > 0);
-      }
-    } catch (jsonError) {
-      // If JSON parsing fails, try CSV parsing
-      const lines = csvData.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-      
-      const nameIndex = headers.indexOf('name') || headers.indexOf('item');
-      const quantityIndex = headers.indexOf('quantity') || headers.indexOf('qty');
-      const valueIndex = headers.indexOf('value') || headers.indexOf('price');
-
-      if (nameIndex === -1 || quantityIndex === -1) {
-        throw new Error('Data must be valid JSON or CSV with name and quantity columns');
-      }
-
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
-        if (values.length >= 2) {
-          const name = values[nameIndex] || '';
-          const quantity = parseInt(values[quantityIndex]) || 0;
-          const price = valueIndex !== -1 ? parseInt(values[valueIndex]) || 0 : 0;
-          
-          if (name && quantity > 0) {
-            newItems.push({
-              id: Date.now().toString() + Math.random(),
-              name,
-              quantity,
-              estimatedPrice: price,
-              category: 'stackable',
-              character: selectedCharacter
-            });
-          }
-        }
+          character: selectedCharacter,
+        });
       }
     }
-    
-    return newItems;
+    return items;
   };
 
-  const handleCSVImport = () => {
+  const handleCSVImport = async () => {
     if (!selectedCharacter || !csvData.trim()) return;
 
+    setIsImporting(true);
     try {
-      const newItems = parseCSVData(csvData);
-      
+      const newItems = await parseAndValue(csvData);
+
       if (newItems.length === 0) {
         alert('No valid items found in the data');
         return;
@@ -222,6 +228,8 @@ export function IntegratedBankManager({
     } catch (error) {
       console.error('Error parsing data:', error);
       alert('Error parsing data. Please check the format.');
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -483,14 +491,14 @@ export function IntegratedBankManager({
             <CardContent>
               <div className="space-y-4">
                 <Textarea
-                  placeholder="Paste CSV or JSON data here..."
+                  placeholder="Cole aqui o JSON do RuneLite Data Exporter ([{id,quantity,name}]) — o preço é calculado automático por id"
                   value={csvData}
                   onChange={(e) => setCsvData(e.target.value)}
                   rows={10}
                 />
-                <Button onClick={handleCSVImport} className="w-full">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import Items
+                <Button onClick={handleCSVImport} className="w-full" disabled={isImporting}>
+                  <Upload className={`h-4 w-4 mr-2 ${isImporting ? 'animate-spin' : ''}`} />
+                  {isImporting ? 'Buscando preços ao vivo...' : 'Import Items'}
                 </Button>
               </div>
             </CardContent>

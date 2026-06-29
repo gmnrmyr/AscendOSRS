@@ -105,7 +105,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
               id="target-price"
               type="number"
               value={newGoal.targetPrice}
-              onChange={(e) => setNewGoal({ ...newGoal, targetPrice: parseInt(e.target.value) || 0 })}
+              onChange={(e) => setNewGoal({ ...newGoal, targetPrice: parseInt(e.target.value) || 0, targetCustom: true } as any)}
               placeholder="0"
             />
           </div>

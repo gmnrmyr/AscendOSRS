@@ -63,11 +63,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
         if (!id) return goal;
         const next: any = { ...goal, itemId: id, imageUrl: itemImageUrl(id) };
         if (price) {
-          // se o target nunca foi customizado (vazio ou == preço antigo), acompanha o mercado
-          const targetUncustomized = !goal.targetPrice || goal.targetPrice === goal.currentPrice;
           if (price !== goal.currentPrice) changed++;
           next.currentPrice = price;
-          if (targetUncustomized) next.targetPrice = price;
+          // target acompanha o mercado, a menos que tenha sido editado à mão (targetCustom)
+          if (!goal.targetCustom) next.targetPrice = price;
         }
         return next;
       });

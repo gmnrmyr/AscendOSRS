@@ -154,7 +154,10 @@ export function BankOverview({ characters, bankData }: BankOverviewProps) {
                   </a>
                   <p className="text-xs text-muted-foreground">×{it.qty.toLocaleString()}</p>
                 </div>
-                <div className="shrink-0 text-right font-mono text-sm font-semibold text-green-600">
+                <div
+                  className="shrink-0 cursor-help text-right font-mono text-sm font-semibold text-green-600"
+                  title={`${it.value.toLocaleString()} gp  (${it.unit.toLocaleString()} cada)`}
+                >
                   {formatGoldValue(it.value)}
                 </div>
               </div>

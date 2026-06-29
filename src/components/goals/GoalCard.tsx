@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, DollarSign, Target, Hash, Star } from "lucide-react";
+import { Trash2, DollarSign, Target, Hash, Star, ExternalLink } from "lucide-react";
 
 const PRIORITIES = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'] as const;
 
@@ -69,14 +69,27 @@ export function GoalCard({
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
             {goal.imageUrl && (
-              <img 
-                src={goal.imageUrl} 
-                alt={goal.name} 
+              <img
+                src={goal.imageUrl}
+                alt={goal.name}
                 className="w-8 h-8 object-cover rounded"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             )}
-            {goal.name}
+            {goal.itemId ? (
+              <a
+                href={`https://prices.runescape.wiki/osrs/item/${goal.itemId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 hover:underline"
+                title="Ver preço/gráfico na OSRS Wiki"
+              >
+                {goal.name}
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+              </a>
+            ) : (
+              goal.name
+            )}
           </CardTitle>
           {handleDelete && (
             <Button
@@ -135,13 +148,17 @@ export function GoalCard({
         
         <div className="flex items-center gap-2 text-lg font-semibold text-green-600">
           <DollarSign className="h-5 w-5" />
-          <span>{formatGP ? formatGP(totalCost) : formatGPDefault(totalCost)} GP</span>
+          <span className="cursor-help" title={`${totalCost.toLocaleString()} gp`}>
+            {formatGP ? formatGP(totalCost) : formatGPDefault(totalCost)} GP
+          </span>
         </div>
 
         {targetTotal && (
           <div className="flex items-center gap-2 text-sm text-blue-600">
             <Target className="h-4 w-4" />
-            <span>Target: {formatGP ? formatGP(targetTotal) : formatGPDefault(targetTotal)} GP</span>
+            <span className="cursor-help" title={`${targetTotal.toLocaleString()} gp`}>
+              Target: {formatGP ? formatGP(targetTotal) : formatGPDefault(targetTotal)} GP
+            </span>
           </div>
         )}
 

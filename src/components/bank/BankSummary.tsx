@@ -57,7 +57,7 @@ export function BankSummary({ characters, bankData }: BankSummaryProps) {
             <span className="text-sm font-medium text-gray-600">Total Bank Value</span>
           </div>
           <div className="text-2xl font-bold text-green-600">{formatGP(totalValue)}</div>
-          <div className="text-xs text-gray-500 mt-1">Items + Gold + Platinum Tokens</div>
+          <div className="text-xs text-muted-foreground mt-1">Items + Gold + Platinum Tokens</div>
         </CardContent>
       </Card>
 
@@ -69,7 +69,7 @@ export function BankSummary({ characters, bankData }: BankSummaryProps) {
             <span className="text-sm font-medium text-gray-600">Total Gold Value</span>
           </div>
           <div className="text-2xl font-bold text-yellow-600">{formatGP(totalGoldValue)}</div>
-          <div className="text-xs text-gray-500 mt-1">Gold Coins + Platinum Tokens</div>
+          <div className="text-xs text-muted-foreground mt-1">Gold Coins + Platinum Tokens</div>
         </CardContent>
       </Card>
     </div>

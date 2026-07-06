@@ -98,7 +98,7 @@ export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items...",
   const getTrendIcon = (trend: string) => {
     if (trend === 'positive') return <TrendingUp className="h-3 w-3 text-green-600" />;
     if (trend === 'negative') return <TrendingDown className="h-3 w-3 text-red-600" />;
-    return <Minus className="h-3 w-3 text-gray-400" />;
+    return <Minus className="h-3 w-3 text-muted-foreground" />;
   };
 
   const displayItems = query.trim() ? items : popularItems;
@@ -163,15 +163,15 @@ export function ItemSearch({ onItemSelect, placeholder = "Search OSRS items...",
       )}
 
       {!query.trim() && popularItems.length === 0 && (
-        <p className="text-center text-gray-500 py-4">Loading popular items...</p>
+        <p className="text-center text-muted-foreground py-4">Loading popular items...</p>
       )}
 
       {query.trim() && items.length === 0 && !loading && (
-        <p className="text-center text-gray-500 py-4">No items found</p>
+        <p className="text-center text-muted-foreground py-4">No items found</p>
       )}
 
       {loading && (
-        <p className="text-center text-gray-500 py-4">Searching...</p>
+        <p className="text-center text-muted-foreground py-4">Searching...</p>
       )}
     </div>
   );

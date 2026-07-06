@@ -94,7 +94,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
                   {newGoal.currentPrice.toLocaleString()} GP
                 </span>
               ) : (
-                <span className="text-gray-500">Select an OSRS item to fetch current price</span>
+                <span className="text-muted-foreground">Select an OSRS item to fetch current price</span>
               )}
             </div>
           </div>

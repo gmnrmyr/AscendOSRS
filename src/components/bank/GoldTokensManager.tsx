@@ -71,7 +71,7 @@ export function GoldTokensManager({
               disabled={isRefreshing}
               variant="outline"
               size="sm"
-              className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
+              className="text-yellow-700 dark:text-yellow-300 border-yellow-300 hover:bg-yellow-50"
             >
               {isRefreshing ? (
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />

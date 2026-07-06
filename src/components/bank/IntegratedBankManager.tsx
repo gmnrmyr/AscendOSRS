@@ -401,7 +401,7 @@ export function IntegratedBankManager({
             <CardContent>
               {/* Items list */}
               {displayedItems.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">No items in bank</p>
+                <p className="text-center text-muted-foreground py-8">No items in bank</p>
               ) : (
                 <div className="space-y-2">
                   {displayedItems.map((item) => (

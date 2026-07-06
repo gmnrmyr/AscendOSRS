@@ -153,14 +153,14 @@ export function MoneyMakerImporter({ onImportMethods, characters }: MoneyMakerIm
                     <Badge className={getMembershipColor(guide.membership || 'p2p')}>
                       {typeof guide.membership === 'boolean' ? (guide.membership ? 'P2P' : 'F2P') : (guide.membership || 'p2p').toString().toUpperCase()}
                     </Badge>
-                    <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">
+                    <Badge variant="outline" className="text-green-700 dark:text-green-300 border-green-300 bg-green-50">
                       {formatGP(guide.profit || guide.gpHour)}/hr
                     </Badge>
                   </div>
                   
                   <p className="text-sm text-gray-600 mb-2">{guide.description || guide.notes}</p>
                   
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     <strong>Requirements:</strong> {Array.isArray(guide.requirements) ? guide.requirements.join(', ') : guide.requirements}
                   </div>
                 </CardContent>

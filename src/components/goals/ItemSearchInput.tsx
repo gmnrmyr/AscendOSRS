@@ -178,7 +178,7 @@ export function ItemSearchInput({ value, onChange, onItemSelect, placeholder }: 
         className="bg-card"
       />
       {(isSearching || loading) && (
-        <div className="text-xs text-gray-500 mt-1">Searching OSRS items...</div>
+        <div className="text-xs text-muted-foreground mt-1">Searching OSRS items...</div>
       )}
     </div>
   );

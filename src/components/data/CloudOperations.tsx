@@ -785,7 +785,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
               <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5" />
               <div>
                 <h4 className="font-medium text-orange-800">Sync Warning</h4>
-                <p className="text-sm text-orange-700 mt-1">{lastSyncWarning}</p>
+                <p className="text-sm text-orange-700 dark:text-orange-400 mt-1">{lastSyncWarning}</p>
                 <div className="bg-orange-100 rounded p-2 mt-2 text-xs text-orange-800">
                   <p><strong>💡 Understanding the results:</strong></p>
                   <p>• <strong>90%+ success rate is excellent!</strong> Your most valuable items (Twisted Bow, Scythe, etc.) are saved first</p>
@@ -808,7 +808,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
               <div className="flex-1">
                 <h4 className="font-medium text-blue-800">Saving Large Dataset - Character by Character</h4>
-                <p className="text-sm text-blue-700">{chunkProgress.phase}</p>
+                <p className="text-sm text-blue-700 dark:text-blue-400">{chunkProgress.phase}</p>
                 <div className="w-full bg-blue-200 rounded-full h-2 mt-1">
                   <div 
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
@@ -860,7 +860,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
             onClick={loadFromCloud} 
             disabled={isCloudLoading || isCloudSavingChunked}
             variant="outline"
-            className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            className="border-blue-300 text-blue-700 dark:text-blue-400 hover:bg-blue-50"
           >
             <CloudDownload className="h-4 w-4 mr-2" />
             {isCloudLoading ? "Loading..." : "Load from Cloud"}
@@ -983,7 +983,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
             <Button 
               onClick={openVersionDialog}
               variant="outline"
-              className="border-purple-300 text-purple-700 hover:bg-purple-50"
+              className="border-purple-300 text-purple-700 dark:text-purple-400 hover:bg-purple-50"
             >
               <History className="h-4 w-4 mr-2" />
               Version History
@@ -993,7 +993,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
               onClick={createManualSnapshot}
               disabled={creatingSnapshot}
               variant="outline"
-              className="border-green-300 text-green-700 hover:bg-green-50"
+              className="border-green-300 text-green-700 dark:text-green-400 hover:bg-green-50"
             >
               <Database className="h-4 w-4 mr-2" />
               {creatingSnapshot ? "Creating..." : "Create Backup"}
@@ -1023,7 +1023,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
                 
                 <div className="bg-blue-50 border border-blue-200 rounded p-3">
                   <p className="text-blue-800 font-medium">✅ Your data is protected!</p>
-                  <p className="text-blue-700 text-sm mt-1">
+                  <p className="text-blue-700 dark:text-blue-400 text-sm mt-1">
                     A backup has been automatically created before this operation. You can restore it anytime.
                   </p>
                 </div>
@@ -1048,7 +1048,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
                   setShowDataProtectionDialog(false);
                   openVersionDialog();
                 }}
-                className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                className="border-purple-300 text-purple-700 dark:text-purple-400 hover:bg-purple-50"
               >
                 <History className="h-4 w-4 mr-2" />
                 Load from History
@@ -1083,7 +1083,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
                   <span className="ml-2">Loading versions...</span>
                 </div>
               ) : snapshots.length === 0 ? (
-                <div className="text-center p-8 text-gray-500">
+                <div className="text-center p-8 text-muted-foreground">
                   <Database className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>No backup versions found.</p>
                   <p className="text-sm">Backups are created automatically when you save data.</p>
@@ -1123,13 +1123,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
                                           <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Latest</span>
                                         )}
                                       </div>
-                                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                      <div className="text-xs text-gray-600 dark:text-muted-foreground mt-1">
                                         <Clock className="h-3 w-3 inline mr-1" />
                                         {formatDate(snapshot.created_at)}
                                       </div>
                                       
                                       {snapshot.data_summary && (
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        <div className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">
                                           {snapshot.data_summary.totalCharacters || 0} characters, {' '}
                                           {snapshot.data_summary.totalMethods || 0} methods, {' '}
                                           {snapshot.data_summary.totalGoals || 0} goals, {' '}
@@ -1181,13 +1181,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
                                           <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Latest</span>
                                         )}
                                       </div>
-                                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                      <div className="text-xs text-gray-600 dark:text-muted-foreground mt-1">
                                         <Clock className="h-3 w-3 inline mr-1" />
                                         {formatDate(snapshot.created_at)}
                                       </div>
                                       
                                       {snapshot.data_summary && (
-                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        <div className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">
                                           {snapshot.data_summary.totalCharacters || 0} characters, {' '}
                                           {snapshot.data_summary.totalMethods || 0} methods, {' '}
                                           {snapshot.data_summary.totalGoals || 0} goals, {' '}
@@ -1244,7 +1244,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <h4 className="text-sm font-medium text-blue-800 mb-2">🚀 Quick Setup Steps:</h4>
-                <ol className="text-xs text-blue-700 space-y-1">
+                <ol className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
                   <li>1. Go to your <a href="https://supabase.com/dashboard/project/hulnpsulovzyqcmroxir" target="_blank" className="underline">Supabase Dashboard</a></li>
                   <li>2. Click "SQL Editor" in the left sidebar</li>
                   <li>3. Copy the SQL below and paste it in the editor</li>
@@ -1287,7 +1287,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
             ✅ True Chunked Save recommended for {totalBankItems.toLocaleString()} items - saves each character separately with most valuable items first
           </p>
         )}
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Regular Save: Fast, may timeout with large datasets | 
             Enhanced Save: Better validation | 
             True Chunked Save: Character-by-character saves, overcomes 1000-item limit | 

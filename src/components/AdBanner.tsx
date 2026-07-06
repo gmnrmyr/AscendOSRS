@@ -21,7 +21,7 @@ export function AdBanner({ className = '', size = 'banner' }: AdBannerProps) {
             {size === 'square' && '250 x 250'}
             {size === 'skyscraper' && '160 x 600'}
           </div>
-          <div className="text-gray-500 text-xs mt-1 font-mono">Google AdSense</div>
+          <div className="text-muted-foreground text-xs mt-1 font-mono">Google AdSense</div>
         </div>
       </div>
     </div>

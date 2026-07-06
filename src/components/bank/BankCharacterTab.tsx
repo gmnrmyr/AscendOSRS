@@ -50,7 +50,7 @@ export function BankCharacterTab({ character, items, onDeleteItem }: BankCharact
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search items..."
               value={searchTerm}
@@ -76,7 +76,7 @@ export function BankCharacterTab({ character, items, onDeleteItem }: BankCharact
       
       <CardContent>
         {filteredItems.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="text-center text-muted-foreground py-8">
             {items.length === 0 
               ? "No items in this bank yet."
               : "No items match your current filters."

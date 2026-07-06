@@ -94,9 +94,9 @@ export function CharacterBankDisplay({
     return (
       <Card className="bg-muted/40 border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Coins className="h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-500 mb-2">No characters available</h3>
-          <p className="text-gray-400 text-center">
+          <Coins className="h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium text-muted-foreground mb-2">No characters available</h3>
+          <p className="text-muted-foreground text-center">
             Add characters in the Characters tab to start tracking bank values
           </p>
         </CardContent>
@@ -165,10 +165,10 @@ export function CharacterBankDisplay({
                   </CardTitle>
                 </div>
                 <div className="text-right space-y-1">
-                  <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20 text-lg px-3 py-1">
+                  <Badge variant="outline" className="text-green-700 dark:text-green-300 border-green-300 bg-green-50 dark:bg-green-900/20 text-lg px-3 py-1">
                     {formatGP(bankValue)} GP
                   </Badge>
-                  <Badge variant="outline" className="text-yellow-700 border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 text-sm px-2 py-1 block">
+                  <Badge variant="outline" className="text-yellow-700 dark:text-yellow-300 border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 text-sm px-2 py-1 block">
                     Gold: {formatGP(goldValue)} GP
                   </Badge>
                 </div>
@@ -217,7 +217,7 @@ export function CharacterBankDisplay({
                             
                             <div className="grid grid-cols-2 gap-2 mt-2">
                               <div>
-                                <Label className="text-xs text-gray-500">Quantity</Label>
+                                <Label className="text-xs text-muted-foreground">Quantity</Label>
                                 <Input
                                   type="number"
                                   value={item.quantity}
@@ -227,7 +227,7 @@ export function CharacterBankDisplay({
                               </div>
                               
                               <div>
-                                <Label className="text-xs text-gray-500">Price Each</Label>
+                                <Label className="text-xs text-muted-foreground">Price Each</Label>
                                 <Input
                                   type="number"
                                   value={item.estimatedPrice}
@@ -251,7 +251,7 @@ export function CharacterBankDisplay({
                           <div key={item.id} className="flex items-center justify-between py-1 px-2 bg-muted/40 rounded text-sm">
                             <span className="truncate">{item.name}</span>
                             <div className="flex items-center gap-2">
-                              <span className="text-gray-500">{Math.floor(item.quantity).toLocaleString()}x</span>
+                              <span className="text-muted-foreground">{Math.floor(item.quantity).toLocaleString()}x</span>
                               <span className="font-medium text-green-600">
                                 {formatGP(Math.floor(item.quantity) * item.estimatedPrice)}
                               </span>
@@ -264,7 +264,7 @@ export function CharacterBankDisplay({
                   </CardContent>
                 ) : (
                   <CardContent>
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <Coins className="h-8 w-8 mx-auto mb-2 opacity-50" />
                       <p>No items in bank yet</p>
                       <p className="text-sm">Select this character above to add items</p>

@@ -132,7 +132,7 @@ export function LocalOperations({
               <FileDown className="h-4 w-4 mr-2" />
               Download JSON
             </Button>
-            <Button onClick={copyToClipboard} variant="outline" className="border-green-300 text-green-700 hover:bg-green-50">
+            <Button onClick={copyToClipboard} variant="outline" className="border-green-300 text-green-700 dark:text-green-400 hover:bg-green-50">
               Copy to Clipboard
             </Button>
           </div>

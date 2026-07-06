@@ -44,7 +44,7 @@ export function GoalFormFields({ newGoal, setNewGoal, onItemSelect }: GoalFormFi
                 {newGoal.currentPrice.toLocaleString()} GP
               </span>
             ) : (
-              <span className="text-gray-500">Select an item to fetch price</span>
+              <span className="text-muted-foreground">Select an item to fetch price</span>
             )}
           </div>
         </div>

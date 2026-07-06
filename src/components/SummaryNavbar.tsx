@@ -164,7 +164,7 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
                   <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  <span className="text-sm sm:text-base font-bold text-green-700">
+                  <span className="text-sm sm:text-base font-bold text-green-700 dark:text-green-400">
                     {formatGP(currentGPHour)}/hr
                   </span>
                   <span className="text-sm text-muted-foreground hidden sm:inline">
@@ -179,7 +179,7 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
-                  <span className="text-sm sm:text-base font-bold text-blue-700">
+                  <span className="text-sm sm:text-base font-bold text-blue-700 dark:text-blue-400">
                     {activeCharacters.length} chars
                   </span>
                 </button>
@@ -198,7 +198,7 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
                   <Landmark className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
-                  <span className="text-sm sm:text-base font-bold text-orange-700">
+                  <span className="text-sm sm:text-base font-bold text-orange-700 dark:text-orange-400">
                     {formatGP(totalBankValue)} bank
                   </span>
                 </button>
@@ -210,7 +210,7 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
                   <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
-                  <span className="text-sm sm:text-base font-bold text-purple-700">
+                  <span className="text-sm sm:text-base font-bold text-purple-700 dark:text-purple-400">
                     {formatGP(totalGoalsValue)} goals
                   </span>
                 </button>
@@ -245,26 +245,26 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
               <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-700">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">Daily Earnings</p>
-                    <p className="font-medium text-green-700">
+                    <p className="text-gray-600 dark:text-muted-foreground">Daily Earnings</p>
+                    <p className="font-medium text-green-700 dark:text-green-400">
                       {formatGP(currentGPHour * hoursPerDay)} GP
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">Total Bank</p>
-                    <p className="font-medium text-blue-700 cursor-help" title={`${totalBankValue.toLocaleString()} gp`}>
+                    <p className="text-gray-600 dark:text-muted-foreground">Total Bank</p>
+                    <p className="font-medium text-blue-700 dark:text-blue-400 cursor-help" title={`${totalBankValue.toLocaleString()} gp`}>
                       {formatGP(totalBankValue)} GP
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">Progress</p>
-                    <p className="font-medium text-purple-700">
+                    <p className="text-gray-600 dark:text-muted-foreground">Progress</p>
+                    <p className="font-medium text-purple-700 dark:text-purple-400">
                       {totalGoalsValue > 0 ? Math.min(100, (totalGoldValue / totalGoalsValue) * 100).toFixed(1) : 100}%
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600 dark:text-gray-400">Time to Goals</p>
-                    <p className="font-medium text-orange-700">
+                    <p className="text-gray-600 dark:text-muted-foreground">Time to Goals</p>
+                    <p className="font-medium text-orange-700 dark:text-orange-400">
                       {currentGPHour > 0 && totalGoalsValue > totalGoldValue 
                         ? `${Math.ceil((totalGoalsValue - totalGoldValue) / (currentGPHour * hoursPerDay))} days`
                         : 'Complete'

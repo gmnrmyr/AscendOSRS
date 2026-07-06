@@ -40,16 +40,16 @@ export function MoneyMakingOverview({ methods, formatGP }: MoneyMakingOverviewPr
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Active Methods</p>
+            <p className="text-sm text-gray-600 dark:text-muted-foreground">Active Methods</p>
             <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">{activeMethods.length}</p>
-            <p className="text-xs text-gray-500">({methods.length} total)</p>
+            <p className="text-xs text-muted-foreground">({methods.length} total)</p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Avg GP/Hour</p>
+            <p className="text-sm text-gray-600 dark:text-muted-foreground">Avg GP/Hour</p>
             <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">{formatGP(avgGPHour)}</p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Total Active GP/Hr</p>
+            <p className="text-sm text-gray-600 dark:text-muted-foreground">Total Active GP/Hr</p>
             <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">{formatGP(totalPotentialGP)}</p>
           </div>
         </div>
@@ -61,7 +61,7 @@ export function MoneyMakingOverview({ methods, formatGP }: MoneyMakingOverviewPr
               <span className="font-semibold">Top Active Method: {topMethod.name}</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="text-green-700 border-green-300">
+              <Badge variant="outline" className="text-green-700 dark:text-green-300 border-green-300">
                 {formatGP(topMethod.gpHour)}/hr
               </Badge>
               {topMethod.character && (
@@ -69,7 +69,7 @@ export function MoneyMakingOverview({ methods, formatGP }: MoneyMakingOverviewPr
                   {topMethod.character}
                 </Badge>
               )}
-              <Badge variant="outline" className="text-orange-700 border-orange-300">
+              <Badge variant="outline" className="text-orange-700 dark:text-orange-300 border-orange-300">
                 <Clock className="h-3 w-3 mr-1" />
                 Intensity {topMethod.clickIntensity}/5
               </Badge>
@@ -79,8 +79,8 @@ export function MoneyMakingOverview({ methods, formatGP }: MoneyMakingOverviewPr
 
         {activeMethods.length === 0 && (
           <div className="text-center py-4">
-            <p className="text-gray-500 dark:text-gray-400">No active money-making methods</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500">Activate methods to see calculations</p>
+            <p className="text-muted-foreground dark:text-muted-foreground">No active money-making methods</p>
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">Activate methods to see calculations</p>
           </div>
         )}
       </CardContent>

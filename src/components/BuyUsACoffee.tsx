@@ -80,7 +80,7 @@ export function BuyUsACoffee() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-blue-700" style={{ fontFamily: 'RuneScape, monospace' }}>
+              <p className="text-blue-700 dark:text-blue-400" style={{ fontFamily: 'RuneScape, monospace' }}>
                 Prefer crypto? Send donations to our project wallet:
               </p>
               <div className="bg-blue-50 p-3 rounded border-2 border-blue-300">
@@ -102,7 +102,7 @@ export function BuyUsACoffee() {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <p className="text-purple-700" style={{ fontFamily: 'RuneScape, monospace' }}>
+            <p className="text-purple-700 dark:text-purple-400" style={{ fontFamily: 'RuneScape, monospace' }}>
               PayPal donations will be available soon! Check back later.
             </p>
             <div className="bg-purple-50 p-3 rounded border-2 border-purple-300">
@@ -167,7 +167,7 @@ export function BuyUsACoffee() {
             <h3 className="text-2xl font-bold text-green-800 mb-4" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               Thank You for Your Support!
             </h3>
-            <p className="text-green-700 max-w-2xl mx-auto" style={{ fontFamily: 'RuneScape, monospace' }}>
+            <p className="text-green-700 dark:text-green-400 max-w-2xl mx-auto" style={{ fontFamily: 'RuneScape, monospace' }}>
               Every donation, no matter how small, helps us dedicate more time to improving this tool. 
               We're committed to keeping it free and open for the entire OSRS community!
             </p>

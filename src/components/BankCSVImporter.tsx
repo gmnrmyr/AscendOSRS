@@ -252,7 +252,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
             variant="outline"
             size="sm"
             onClick={() => setShowInstructions(!showInstructions)}
-            className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-600 dark:text-indigo-300"
+            className="border-indigo-300 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:border-indigo-600 dark:text-indigo-300"
           >
             <Info className="h-4 w-4 mr-1" />
             {showInstructions ? 'Hide' : 'Show'} Guide
@@ -310,12 +310,12 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
               onChange={handleFileUpload}
               className="bg-card mt-1"
             />
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-600 dark:text-muted-foreground mt-1">
               Supports .csv, .txt, and .json files up to 5MB
             </p>
           </div>
 
-          <div className="text-center text-sm text-gray-500 flex items-center justify-center gap-2">
+          <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
             <div className="h-px bg-gray-300 flex-1"></div>
             <span>or</span>
             <div className="h-px bg-gray-300 flex-1"></div>
@@ -363,7 +363,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">RuneLite JSON Format:</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-muted-foreground">RuneLite JSON Format:</span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -379,7 +379,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
             </div>
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">CSV Format:</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-muted-foreground">CSV Format:</span>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -397,7 +397,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
         </div>
 
         {/* Enhanced Status Messages */}
-        <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+        <div className="text-xs text-gray-600 dark:text-muted-foreground space-y-1">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
               Format Detection

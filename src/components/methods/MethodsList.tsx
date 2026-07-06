@@ -37,7 +37,7 @@ export function MethodsList({ methods, onDeleteMethod }: MethodsListProps) {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search methods..."
               value={searchTerm}
@@ -77,7 +77,7 @@ export function MethodsList({ methods, onDeleteMethod }: MethodsListProps) {
       
       <CardContent>
         {filteredMethods.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="text-center text-muted-foreground py-8">
             {methods.length === 0 
               ? "No money making methods added yet. Add your first method above!"
               : "No methods match your current filters."

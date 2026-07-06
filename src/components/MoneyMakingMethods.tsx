@@ -317,21 +317,21 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label>GP per Hour (From Wiki)</Label>
-              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-muted-foreground">
                 {newMethod.gpHour ? formatGP(newMethod.gpHour) : 'Select method to auto-fill'}
               </div>
             </div>
 
             <div>
               <Label>Category (From Wiki)</Label>
-              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-muted-foreground">
                 {newMethod.category ? newMethod.category : 'Auto-filled from selection'}
               </div>
             </div>
 
             <div>
               <Label>Membership (From Wiki)</Label>
-              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-muted-foreground">
                 {newMethod.membership ? newMethod.membership.toUpperCase() : 'Auto-filled from selection'}
               </div>
             </div>
@@ -340,7 +340,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Requirements (From Wiki)</Label>
-              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400 max-h-20 overflow-y-auto">
+              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-muted-foreground max-h-20 overflow-y-auto">
                 {newMethod.requirements || 'Auto-filled from selection'}
               </div>
             </div>
@@ -394,7 +394,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       {/* Inactive Methods */}
       {inactiveMethods.length > 0 && (
         <div>
-          <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2">
+          <h3 className="text-xl font-bold text-gray-600 dark:text-muted-foreground mb-4 flex items-center gap-2">
             <Coins className="h-5 w-5" />
             Inactive Methods ({inactiveMethods.length})
           </h3>
@@ -422,9 +422,9 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       {methods.length === 0 && (
         <Card className="bg-muted/40 border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Coins className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-500 mb-2">No money-making methods yet</h3>
-            <p className="text-gray-400 text-center mb-4">
+            <Coins className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">No money-making methods yet</h3>
+            <p className="text-muted-foreground text-center mb-4">
               Search for OSRS Wiki money-making methods to get started
             </p>
           </CardContent>
@@ -487,7 +487,7 @@ function MethodCard({
               {method.membership.toUpperCase()}
             </Badge>
           )}
-          <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 dark:bg-green-900/20">
+          <Badge variant="outline" className="text-green-700 dark:text-green-300 border-green-300 bg-green-50 dark:bg-green-900/20">
             {formatGP(method.gpHour)}/hr
           </Badge>
           <Badge 
@@ -501,7 +501,7 @@ function MethodCard({
       
       <CardContent className="space-y-3">
         <div>
-          <Label className="text-xs text-gray-500">Character Assignment</Label>
+          <Label className="text-xs text-muted-foreground">Character Assignment</Label>
           <Select 
             value={method.character} 
             onValueChange={(value) => onUpdate(method.id, 'character', value)}
@@ -520,7 +520,7 @@ function MethodCard({
 
         {method.requirements && (
           <div>
-            <Label className="text-xs text-gray-500">Requirements</Label>
+            <Label className="text-xs text-muted-foreground">Requirements</Label>
             <div className="bg-muted border rounded px-2 py-1 text-xs max-h-16 overflow-y-auto">
               {method.requirements}
             </div>
@@ -529,7 +529,7 @@ function MethodCard({
 
         {method.notes && (
           <div>
-            <Label className="text-xs text-gray-500">Personal Notes</Label>
+            <Label className="text-xs text-muted-foreground">Personal Notes</Label>
             <Input
               value={method.notes}
               onChange={(e) => onUpdate(method.id, 'notes', e.target.value)}

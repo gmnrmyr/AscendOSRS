@@ -538,9 +538,9 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
         {goals.length === 0 && (
           <Card className="bg-muted/40 border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <Target className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-500 mb-2">No purchase goals yet</h3>
-              <p className="text-gray-400 text-center mb-4">
+              <Target className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">No purchase goals yet</h3>
+              <p className="text-muted-foreground text-center mb-4">
                 Add items you want to purchase to track your progress
               </p>
               <Button onClick={addDefaultGoals} variant="outline">
@@ -553,9 +553,9 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
         {filteredAndSortedGoals.length === 0 && goals.length > 0 && (
           <Card className="bg-muted/40 border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <Filter className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-500 mb-2">No goals match your filters</h3>
-              <p className="text-gray-400 text-center mb-4">
+              <Filter className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">No goals match your filters</h3>
+              <p className="text-muted-foreground text-center mb-4">
                 Try adjusting your filter settings
               </p>
               <Button onClick={() => {

@@ -237,7 +237,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                               <div>
-                <Label className="text-xs text-gray-500 dark:text-gray-400">Combat Level</Label>
+                <Label className="text-xs text-muted-foreground dark:text-muted-foreground">Combat Level</Label>
                 <Input
                   type="number"
                   value={character.combatLevel}
@@ -249,7 +249,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
               </div>
               
               <div>
-                <Label className="text-xs text-gray-500 dark:text-gray-400">Total Level</Label>
+                <Label className="text-xs text-muted-foreground dark:text-muted-foreground">Total Level</Label>
                 <Input
                   type="number"
                   value={character.totalLevel}
@@ -263,7 +263,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
 
               {character.notes && (
                 <div>
-                  <Label className="text-xs text-gray-500 dark:text-gray-400">Notes</Label>
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">Notes</Label>
                   <Textarea
                     value={character.notes}
                     onChange={(e) => updateCharacter(character.id, 'notes', e.target.value)}
@@ -279,9 +279,9 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
       {characters.length === 0 && (
         <Card className="bg-muted/40 border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Users className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-500 mb-2">No characters yet</h3>
-            <p className="text-gray-400 text-center">
+            <Users className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">No characters yet</h3>
+            <p className="text-muted-foreground text-center">
               Add your OSRS characters to start tracking their progress and bank values
             </p>
           </CardContent>

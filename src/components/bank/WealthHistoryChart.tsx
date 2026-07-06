@@ -30,7 +30,7 @@ const REASON: Record<ItemMover['reason'], { label: string; cls: string }> = {
   qty:   { label: 'qtd',       cls: 'bg-blue-500/15 text-blue-600' },
   both:  { label: 'preço+qtd', cls: 'bg-purple-500/15 text-purple-600' },
   new:   { label: 'novo',      cls: 'bg-green-500/15 text-green-600' },
-  gone:  { label: 'saiu',      cls: 'bg-gray-500/15 text-gray-500' },
+  gone:  { label: 'saiu',      cls: 'bg-gray-500/15 text-muted-foreground' },
 };
 
 // Explica no hover o que rolou (preço de X→Y, qtd de X→Y).

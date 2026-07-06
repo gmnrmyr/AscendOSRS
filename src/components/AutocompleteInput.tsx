@@ -141,7 +141,7 @@ export function AutocompleteInput({
           className={className}
         />
         {loading && (
-          <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
+          <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         )}
       </div>
 
@@ -170,7 +170,7 @@ export function AutocompleteInput({
                   <div className="flex-1">
                     <div className="font-medium text-amber-800">{option.name}</div>
                     {option.subtitle && (
-                      <div className="text-sm text-gray-500">{option.subtitle}</div>
+                      <div className="text-sm text-muted-foreground">{option.subtitle}</div>
                     )}
                   </div>
                   <div className="flex gap-2">
@@ -180,7 +180,7 @@ export function AutocompleteInput({
                       </Badge>
                     )}
                     {option.value && (
-                      <Badge variant="outline" className="text-xs text-green-700">
+                      <Badge variant="outline" className="text-xs text-green-700 dark:text-green-400">
                         {formatValue(option.value)}
                       </Badge>
                     )}

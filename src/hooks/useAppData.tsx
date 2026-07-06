@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useDataPersistence } from './useDataPersistence';
 import { loadServerData, saveServerData } from '@/services/localStore';
 import { upsertSnapshot, type WealthSnapshot } from '@/services/wealthHistory';
+import { ensurePrices, priceOf, priceOfVariant, idByName, itemImageUrl } from '@/services/priceEngine';
 import { 
   getDefaultCharacters, 
   getDefaultMoneyMethods, 
@@ -134,6 +135,46 @@ export function useAppData() {
     setWealthHistory((prev) => upsertSnapshot(prev, characters, bankData));
   };
 
+  // Atualização GLOBAL de preços: reprecifica TODOS os itens de TODOS os bancos
+  // (com fallback variante->base) + TODOS os goals, com o preço GE ao vivo. Depois
+  // re-carimba o snapshot de hoje com os valores novos. Devolve o que mudou.
+  const refreshAllPrices = async (): Promise<{ bankChanged: number; goalsChanged: number }> => {
+    await ensurePrices(true); // force = /latest fresco (ignora cache de 10min)
+
+    let bankChanged = 0;
+    const nextBank: Record<string, BankItem[]> = {};
+    for (const [char, items] of Object.entries(bankData)) {
+      nextBank[char] = items.map((item) => {
+        if (!item.osrsId) return item; // sem id (manual/CSV) -> mantém preço manual
+        const unit = priceOfVariant(item.osrsId, item.name).unit;
+        if (unit > 0 && unit !== item.estimatedPrice) { bankChanged++; return { ...item, estimatedPrice: unit }; }
+        return item;
+      });
+    }
+    setBankData(nextBank);
+
+    let goalsChanged = 0;
+    const nextGoals = purchaseGoals.map((goal) => {
+      let id = goal.itemId && goal.itemId > 0 ? goal.itemId : 0;
+      let price = id ? priceOf(id) : 0;
+      if (!price) { const byName = idByName(goal.name); if (byName) { id = byName; price = priceOf(byName); } }
+      if (!id) return goal;
+      const next: any = { ...goal, itemId: id, imageUrl: itemImageUrl(id) };
+      if (price) {
+        if (price !== goal.currentPrice) goalsChanged++;
+        next.currentPrice = price;
+        if (!(goal as any).targetCustom) next.targetPrice = price; // target segue o mercado (salvo editado à mão)
+      }
+      return next;
+    });
+    setPurchaseGoals(nextGoals);
+
+    // snapshot de hoje reflete os preços novos (usa o bank recém-reprecificado)
+    setWealthHistory((prev) => upsertSnapshot(prev, characters, nextBank));
+
+    return { bankChanged, goalsChanged };
+  };
+
   // Use persistence hook for auto-saving (só depois do load inicial)
   useDataPersistence({
     characters,
@@ -173,7 +214,8 @@ export function useAppData() {
     setBankData,
     setHoursPerDay,
     setAllData,
-    recordWealthSnapshot
+    recordWealthSnapshot,
+    refreshAllPrices
   };
 }
 

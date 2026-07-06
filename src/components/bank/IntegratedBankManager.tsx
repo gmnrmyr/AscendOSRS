@@ -13,7 +13,7 @@ import { Character, BankItem } from '@/hooks/useAppData';
 import { useCharacterRefresh } from '@/hooks/useCharacterRefresh';
 import { EnhancedBankManager } from './EnhancedBankManager';
 import { formatGoldValue } from '@/lib/utils';
-import { valueExport, ensurePrices, priceOf, type ExportItem } from '@/services/priceEngine';
+import { valueExport, ensurePrices, priceOfVariant, type ExportItem } from '@/services/priceEngine';
 
 const VALUABLE_ITEMS_THRESHOLD = 10; // Show top 10 most valuable items when collapsed
 
@@ -163,7 +163,7 @@ export function IntegratedBankManager({
       let repriced = 0;
       const updatedItems = characterBankItems.map((item) => {
         if (!item.osrsId) return item;
-        const unit = priceOf(item.osrsId);
+        const unit = priceOfVariant(item.osrsId, item.name).unit;
         if (unit > 0 && unit !== item.estimatedPrice) repriced++;
         return unit > 0 ? { ...item, estimatedPrice: unit } : item;
       });
@@ -425,6 +425,14 @@ export function IntegratedBankManager({
                             </div>
                             <p className="text-sm text-muted-foreground">
                               Quantity: {Math.floor(item.quantity).toLocaleString()}
+                              {item.estimatedPrice > 0 && (
+                                <span
+                                  className="ml-1.5 font-medium text-foreground cursor-help"
+                                  title={`${(Math.floor(item.quantity) * item.estimatedPrice).toLocaleString()} gp  (${item.estimatedPrice.toLocaleString()} cada)`}
+                                >
+                                  · = {formatGoldValue(Math.floor(item.quantity) * item.estimatedPrice)} GP
+                                </span>
+                              )}
                             </p>
                           </div>
                           
@@ -447,7 +455,7 @@ export function IntegratedBankManager({
                               </div>
                             ) : (
                               <>
-                                <span className="font-mono">
+                                <span className="font-mono cursor-help" title={`${item.estimatedPrice.toLocaleString()} gp cada`}>
                                   {formatGoldValue(item.estimatedPrice)} GP
                                 </span>
                                 <Button

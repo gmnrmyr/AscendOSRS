@@ -95,6 +95,41 @@ export function priceOf(id: number): number {
   return priceMapMem?.get(id) ?? 0;
 }
 
+// Variantes que a Wiki /latest NÃO precifica (ID untradeable), mas que valem o
+// item-base tradeable — igual o tracker do RuneLite. Dado um nome, devolve os
+// nomes-base candidatos a tentar (barrows degradado, anel imbued, charged→uncharged).
+function variantBaseNames(name: string): string[] {
+  const n = name || '';
+  const out: string[] = [];
+  // Barrows degradados: "Dharok's helm 100" -> "Dharok's helm"
+  if (/^(Dharok's|Guthan's|Karil's|Ahrim's|Torag's|Verac's)\b/i.test(n) && /\s+\d+$/.test(n)) {
+    out.push(n.replace(/\s+\d+$/, ''));
+  }
+  // Anéis imbued: "Berserker ring (i)" / "Ring of suffering (ri)" -> base tradeable
+  if (/\s\(ri\)$/i.test(n)) out.push(n.replace(/\s*\(ri\)$/i, ''));
+  if (/\s\(i\)$/i.test(n)) out.push(n.replace(/\s*\(i\)$/i, ''));
+  // Charged -> uncharged (Serpentine helm, tridents...): só casa se o base existir.
+  out.push(`${n} (uncharged)`);
+  return out;
+}
+
+// Preço unitário resolvendo variante -> item-base pelo nome quando o id não tem
+// preço direto. Devolve também o nome-base usado (pra debug/telemetria).
+export function priceOfVariant(id: number, name: string): { unit: number; via?: string } {
+  const direct = priceOf(id);
+  if (direct > 0) return { unit: direct };
+  if (name && nameToIdMem) {
+    for (const base of variantBaseNames(name)) {
+      const bid = nameToIdMem.get(normName(base));
+      if (bid != null) {
+        const p = priceOf(bid);
+        if (p > 0) return { unit: p, via: base };
+      }
+    }
+  }
+  return { unit: 0 };
+}
+
 // Resolve o id de um item pelo nome (exato -> começa-com -> contém). Pra goals sem id confiável.
 export function idByName(name: string): number | null {
   if (!nameToIdMem) return null;
@@ -125,7 +160,7 @@ export async function valueExport(items: ExportItem[], force = false): Promise<{
   let total = 0;
   let unpricedCount = 0;
   const valued = items.map((it) => {
-    const unit = priceOf(it.id);
+    const unit = priceOfVariant(it.id, it.name).unit;
     const value = unit * it.quantity;
     total += value;
     if (unit === 0 && it.id !== COINS_ID) unpricedCount++;

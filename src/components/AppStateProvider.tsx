@@ -23,6 +23,7 @@ interface AppState {
     hoursPerDay: number;
   }) => void;
   recordWealthSnapshot: () => void;
+  refreshAllPrices: () => Promise<{ bankChanged: number; goalsChanged: number }>;
 }
 
 const AppStateContext = createContext<AppState | undefined>(undefined);

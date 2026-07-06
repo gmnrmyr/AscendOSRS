@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { LineChart } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { formatGoldValue } from '@/lib/utils';
-import type { WealthSnapshot } from '@/services/wealthHistory';
+import { diffItems, diffChars, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
 
 interface WealthHistoryChartProps {
   history: WealthSnapshot[];
@@ -22,6 +22,23 @@ const RANGES: { key: Range; label: string; days: number | null }[] = [
 function shortDate(iso: string): string {
   const [, m, d] = iso.split('-');
   return `${d}/${m}`;
+}
+
+// Rótulo curto da causa do movimento de um item.
+const REASON: Record<ItemMover['reason'], { label: string; cls: string }> = {
+  price: { label: 'preço',     cls: 'bg-amber-500/15 text-amber-600' },
+  qty:   { label: 'qtd',       cls: 'bg-blue-500/15 text-blue-600' },
+  both:  { label: 'preço+qtd', cls: 'bg-purple-500/15 text-purple-600' },
+  new:   { label: 'novo',      cls: 'bg-green-500/15 text-green-600' },
+  gone:  { label: 'saiu',      cls: 'bg-gray-500/15 text-gray-500' },
+};
+
+// Explica no hover o que rolou (preço de X→Y, qtd de X→Y).
+function moverTitle(m: ItemMover): string {
+  const money = `${m.prevValue.toLocaleString()} → ${m.currValue.toLocaleString()} gp`;
+  const qty = m.prevQty !== m.currQty ? `  · qtd ${m.prevQty.toLocaleString()} → ${m.currQty.toLocaleString()}` : '';
+  const unit = m.prevUnit !== m.currUnit ? `  · preço ${m.prevUnit.toLocaleString()} → ${m.currUnit.toLocaleString()} cada` : '';
+  return money + qty + unit;
 }
 
 export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartProps) {
@@ -43,6 +60,17 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
   const delta = latest && first ? latest.total - first.total : 0;
   const deltaPct = first && first.total > 0 ? (delta / first.total) * 100 : 0;
   const deltaUp = delta >= 0;
+
+  // "O que mudou": diff dos 2 últimos snapshots. Prefere item; cai pra conta.
+  const movers = useMemo(() => {
+    if (sorted.length < 2) return null;
+    const prev = sorted[sorted.length - 2];
+    const curr = sorted[sorted.length - 1];
+    const items = diffItems(prev, curr).slice(0, 6);
+    if (items.length) return { kind: 'item' as const, prev, curr, items };
+    const chars = diffChars(prev, curr).slice(0, 6);
+    return chars.length ? { kind: 'char' as const, prev, curr, chars } : null;
+  }, [sorted]);
 
   return (
     <Card>
@@ -106,15 +134,16 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                   <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.1} vertical={false} />
                   <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'currentColor' }} axisLine={false} tickLine={false} minTickGap={20} />
                   <YAxis
-                    tick={{ fontSize: 11, fill: 'currentColor' }}
+                    tick={{ fontSize: 10, fill: 'currentColor' }}
                     axisLine={false}
                     tickLine={false}
-                    width={48}
-                    tickFormatter={(v: number) => formatGoldValue(v)}
+                    width={92}
+                    tickCount={4}
+                    tickFormatter={(v: number) => Math.round(v).toLocaleString('pt-BR')}
                     domain={['dataMin', 'dataMax']}
                   />
                   <Tooltip
-                    formatter={(v: number) => [`${formatGoldValue(v)} gp`, 'Total']}
+                    formatter={(v: number) => [`${v.toLocaleString()} gp`, 'Total']}
                     labelFormatter={(l) => `Dia ${l}`}
                     contentStyle={{ fontSize: 12, borderRadius: 8 }}
                   />
@@ -123,6 +152,62 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                 </AreaChart>
               </ResponsiveContainer>
             </div>
+
+            {movers && (
+              <div className="mt-5 border-t border-border pt-4">
+                <div className="mb-2 flex items-baseline justify-between gap-2">
+                  <h4 className="text-sm font-semibold">O que mudou</h4>
+                  <span className="text-xs text-muted-foreground">
+                    {shortDate(movers.prev.date)} → {shortDate(movers.curr.date)}
+                    {movers.kind === 'char' && ' · por conta'}
+                  </span>
+                </div>
+
+                {movers.kind === 'item' ? (
+                  <ul className="space-y-1">
+                    {movers.items.map((m) => {
+                      const up = m.deltaValue >= 0;
+                      return (
+                        <li key={m.name} className="flex items-center gap-2 text-sm cursor-help" title={moverTitle(m)}>
+                          <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${REASON[m.reason].cls}`}>
+                            {REASON[m.reason].label}
+                          </span>
+                          <span className="flex-1 truncate">{m.name}</span>
+                          <span className={`shrink-0 tabular-nums font-medium ${up ? 'text-green-600' : 'text-red-500'}`}>
+                            {up ? '+' : '−'}{formatGoldValue(Math.abs(m.deltaValue))}
+                          </span>
+                          <span className="shrink-0 w-14 text-right tabular-nums text-xs text-muted-foreground">
+                            {up ? '+' : '−'}{Math.abs(m.deltaPct).toFixed(1)}%
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <ul className="space-y-1">
+                    {movers.chars.map((c) => {
+                      const up = c.delta >= 0;
+                      return (
+                        <li key={c.name} className="flex items-center gap-2 text-sm cursor-help" title={`${c.prev.toLocaleString()} → ${c.curr.toLocaleString()} gp`}>
+                          <span className="flex-1 truncate">{c.name}</span>
+                          <span className={`shrink-0 tabular-nums font-medium ${up ? 'text-green-600' : 'text-red-500'}`}>
+                            {up ? '+' : '−'}{formatGoldValue(Math.abs(c.delta))}
+                          </span>
+                          <span className="shrink-0 w-14 text-right tabular-nums text-xs text-muted-foreground">
+                            {up ? '+' : '−'}{Math.abs(c.deltaPct).toFixed(1)}%
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                {movers.kind === 'char' && (
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    Detalhe por item aparece quando os dois dias comparados já tiverem a foto dos itens.
+                  </p>
+                )}
+              </div>
+            )}
           </>
         )}
       </CardContent>

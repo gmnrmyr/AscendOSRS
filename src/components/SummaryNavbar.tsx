@@ -1,21 +1,43 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, DollarSign, Users, Target, Coins, Landmark } from "lucide-react";
+import { ChevronDown, ChevronUp, DollarSign, Users, Target, Coins, Landmark, RefreshCw } from "lucide-react";
 import { useAppState } from "@/components/AppStateProvider";
+import { useToast } from "@/hooks/use-toast";
 
 export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => void }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { toast } = useToast();
+
   const {
     characters,
     moneyMethods,
     purchaseGoals,
     bankData,
-    hoursPerDay
+    hoursPerDay,
+    refreshAllPrices
   } = useAppState();
+
+  // Atualiza preço de TUDO (todos os bancos + goals) com o GE ao vivo.
+  const handleRefreshAll = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      const { bankChanged, goalsChanged } = await refreshAllPrices();
+      toast({
+        title: "Preços atualizados (GE ao vivo)",
+        description: `${bankChanged} itens de banco e ${goalsChanged} goals reprecificados.`,
+      });
+    } catch (e) {
+      console.error("Falha ao atualizar preços globais:", e);
+      toast({ title: "Erro", description: "Falha ao buscar preços ao vivo.", variant: "destructive" });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Handle scroll behavior for sticky navbar
   useEffect(() => {
@@ -154,7 +176,7 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                 
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
-                  <span className="text-xs sm:text-sm font-medium text-yellow-700">
+                  <span className="text-xs sm:text-sm font-medium text-yellow-700 cursor-help" title={`${totalGoldValue.toLocaleString()} gp`}>
                     {formatGP(totalGoldValue)} GP
                   </span>
                 </div>
@@ -162,7 +184,7 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                 <button
                   type="button"
                   onClick={() => onTabChange?.('bank')}
-                  title="Ver banco detalhado"
+                  title={`${totalBankValue.toLocaleString()} gp — clique pra abrir o banco`}
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
                   <Landmark className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
@@ -173,7 +195,7 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
 
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
-                  <span className="text-xs sm:text-sm font-medium text-purple-700">
+                  <span className="text-xs sm:text-sm font-medium text-purple-700 cursor-help" title={`${totalGoalsValue.toLocaleString()} gp`}>
                     {formatGP(totalGoalsValue)} goals
                   </span>
                 </div>
@@ -182,8 +204,19 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={handleRefreshAll}
+                disabled={isRefreshing}
+                title="Atualizar preço de tudo (todos os bancos + goals) com o GE ao vivo"
                 className="h-10 w-10 sm:h-8 sm:w-8 p-2 sm:p-1 hover:bg-amber-100 dark:hover:bg-amber-800/20 ml-2"
+              >
+                <RefreshCw className={`h-5 w-5 sm:h-4 sm:w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="h-10 w-10 sm:h-8 sm:w-8 p-2 sm:p-1 hover:bg-amber-100 dark:hover:bg-amber-800/20 ml-1"
               >
                 {isExpanded ? (
                   <ChevronUp className="h-6 w-6 sm:h-5 sm:w-5" />
@@ -204,7 +237,7 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   </div>
                   <div>
                     <p className="text-gray-600 dark:text-gray-400">Total Bank</p>
-                    <p className="font-medium text-blue-700">
+                    <p className="font-medium text-blue-700 cursor-help" title={`${totalBankValue.toLocaleString()} gp`}>
                       {formatGP(totalBankValue)} GP
                     </p>
                   </div>

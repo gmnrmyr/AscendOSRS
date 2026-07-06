@@ -108,6 +108,12 @@ function variantBaseNames(name: string): string[] {
   // Anéis imbued: "Berserker ring (i)" / "Ring of suffering (ri)" -> base tradeable
   if (/\s\(ri\)$/i.test(n)) out.push(n.replace(/\s*\(ri\)$/i, ''));
   if (/\s\(i\)$/i.test(n)) out.push(n.replace(/\s*\(i\)$/i, ''));
+  // Ornament kit "(or)" -> item-base (Tormented bracelet (or), Occult necklace (or)...)
+  if (/\s\(or\)$/i.test(n)) out.push(n.replace(/\s*\(or\)$/i, ''));
+  // Enchanted+imbued "(ei)" -> "(e)" e depois o cru (Salve amulet(ei))
+  if (/\(ei\)$/i.test(n)) { out.push(n.replace(/\s*\(ei\)$/i, ' (e)')); out.push(n.replace(/\s*\(ei\)$/i, '')); }
+  // Sufixo "(untradeable)" -> o tradeable homônimo (Old school bond (untradeable))
+  if (/\s\(untradeable\)$/i.test(n)) out.push(n.replace(/\s*\(untradeable\)$/i, ''));
   // Charged -> uncharged (Serpentine helm, tridents...): só casa se o base existir.
   out.push(`${n} (uncharged)`);
   return out;

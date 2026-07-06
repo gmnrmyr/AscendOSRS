@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Target, Filter } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { TrendingUp, Target, Filter, Coins } from "lucide-react";
+import { useAppState } from "@/components/AppStateProvider";
 import { useToast } from "@/hooks/use-toast";
 import { osrsApi } from "@/services/osrsApi";
 import { ensurePrices, priceOf, idByName, itemImageUrl } from "@/services/priceEngine";
@@ -360,6 +362,33 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
 
   const totalGoalValue = goals.reduce((sum, goal) => sum + getTotalCost(goal), 0);
 
+  // ---- Ouro disponível vs goals ----
+  // Toggle "só a conta principal" (OFF por padrão): compara os goals com o ouro
+  // de TODAS as contas, ou só o da principal (detectada = maior valor de banco).
+  const { bankData } = useAppState();
+  const [mainOnly, setMainOnly] = useState(false);
+
+  const goldOf = (items: any[]) => (items || []).reduce((s, it) => {
+    const n = (it.name || '').toLowerCase();
+    if (n.includes('coin')) return s + (it.quantity || 0);
+    if (n.includes('platinum')) return s + (it.quantity || 0) * 1000;
+    return s;
+  }, 0);
+
+  const { totalGold, mainName, mainGold } = useMemo(() => {
+    let totalGold = 0, mainName = '', mainVal = -1, mainGold = 0;
+    for (const [name, items] of Object.entries(bankData || {})) {
+      const g = goldOf(items as any[]);
+      totalGold += g;
+      const bv = (items as any[]).reduce((s, it) => s + Math.floor(it.quantity || 0) * (it.estimatedPrice || 0), 0);
+      if (bv > mainVal) { mainVal = bv; mainName = name; mainGold = g; }
+    }
+    return { totalGold, mainName, mainGold };
+  }, [bankData]);
+
+  const availableGold = mainOnly ? mainGold : totalGold;
+  const goldPct = totalGoalValue > 0 ? Math.min(100, (availableGold / totalGoalValue) * 100) : 100;
+
   // Format the timestamp nicely
   const formatLastUpdate = (timestamp: string | null) => {
     if (!timestamp) return 'Unknown';
@@ -386,7 +415,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
       <div className="flex flex-col space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <h2 className="text-2xl font-bold">Purchase Goals</h2>
+            <h2 className="osrs-title text-2xl">Purchase Goals</h2>
             <Badge variant="outline" className="text-xs">
               Prices updated: {formatLastUpdate(metadata?.last_updated || null)}
             </Badge>
@@ -422,6 +451,49 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           </div>
         </div>
         
+        {/* Resumo: ouro disponível vs custo total dos goals */}
+        <Card className="osrs-card">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <Coins className="h-5 w-5 text-yellow-600" />
+                <span className="osrs-title text-lg">Ouro vs Objetivos</span>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer select-none" title={mainName ? `Considera só o ouro de ${mainName}` : 'Considera só a conta principal'}>
+                <span className="text-sm font-medium text-muted-foreground">
+                  Só {mainName || 'conta principal'}
+                </span>
+                <Switch checked={mainOnly} onCheckedChange={setMainOnly} />
+              </label>
+            </div>
+
+            <div className="flex items-end justify-between gap-3 mb-2">
+              <span
+                className="text-2xl font-bold text-yellow-700 dark:text-yellow-400 cursor-help"
+                title={`${availableGold.toLocaleString()} gp disponível`}
+                style={{ fontFamily: 'RuneScape Bold, monospace' }}
+              >
+                {formatGP(availableGold)} GP
+              </span>
+              <span className="text-sm text-muted-foreground">
+                de <span className="font-semibold text-foreground cursor-help" title={`${totalGoalValue.toLocaleString()} gp em objetivos`}>{formatGP(totalGoalValue)} GP</span> em objetivos
+              </span>
+            </div>
+
+            <div className="osrs-progress h-4">
+              <div className="osrs-progress-fill" style={{ width: `${goldPct}%` }} />
+            </div>
+            <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+              <span>{goldPct.toFixed(1)}% coberto</span>
+              <span>
+                {availableGold >= totalGoalValue
+                  ? 'Dá pra bancar tudo ✔'
+                  : `Faltam ${formatGP(totalGoalValue - availableGold)} GP`}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Filters */}
         <GoalFilters
           filterPriority={filterPriority}

@@ -187,7 +187,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
           />
         </div>
 
-        <Button onClick={addGoal} className="w-full bg-purple-600 hover:bg-purple-700">
+        <Button onClick={addGoal} className="osrs-button w-full">
           <Plus className="h-4 w-4 mr-2" />
           Add Goal
         </Button>

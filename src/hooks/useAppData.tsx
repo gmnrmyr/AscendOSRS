@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useDataPersistence } from './useDataPersistence';
 import { loadServerData, saveServerData } from '@/services/localStore';
+import { upsertSnapshot, type WealthSnapshot } from '@/services/wealthHistory';
 import { 
   getDefaultCharacters, 
   getDefaultMoneyMethods, 
@@ -61,6 +62,7 @@ export function useAppData() {
   const [purchaseGoals, setPurchaseGoals] = useState<PurchaseGoal[]>(getDefaultPurchaseGoals());
   const [bankData, setBankData] = useState<Record<string, BankItem[]>>(getDefaultBankData());
   const [hoursPerDay, setHoursPerDay] = useState(10);
+  const [wealthHistory, setWealthHistory] = useState<WealthSnapshot[]>([]);
   // Gate de salvamento: só persiste DEPOIS do load inicial, pra não gravar
   // defaults vazios por cima do save do disco.
   const [loaded, setLoaded] = useState(false);
@@ -69,6 +71,7 @@ export function useAppData() {
     if (Array.isArray(d.characters)) setCharacters(d.characters);
     if (Array.isArray(d.moneyMethods)) setMoneyMethods(d.moneyMethods);
     if (Array.isArray(d.purchaseGoals)) setPurchaseGoals(d.purchaseGoals);
+    if (Array.isArray(d.wealthHistory)) setWealthHistory(d.wealthHistory);
     if (d.bankData && typeof d.bankData === 'object') {
       // Saneamento: descarta bankData de chars que não existem mais (lixo órfão)
       const validNames = new Set((Array.isArray(d.characters) ? d.characters : []).map((c: any) => c.name));
@@ -117,6 +120,20 @@ export function useAppData() {
     return () => { cancelled = true; };
   }, []);
 
+  // Auto-carimbo diário: depois do load, garante 1 snapshot pra hoje (upsert por dia).
+  // Roda uma vez por sessão quando os dados já estão carregados.
+  const [autoSnapped, setAutoSnapped] = useState(false);
+  useEffect(() => {
+    if (!loaded || autoSnapped) return;
+    setWealthHistory((prev) => upsertSnapshot(prev, characters, bankData));
+    setAutoSnapped(true);
+  }, [loaded, autoSnapped, characters, bankData]);
+
+  // Carimbo manual: força um snapshot com os valores atuais (sobrescreve o de hoje).
+  const recordWealthSnapshot = () => {
+    setWealthHistory((prev) => upsertSnapshot(prev, characters, bankData));
+  };
+
   // Use persistence hook for auto-saving (só depois do load inicial)
   useDataPersistence({
     characters,
@@ -124,6 +141,7 @@ export function useAppData() {
     purchaseGoals,
     bankData,
     hoursPerDay,
+    wealthHistory,
     enabled: loaded
   });
 
@@ -148,12 +166,14 @@ export function useAppData() {
     purchaseGoals,
     bankData,
     hoursPerDay,
+    wealthHistory,
     setCharacters,
     setMoneyMethods,
     setPurchaseGoals,
     setBankData,
     setHoursPerDay,
-    setAllData
+    setAllData,
+    recordWealthSnapshot
   };
 }
 

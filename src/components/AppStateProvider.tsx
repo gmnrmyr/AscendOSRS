@@ -1,6 +1,7 @@
 
 import { createContext, useContext, ReactNode } from 'react';
 import { useAppData, type Character, type MoneyMethod, type PurchaseGoal, type BankItem } from '@/hooks/useAppData';
+import type { WealthSnapshot } from '@/services/wealthHistory';
 
 interface AppState {
   characters: Character[];
@@ -8,6 +9,7 @@ interface AppState {
   purchaseGoals: PurchaseGoal[];
   bankData: Record<string, BankItem[]>;
   hoursPerDay: number;
+  wealthHistory: WealthSnapshot[];
   setCharacters: (characters: Character[]) => void;
   setMoneyMethods: (methods: MoneyMethod[]) => void;
   setPurchaseGoals: (goals: PurchaseGoal[]) => void;
@@ -20,6 +22,7 @@ interface AppState {
     bankData: Record<string, BankItem[]>;
     hoursPerDay: number;
   }) => void;
+  recordWealthSnapshot: () => void;
 }
 
 const AppStateContext = createContext<AppState | undefined>(undefined);

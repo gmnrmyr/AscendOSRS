@@ -8,6 +8,7 @@ export interface DashboardSave {
   purchaseGoals: any[];
   bankData: Record<string, any[]>;
   hoursPerDay: number;
+  wealthHistory?: any[]; // série histórica da riqueza total (1 ponto/dia)
   savedAt?: string;
 }
 

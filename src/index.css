@@ -1,305 +1,290 @@
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=MedievalSharp&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ==========================================================================
-   Tema OSRS — parchment/bronze (light default) + stone escuro (dark opcional).
-   As variáveis alimentam o shadcn, então retematizam quase tudo de graça.
+   Tema OSRS autêntico — fonte oficial do jogo + painéis beige chanfrados.
+   Fonts: RuneStar/fonts (extraídas do cache do jogo), servidas localmente.
    ========================================================================== */
+
+@font-face {
+  font-family: 'RuneScape';
+  src: url('/fonts/RuneScape-Plain-12.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'RuneScape Bold';
+  src: url('/fonts/RuneScape-Bold-12.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'RuneScape Quill';
+  src: url('/fonts/RuneScape-Quill.ttf') format('truetype');
+  font-display: swap;
+}
 
 @layer base {
   :root {
-    /* Parchment claro (pergaminho de quest/mapa) */
-    --background: 41 40% 71%;      /* couro/pergaminho de fundo */
-    --foreground: 36 42% 13%;      /* tinta marrom escura */
+    /* Beige de interface OSRS (menu/tooltip) sobre couro/khaki */
+    --background: 42 30% 56%;      /* couro/khaki de fundo */
+    --foreground: 38 40% 11%;      /* tinta quase preta */
 
-    --card: 44 56% 87%;            /* painel de pergaminho claro */
-    --card-foreground: 36 42% 13%;
+    --card: 45 40% 71%;            /* painel beige do jogo */
+    --card-foreground: 38 40% 11%;
 
-    --popover: 44 56% 89%;
-    --popover-foreground: 36 42% 13%;
+    --popover: 45 42% 74%;
+    --popover-foreground: 38 40% 11%;
 
-    --primary: 32 72% 40%;         /* bronze/âmbar (botões) */
-    --primary-foreground: 44 60% 94%;
+    --primary: 32 90% 45%;         /* laranja/bronze OSRS */
+    --primary-foreground: 44 60% 96%;
 
-    --secondary: 43 45% 78%;       /* tan mais claro */
-    --secondary-foreground: 36 42% 15%;
+    --secondary: 44 34% 64%;
+    --secondary-foreground: 38 40% 12%;
 
-    --muted: 44 43% 80%;
-    --muted-foreground: 38 30% 32%;
+    --muted: 44 30% 66%;
+    --muted-foreground: 38 34% 26%;
 
-    --accent: 43 48% 76%;
-    --accent-foreground: 36 42% 15%;
+    --accent: 44 36% 68%;
+    --accent-foreground: 38 40% 12%;
 
-    --destructive: 6 66% 40%;      /* vermelho OSRS */
-    --destructive-foreground: 44 60% 94%;
+    --destructive: 4 62% 42%;
+    --destructive-foreground: 44 60% 96%;
 
-    --border: 37 44% 34%;          /* bronze escuro (moldura) */
-    --input: 37 40% 40%;
-    --ring: 45 66% 47%;            /* dourado (foco) */
+    --border: 38 34% 30%;
+    --input: 38 34% 34%;
+    --ring: 40 88% 52%;
 
-    --radius: 0.2rem;              /* cantos quase retos, estilo interface OSRS */
+    --radius: 0;                   /* interface OSRS é totalmente reta */
 
-    /* Acentos temáticos reutilizáveis */
-    --gold: 45 68% 47%;
-    --osrs-orange: 33 100% 56%;
-    --osrs-yellow: 52 96% 52%;
-    --bronze-hi: 44 60% 90%;
-    --bronze-lo: 38 40% 18%;
+    /* Bevel e acentos */
+    --bevel-light: 46 55% 84%;
+    --bevel-dark: 38 34% 26%;
+    --panel-edge: 40 40% 6%;       /* contorno preto-marrom */
+    --gold: 43 74% 49%;
+    --osrs-orange: 33 100% 56%;    /* #ff981f */
+    --osrs-yellow: 56 100% 50%;    /* #ffff00 */
   }
 
   .dark {
-    /* Stone/couro escuro (painel clássico da interface OSRS) */
-    --background: 41 18% 12%;
-    --foreground: 43 43% 83%;
+    /* Stone escuro (interface fixa do jogo) */
+    --background: 40 16% 10%;
+    --foreground: 44 42% 82%;
 
-    --card: 38 16% 19%;
-    --card-foreground: 43 43% 83%;
+    --card: 38 15% 17%;
+    --card-foreground: 44 42% 82%;
 
-    --popover: 38 16% 19%;
-    --popover-foreground: 43 43% 83%;
+    --popover: 38 15% 17%;
+    --popover-foreground: 44 42% 82%;
 
-    --primary: 45 66% 47%;         /* dourado */
-    --primary-foreground: 38 30% 12%;
+    --primary: 40 88% 52%;
+    --primary-foreground: 38 30% 10%;
 
-    --secondary: 38 14% 26%;
-    --secondary-foreground: 43 43% 83%;
+    --secondary: 38 13% 24%;
+    --secondary-foreground: 44 42% 82%;
 
-    --muted: 38 14% 24%;
-    --muted-foreground: 42 25% 62%;
+    --muted: 38 13% 22%;
+    --muted-foreground: 42 24% 60%;
 
-    --accent: 38 16% 28%;
-    --accent-foreground: 43 43% 83%;
+    --accent: 38 15% 26%;
+    --accent-foreground: 44 42% 82%;
 
-    --destructive: 6 60% 42%;
-    --destructive-foreground: 43 43% 90%;
+    --destructive: 4 56% 44%;
+    --destructive-foreground: 44 50% 90%;
 
-    --border: 38 30% 30%;
-    --input: 38 26% 32%;
-    --ring: 45 66% 47%;
+    --border: 38 26% 28%;
+    --input: 38 24% 30%;
+    --ring: 40 88% 52%;
 
-    --bronze-hi: 44 40% 55%;
-    --bronze-lo: 38 40% 8%;
+    --bevel-light: 40 20% 38%;
+    --bevel-dark: 40 30% 6%;
+    --panel-edge: 40 40% 4%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'RuneScape', 'JetBrains Mono', monospace;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* Fundo de pergaminho com leve textura (só gradientes, sem imagem externa) */
+  /* Fundo de couro com textura leve (só gradientes) */
   body:not(.dark) {
-    background-color: #c9b78b;
+    background-color: #a5945f;
     background-image:
-      radial-gradient(hsla(44, 40%, 100%, 0.22) 1px, transparent 1px),
-      radial-gradient(hsla(30, 45%, 18%, 0.06) 1px, transparent 1px),
-      linear-gradient(135deg, #d4c295 0%, #c1ac7c 100%);
-    background-size: 6px 6px, 6px 6px, 100% 100%;
-    background-position: 0 0, 3px 3px, 0 0;
+      radial-gradient(hsla(44, 40%, 100%, 0.16) 1px, transparent 1px),
+      radial-gradient(hsla(30, 45%, 12%, 0.10) 1px, transparent 1px),
+      linear-gradient(135deg, #b1a06b 0%, #9a894f 100%);
+    background-size: 5px 5px, 5px 5px, 100% 100%;
+    background-position: 0 0, 2px 2px, 0 0;
     background-attachment: fixed;
   }
-
   body.dark {
-    background-color: #211d16;
+    background-color: #1a1712;
     background-image:
-      radial-gradient(hsla(44, 30%, 60%, 0.045) 1px, transparent 1px),
-      linear-gradient(135deg, #2a251b 0%, #1c1913 100%);
-    background-size: 6px 6px, 100% 100%;
+      radial-gradient(hsla(44, 30%, 60%, 0.05) 1px, transparent 1px),
+      linear-gradient(135deg, #221e17 0%, #14110c 100%);
+    background-size: 5px 5px, 100% 100%;
     background-attachment: fixed;
   }
 
-  /* Inputs coerentes com o pergaminho */
   input, textarea, select {
-    @apply bg-card border-border text-foreground;
+    @apply bg-card text-foreground;
+    font-family: 'RuneScape', monospace;
+    border: 2px solid;
+    border-color: hsl(var(--bevel-dark)) hsl(var(--bevel-light)) hsl(var(--bevel-light)) hsl(var(--bevel-dark)); /* recuo (input afundado) */
   }
   input:focus, textarea:focus, select:focus {
-    @apply ring-1 ring-[hsl(var(--gold))] border-[hsl(var(--gold))];
+    @apply outline-none;
+    box-shadow: 0 0 0 1px hsl(var(--gold));
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'MedievalSharp', 'JetBrains Mono', monospace;
-    font-weight: 600;
-    letter-spacing: 0.01em;
+    font-family: 'RuneScape Bold', 'RuneScape', monospace;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
 }
 
 @layer components {
-  /* ---- Painel OSRS: pergaminho com moldura de bronze belevada ---- */
-  .pixel-card {
-    background:
-      linear-gradient(hsla(44, 55%, 92%, 0.35), hsla(44, 45%, 80%, 0.12)),
-      hsl(var(--card));
-    border: 2px solid hsl(var(--border));
-    border-radius: var(--radius);
-    box-shadow:
-      inset 0 0 0 1px hsla(var(--bronze-hi), 0.45),
-      inset 0 -3px 8px hsla(var(--bronze-lo), 0.16),
-      0 3px 8px hsla(30, 40%, 8%, 0.35);
+  /* ---- Bevel OSRS reutilizável (painel levantado): contorno preto + chanfro ---- */
+  .osrs-bevel {
+    border: 2px solid;
+    border-color: hsl(var(--bevel-light)) hsl(var(--bevel-dark)) hsl(var(--bevel-dark)) hsl(var(--bevel-light));
+    box-shadow: 0 0 0 1px hsl(var(--panel-edge)), 0 2px 4px hsla(40, 40%, 4%, 0.4);
+    border-radius: 0;
   }
 
-  /* ---- Botões de bronze belevados ---- */
-  .pixel-button {
-    background: linear-gradient(hsl(38 42% 62%), hsl(35 40% 48%));
-    border: 2px solid hsl(var(--border));
-    color: hsl(44 55% 96%);
-    border-radius: var(--radius);
-    box-shadow: inset 0 1px 0 hsla(var(--bronze-hi), 0.6), 0 2px 4px hsla(30, 40%, 8%, 0.35);
-    @apply px-4 py-2 font-medium transition-all duration-150;
-    font-family: 'MedievalSharp', cursive;
-    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.6);
+  /* Painel de conteúdo (beige levantado) */
+  .pixel-card, .osrs-card {
+    background: hsl(var(--card));
+    border: 2px solid;
+    border-color: hsl(var(--bevel-light)) hsl(var(--bevel-dark)) hsl(var(--bevel-dark)) hsl(var(--bevel-light));
+    box-shadow: 0 0 0 1px hsl(var(--panel-edge)), 0 3px 6px hsla(40, 40%, 4%, 0.42);
+    border-radius: 0;
   }
-  .pixel-button:hover { filter: brightness(1.07); }
-  .pixel-button:active { filter: brightness(0.95); transform: translateY(1px); }
 
-  .pixel-button-primary {
-    background: linear-gradient(hsl(33 62% 46%), hsl(32 64% 36%));
-    border: 2px solid hsl(var(--gold));
-    color: hsl(44 60% 95%);
-    border-radius: var(--radius);
-    box-shadow: inset 0 1px 0 hsla(var(--bronze-hi), 0.5), 0 2px 4px hsla(30, 40%, 8%, 0.4);
-    @apply px-4 py-2 font-medium transition-all duration-150;
-    font-family: 'MedievalSharp', cursive;
-    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.6);
+  /* ---- Botões beige chanfrados (levanta; ao clicar, afunda) ---- */
+  .pixel-button, .osrs-button, .osrs-button-secondary {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border: 2px solid;
+    border-color: hsl(var(--bevel-light)) hsl(var(--bevel-dark)) hsl(var(--bevel-dark)) hsl(var(--bevel-light));
+    box-shadow: 0 0 0 1px hsl(var(--panel-edge));
+    border-radius: 0;
+    @apply px-4 py-2 transition-none;
+    font-family: 'RuneScape Bold', monospace;
+    text-shadow: 0 1px 0 hsla(46, 55%, 90%, 0.4);
   }
-  .pixel-button-primary:hover { filter: brightness(1.08); }
+  .pixel-button:hover, .osrs-button:hover, .osrs-button-secondary:hover { filter: brightness(1.06); }
+  .pixel-button:active, .osrs-button:active {
+    border-color: hsl(var(--bevel-dark)) hsl(var(--bevel-light)) hsl(var(--bevel-light)) hsl(var(--bevel-dark));
+    transform: translateY(1px);
+  }
+
+  .pixel-button-primary, .osrs-button {
+    background: linear-gradient(hsl(33 88% 50%), hsl(30 90% 42%));
+    color: hsl(40 60% 12%);
+    border-color: hsl(40 90% 62%) hsl(28 70% 30%) hsl(28 70% 30%) hsl(40 90% 62%);
+  }
 
   .pixel-input {
-    @apply bg-card border-2 border-border text-foreground px-3 py-2;
-    border-radius: var(--radius);
-    @apply focus:ring-1 focus:ring-[hsl(var(--gold))] focus:border-[hsl(var(--gold))];
-    @apply transition-all duration-150;
-    font-family: 'JetBrains Mono', monospace;
+    @apply bg-card text-foreground px-3 py-2;
+    border: 2px solid;
+    border-color: hsl(var(--bevel-dark)) hsl(var(--bevel-light)) hsl(var(--bevel-light)) hsl(var(--bevel-dark));
+    border-radius: 0;
+    font-family: 'RuneScape', monospace;
   }
+  .pixel-input:focus { @apply outline-none; box-shadow: 0 0 0 1px hsl(var(--gold)); }
 
-  .pixel-badge {
-    @apply text-xs font-semibold px-2 py-1;
+  .pixel-badge, .osrs-badge {
     background: hsl(var(--secondary));
     color: hsl(var(--secondary-foreground));
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid hsl(var(--panel-edge));
+    box-shadow: inset 1px 1px 0 hsl(var(--bevel-light)), inset -1px -1px 0 hsl(var(--bevel-dark));
+    @apply px-2 py-1 text-xs;
+    border-radius: 0;
+    font-family: 'RuneScape Bold', monospace;
   }
 
-  /* ---- Abas de navegação estilo pergaminho ---- */
+  /* ---- Abas ---- */
   .pixel-tab {
-    background: linear-gradient(hsl(43 42% 82%), hsl(41 40% 73%));
-    border: 2px solid hsl(var(--border));
+    background: hsl(var(--card));
+    border: 2px solid;
+    border-color: hsl(var(--bevel-light)) hsl(var(--bevel-dark)) hsl(var(--bevel-dark)) hsl(var(--bevel-light));
+    box-shadow: 0 0 0 1px hsl(var(--panel-edge));
     color: hsl(var(--foreground)) !important;
-    border-radius: var(--radius);
-    box-shadow: inset 0 1px 0 hsla(var(--bronze-hi), 0.6);
-    @apply px-4 py-2 font-medium transition-all duration-150;
-    font-family: 'MedievalSharp', cursive;
+    border-radius: 0;
+    @apply px-4 py-2 transition-none;
+    font-family: 'RuneScape Bold', monospace;
   }
-  .dark .pixel-tab {
-    background: linear-gradient(hsl(38 16% 26%), hsl(38 16% 20%));
-  }
-  .pixel-tab:hover { filter: brightness(1.05); }
+  .pixel-tab:hover { filter: brightness(1.06); }
 
-  /* Aba ativa: bronze escuro com texto dourado */
+  /* Aba ativa: afundada + texto laranja OSRS */
   .pixel-tab-active,
   .pixel-tab[data-state="active"] {
-    background: linear-gradient(hsl(33 60% 42%), hsl(32 62% 32%)) !important;
-    border-color: hsl(var(--gold)) !important;
-    color: hsl(48 80% 82%) !important;
-    box-shadow: inset 0 1px 0 hsla(var(--bronze-hi), 0.5), 0 0 0 1px hsla(var(--gold), 0.3);
-    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.7);
+    background: hsl(40 34% 62%) !important;
+    border-color: hsl(var(--bevel-dark)) hsl(var(--bevel-light)) hsl(var(--bevel-light)) hsl(var(--bevel-dark)) !important;
+    color: hsl(var(--osrs-orange)) !important;
+    text-shadow: 0 1px 1px hsla(30, 60%, 10%, 0.6);
   }
 
-  /* ---- Classes osrs-* (mantidas, refinadas) ---- */
-  .osrs-card {
-    background: hsl(var(--card));
-    border: 2px solid hsl(var(--border));
-    border-radius: var(--radius);
-    box-shadow: inset 0 0 0 1px hsla(var(--bronze-hi), 0.4), 0 2px 6px hsla(30, 40%, 8%, 0.3);
-    @apply transition-colors duration-150;
-  }
-
-  .osrs-badge {
-    background: hsl(var(--secondary));
-    color: hsl(var(--secondary-foreground));
-    border: 1px solid hsl(var(--border));
-    @apply px-2 py-1 text-xs font-semibold;
-    border-radius: var(--radius);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
+  /* ---- Progresso ---- */
   .osrs-progress {
-    background: hsl(38 30% 30%);
-    border: 2px solid hsl(var(--border));
-    border-radius: var(--radius);
+    background: hsl(38 30% 22%);
+    border: 2px solid;
+    border-color: hsl(var(--bevel-dark)) hsl(var(--bevel-light)) hsl(var(--bevel-light)) hsl(var(--bevel-dark));
+    box-shadow: 0 0 0 1px hsl(var(--panel-edge));
+    border-radius: 0;
     @apply overflow-hidden;
   }
-
   .osrs-progress-fill {
-    background: linear-gradient(90deg, hsl(var(--gold)), hsl(var(--osrs-orange)));
+    background: linear-gradient(hsl(40 90% 52%), hsl(30 88% 44%));
+    box-shadow: inset 0 1px 0 hsla(48, 90%, 80%, 0.5);
     @apply h-full transition-all duration-300 ease-out;
   }
 
+  /* ---- Títulos laranja OSRS ---- */
   .osrs-title {
     color: hsl(var(--osrs-orange));
-    @apply font-bold;
-    font-family: 'MedievalSharp', cursive;
-    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.4);
+    font-family: 'RuneScape Bold', monospace;
+    text-shadow: 1px 1px 0 hsla(40, 60%, 8%, 0.55);
   }
+  .osrs-button-secondary { background: hsl(var(--card)); }
 
-  .osrs-button {
-    background: linear-gradient(hsl(33 62% 46%), hsl(32 64% 36%));
-    color: hsl(44 60% 95%);
-    border: 2px solid hsl(var(--gold));
-    border-radius: var(--radius);
-    @apply transition-all duration-150;
-    font-family: 'MedievalSharp', cursive;
-    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.6);
-  }
-  .osrs-button:hover { filter: brightness(1.08); }
-
-  .osrs-button-secondary {
-    border: 2px solid hsl(var(--border));
-    color: hsl(var(--foreground));
-    @apply hover:bg-[hsl(var(--accent))];
-    border-radius: var(--radius);
-    font-family: 'MedievalSharp', cursive;
-  }
-
-  /* ---- Navbar translúcida com base de bronze ---- */
+  /* ---- Navbar ---- */
   .navbar-blur {
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
   .navbar-blur:not(.dark) {
-    background: hsla(43, 45%, 80%, 0.88);
-    border-bottom: 2px solid hsl(var(--border));
+    background: hsla(45, 38%, 68%, 0.94);
+    border-bottom: 2px solid hsl(var(--panel-edge));
+    box-shadow: inset 0 1px 0 hsl(var(--bevel-light));
   }
   .dark .navbar-blur {
-    background: hsla(38, 16%, 14%, 0.9);
-    border-bottom: 2px solid hsl(var(--border));
+    background: hsla(38, 15%, 12%, 0.94);
+    border-bottom: 2px solid hsl(var(--panel-edge));
   }
-
   .navbar-hidden { transform: translateY(-100%); }
   .navbar-visible { transform: translateY(0); }
 }
 
-/* ---- Scrollbar de bronze ---- */
-::-webkit-scrollbar { width: 12px; }
-::-webkit-scrollbar-track { background: hsl(41 30% 60%); }
+/* ---- Scrollbar chanfrada ---- */
+::-webkit-scrollbar { width: 14px; }
+::-webkit-scrollbar-track { background: hsl(42 26% 46%); border-left: 1px solid hsl(var(--panel-edge)); }
 ::-webkit-scrollbar-thumb {
-  background: hsl(37 44% 34%);
-  border: 2px solid hsl(41 30% 60%);
-  border-radius: 2px;
+  background: hsl(45 40% 66%);
+  border: 2px solid;
+  border-color: hsl(var(--bevel-light)) hsl(var(--bevel-dark)) hsl(var(--bevel-dark)) hsl(var(--bevel-light));
 }
-::-webkit-scrollbar-thumb:hover { background: hsl(45 66% 40%); }
-
-.dark ::-webkit-scrollbar-track { background: hsl(38 16% 16%); }
-.dark ::-webkit-scrollbar-thumb {
-  background: hsl(38 30% 34%);
-  border: 2px solid hsl(38 16% 16%);
-}
-.dark ::-webkit-scrollbar-thumb:hover { background: hsl(45 66% 44%); }
+::-webkit-scrollbar-thumb:hover { filter: brightness(1.08); }
+.dark ::-webkit-scrollbar-track { background: hsl(38 15% 12%); }
+.dark ::-webkit-scrollbar-thumb { background: hsl(38 20% 30%); }

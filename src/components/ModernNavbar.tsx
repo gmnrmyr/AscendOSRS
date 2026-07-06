@@ -76,8 +76,8 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
                 <img src="/logo.svg" alt="AscendOSRS" className="h-8 w-8" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>AscendOSRS</h1>
-                <p className="text-xs text-gray-600 dark:text-gray-300">Ultimate OSRS Progress Tracker</p>
+                <h1 className="osrs-title text-2xl">AscendOSRS</h1>
+                <p className="text-xs text-muted-foreground">Ultimate OSRS Progress Tracker</p>
               </div>
             </div>
 

@@ -43,9 +43,9 @@ export function CharacterForm() {
   };
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+    <Card className="osrs-card">
       <CardHeader>
-        <CardTitle className="text-blue-800">Add New Character</CardTitle>
+        <CardTitle className="osrs-title">Add New Character</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

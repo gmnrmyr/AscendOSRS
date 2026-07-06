@@ -464,7 +464,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
         </div>
 
         {goals.length === 0 && (
-          <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
+          <Card className="bg-muted/40 border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Target className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-500 mb-2">No purchase goals yet</h3>
@@ -479,7 +479,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
         )}
 
         {filteredAndSortedGoals.length === 0 && goals.length > 0 && (
-          <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
+          <Card className="bg-muted/40 border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Filter className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-500 mb-2">No goals match your filters</h3>

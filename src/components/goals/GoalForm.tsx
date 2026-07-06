@@ -63,9 +63,9 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
   };
 
   return (
-    <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+    <Card className="osrs-card">
       <CardHeader>
-        <CardTitle className="text-purple-800 flex items-center justify-between">
+        <CardTitle className="osrs-title flex items-center justify-between">
           Add New Purchase Goal
           {onAddDefaultGoals && (
             <Button onClick={onAddDefaultGoals} variant="outline" size="sm">
@@ -88,7 +88,7 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
           
           <div>
             <Label htmlFor="current-price">Current Price (GP)</Label>
-            <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm">
+            <div className="bg-muted border rounded px-3 py-2 text-sm">
               {newGoal.currentPrice > 0 ? (
                 <span className="text-green-600 font-medium">
                   {newGoal.currentPrice.toLocaleString()} GP

@@ -153,30 +153,40 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
       }`}
     >
       <div className="container mx-auto px-6">
-        <Card className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800 shadow-md">
+        <Card className="osrs-card">
           <div className="p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 sm:space-x-6 flex-wrap">
-                <div className="flex items-center gap-1 sm:gap-2">
+                <button
+                  type="button"
+                  onClick={() => onTabChange?.('methods')}
+                  title="Ver métodos de dinheiro"
+                  className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+                >
                   <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  <span className="text-xs sm:text-sm font-medium text-green-700">
+                  <span className="text-sm sm:text-base font-bold text-green-700">
                     {formatGP(currentGPHour)}/hr
                   </span>
-                  <span className="text-xs text-gray-500 hidden sm:inline">
+                  <span className="text-sm text-muted-foreground hidden sm:inline">
                     ({activeMethodsCount} assigned)
                   </span>
-                </div>
-                
-                <div className="flex items-center gap-1 sm:gap-2">
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onTabChange?.('characters')}
+                  title="Ver personagens"
+                  className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+                >
                   <Users className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
-                  <span className="text-xs sm:text-sm font-medium text-blue-700">
+                  <span className="text-sm sm:text-base font-bold text-blue-700">
                     {activeCharacters.length} chars
                   </span>
-                </div>
+                </button>
                 
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
-                  <span className="text-xs sm:text-sm font-medium text-yellow-700 cursor-help" title={`${totalGoldValue.toLocaleString()} gp`}>
+                  <span className="text-sm sm:text-base font-bold text-amber-800 dark:text-amber-300 cursor-help" title={`${totalGoldValue.toLocaleString()} gp`}>
                     {formatGP(totalGoldValue)} GP
                   </span>
                 </div>
@@ -188,17 +198,22 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
                   <Landmark className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
-                  <span className="text-xs sm:text-sm font-medium text-orange-700">
+                  <span className="text-sm sm:text-base font-bold text-orange-700">
                     {formatGP(totalBankValue)} bank
                   </span>
                 </button>
 
-                <div className="flex items-center gap-1 sm:gap-2">
+                <button
+                  type="button"
+                  onClick={() => onTabChange?.('goals')}
+                  title={`${totalGoalsValue.toLocaleString()} gp — ver objetivos`}
+                  className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+                >
                   <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
-                  <span className="text-xs sm:text-sm font-medium text-purple-700 cursor-help" title={`${totalGoalsValue.toLocaleString()} gp`}>
+                  <span className="text-sm sm:text-base font-bold text-purple-700">
                     {formatGP(totalGoalsValue)} goals
                   </span>
-                </div>
+                </button>
               </div>
               
               <Button

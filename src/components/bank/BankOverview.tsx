@@ -95,7 +95,7 @@ export function BankOverview({ characters, bankData }: BankOverviewProps) {
                   tickLine={false}
                 />
                 <Tooltip
-                  formatter={(v: number) => [`${formatGoldValue(v)} gp`, 'Banco']}
+                  formatter={(v: number) => [`${v.toLocaleString()} gp`, 'Banco']}
                   cursor={{ fill: 'rgba(245,158,11,0.08)' }}
                   contentStyle={{ fontSize: 12, borderRadius: 8 }}
                 />

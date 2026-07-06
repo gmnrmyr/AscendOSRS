@@ -12,7 +12,7 @@ export function Footer() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-2">
             <img src="/logo.svg" alt="AscendOSRS" className="h-8 w-8" />
-            <span className="text-2xl font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <span className="text-2xl font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               AscendOSRS
             </span>
             <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-xs">

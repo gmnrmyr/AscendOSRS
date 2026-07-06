@@ -175,7 +175,7 @@ export function ItemSearchInput({ value, onChange, onItemSelect, placeholder }: 
         onSelect={onItemSelect}
         placeholder={placeholder || "Search OSRS items (e.g., Twisted bow, Bandos chestplate)"}
         searchFunction={searchItems}
-        className="bg-white dark:bg-slate-800"
+        className="bg-card"
       />
       {(isSearching || loading) && (
         <div className="text-xs text-gray-500 mt-1">Searching OSRS items...</div>

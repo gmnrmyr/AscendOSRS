@@ -55,7 +55,7 @@ export function MoneyMakingOverview({ methods, formatGP }: MoneyMakingOverviewPr
         </div>
 
         {topMethod && (
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border">
+          <div className="bg-card rounded-lg p-4 border">
             <div className="flex items-center gap-2 mb-2">
               <Star className="h-4 w-4 text-yellow-500" />
               <span className="font-semibold">Top Active Method: {topMethod.name}</span>

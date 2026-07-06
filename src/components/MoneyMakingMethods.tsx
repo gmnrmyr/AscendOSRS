@@ -290,7 +290,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                 onSelect={handleMethodSelect}
                 placeholder="Start typing method name..."
                 searchFunction={searchMoneyMakers}
-                className="bg-white dark:bg-slate-800"
+                className="bg-card"
               />
             </div>
             
@@ -300,7 +300,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                 value={newMethod.character} 
                 onValueChange={(value) => setNewMethod({...newMethod, character: value})}
               >
-                <SelectTrigger className="bg-white dark:bg-slate-800">
+                <SelectTrigger className="bg-card">
                   <SelectValue placeholder="Select character (optional)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -317,21 +317,21 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label>GP per Hour (From Wiki)</Label>
-              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
                 {newMethod.gpHour ? formatGP(newMethod.gpHour) : 'Select method to auto-fill'}
               </div>
             </div>
 
             <div>
               <Label>Category (From Wiki)</Label>
-              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
                 {newMethod.category ? newMethod.category : 'Auto-filled from selection'}
               </div>
             </div>
 
             <div>
               <Label>Membership (From Wiki)</Label>
-              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
                 {newMethod.membership ? newMethod.membership.toUpperCase() : 'Auto-filled from selection'}
               </div>
             </div>
@@ -340,7 +340,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Requirements (From Wiki)</Label>
-              <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400 max-h-20 overflow-y-auto">
+              <div className="bg-muted border rounded px-3 py-2 text-sm text-gray-600 dark:text-gray-400 max-h-20 overflow-y-auto">
                 {newMethod.requirements || 'Auto-filled from selection'}
               </div>
             </div>
@@ -351,7 +351,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
                 value={newMethod.notes || ''}
                 onChange={(e) => setNewMethod({...newMethod, notes: e.target.value})}
                 placeholder="Add your own notes..."
-                className="bg-white dark:bg-slate-800"
+                className="bg-card"
               />
             </div>
           </div>
@@ -420,7 +420,7 @@ export function MoneyMakingMethods({ methods, setMethods, characters }: MoneyMak
       )}
 
       {methods.length === 0 && (
-        <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
+        <Card className="bg-muted/40 border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Coins className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-500 mb-2">No money-making methods yet</h3>
@@ -459,7 +459,7 @@ function MethodCard({
   getMembershipColor
 }: MethodCardProps) {
   return (
-    <Card className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
+    <Card className="bg-card border-amber-200 dark:border-amber-800">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg text-amber-800 dark:text-amber-200">
@@ -521,7 +521,7 @@ function MethodCard({
         {method.requirements && (
           <div>
             <Label className="text-xs text-gray-500">Requirements</Label>
-            <div className="bg-gray-50 dark:bg-gray-800 border rounded px-2 py-1 text-xs max-h-16 overflow-y-auto">
+            <div className="bg-muted border rounded px-2 py-1 text-xs max-h-16 overflow-y-auto">
               {method.requirements}
             </div>
           </div>

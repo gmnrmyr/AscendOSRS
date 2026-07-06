@@ -308,7 +308,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
               type="file"
               accept=".csv,.txt,.json"
               onChange={handleFileUpload}
-              className="bg-white dark:bg-slate-800 mt-1"
+              className="bg-card mt-1"
             />
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
               Supports .csv, .txt, and .json files up to 5MB
@@ -331,7 +331,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
               value={csvText}
               onChange={(e) => handleTextChange(e.target.value)}
               rows={8}
-              className="bg-white dark:bg-slate-800 mt-1 font-mono text-sm"
+              className="bg-card mt-1 font-mono text-sm"
             />
             
             {/* Format Detection Feedback */}
@@ -356,7 +356,7 @@ export function BankCSVImporter({ onImportBank, characters }: BankCSVImporterPro
         </div>
 
         {/* Sample Data Section */}
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+        <div className="bg-muted/50 rounded-lg p-3">
           <h5 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
             📝 Sample Formats (Click to Copy):
           </h5>

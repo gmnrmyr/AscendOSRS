@@ -283,7 +283,7 @@ export function SummaryDashboard({
       {aiInsights.length > 0 && (
         <div className="osrs-card p-6">
           <div className="mb-4">
-            <h3 className="text-2xl font-bold text-purple-800 dark:text-purple-200 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <h3 className="text-2xl font-bold text-purple-800 dark:text-purple-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               <Brain className="h-6 w-6" />
               🧠 AI Insights & Recommendations
             </h3>
@@ -292,7 +292,7 @@ export function SummaryDashboard({
           <div className="space-y-3">
             {aiInsights.map((insight, index) => (
               <div key={index} className="p-3 bg-card/60 border border-border rounded-lg">
-                <p className="text-purple-800 dark:text-purple-200 font-medium" style={{ fontFamily: 'Cinzel, serif' }}>
+                <p className="text-purple-800 dark:text-purple-200 font-medium" style={{ fontFamily: 'RuneScape, monospace' }}>
                   {insight}
                 </p>
               </div>
@@ -305,7 +305,7 @@ export function SummaryDashboard({
       {currentGPHour > 0 && (
         <div className="osrs-card p-6">
           <div className="mb-4">
-            <h3 className="text-2xl font-bold text-green-800 dark:text-green-200 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <h3 className="text-2xl font-bold text-green-800 dark:text-green-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               <DollarSign className="h-6 w-6" />
               💸 Current Earnings Breakdown
             </h3>
@@ -313,28 +313,28 @@ export function SummaryDashboard({
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
-              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
                 {formatGP(currentGPHour)}/hr
               </p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Hourly Rate</p>
+              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>Hourly Rate</p>
             </div>
             <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
-              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
                 {formatGP(currentGPHour * hoursPerDay)} GP
               </p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Daily ({hoursPerDay}h)</p>
+              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>Daily ({hoursPerDay}h)</p>
             </div>
             <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
-              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
                 {formatGP(currentGPHour * hoursPerDay * 30)} GP
               </p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Monthly</p>
+              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>Monthly</p>
             </div>
           </div>
 
           {/* Methods by Character */}
           <div className="space-y-3">
-            <h4 className="text-lg font-bold text-green-800 dark:text-green-200" style={{ fontFamily: 'Cinzel, serif' }}>
+            <h4 className="text-lg font-bold text-green-800 dark:text-green-200" style={{ fontFamily: 'RuneScape, monospace' }}>
               Methods by Character:
             </h4>
             {Object.entries(methodsByCharacter).map(([character, methods]) => {
@@ -342,7 +342,7 @@ export function SummaryDashboard({
               return (
                 <div key={character} className="p-3 bg-card/60 border border-border rounded">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-green-800 dark:text-green-200" style={{ fontFamily: 'Cinzel, serif' }}>
+                    <span className="font-bold text-green-800 dark:text-green-200" style={{ fontFamily: 'RuneScape, monospace' }}>
                       ⚔️ {character}
                     </span>
                     <span className="osrs-badge">
@@ -377,7 +377,7 @@ export function SummaryDashboard({
         {/* Best Money Method */}
         <div className="osrs-card p-6">
           <div className="mb-4">
-            <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               <Star className="h-5 w-5" />
               ⭐ Best Money Method
             </h3>
@@ -385,7 +385,7 @@ export function SummaryDashboard({
           {bestMethod ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-lg text-amber-800 dark:text-amber-200" style={{ fontFamily: 'Cinzel, serif' }}>
+                <h4 className="font-bold text-lg text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape, monospace' }}>
                   {bestMethod.name || 'Unknown Method'}
                 </h4>
                 <span className="osrs-badge">
@@ -395,14 +395,14 @@ export function SummaryDashboard({
               
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="p-3 bg-card/60 border border-border rounded">
-                  <p className="text-amber-600 dark:text-amber-400 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>Daily ({hoursPerDay}h)</p>
-                  <p className="font-bold text-green-700 dark:text-green-300 text-lg" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                  <p className="text-amber-600 dark:text-amber-400 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>Daily ({hoursPerDay}h)</p>
+                  <p className="font-bold text-green-700 dark:text-green-300 text-lg" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
                     {formatGP((bestMethod.gpHour || 0) * hoursPerDay)} GP
                   </p>
                 </div>
                 <div className="p-3 bg-card/60 border border-border rounded">
-                  <p className="text-amber-600 dark:text-amber-400 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>Monthly</p>
-                  <p className="font-bold text-green-700 dark:text-green-300 text-lg" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+                  <p className="text-amber-600 dark:text-amber-400 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>Monthly</p>
+                  <p className="font-bold text-green-700 dark:text-green-300 text-lg" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
                     {formatGP((bestMethod.gpHour || 0) * hoursPerDay * 30)} GP
                   </p>
                 </div>
@@ -410,13 +410,13 @@ export function SummaryDashboard({
 
               {bestMethod.requirements && (
                 <div className="p-3 bg-card/60 border border-border rounded">
-                  <p className="text-amber-600 dark:text-amber-400 text-sm font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>Requirements:</p>
+                  <p className="text-amber-600 dark:text-amber-400 text-sm font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>Requirements:</p>
                   <p className="text-sm text-amber-800 dark:text-amber-200">{bestMethod.requirements}</p>
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-amber-600 dark:text-amber-400 text-center py-6 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
+            <p className="text-amber-600 dark:text-amber-400 text-center py-6 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>
               🔍 No money-making methods added yet
             </p>
           )}
@@ -425,7 +425,7 @@ export function SummaryDashboard({
         {/* Character Summary */}
         <div className="osrs-card p-6">
           <div className="mb-4">
-            <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               <Users className="h-5 w-5" />
               ⚔️ Character Overview
             </h3>
@@ -448,8 +448,8 @@ export function SummaryDashboard({
                 return (
                   <div key={char?.id || index} className="flex items-center justify-between p-3 bg-card/60 border border-amber-400 dark:border-amber-700 rounded">
                     <div>
-                      <p className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'Cinzel, serif' }}>⚔️ {char?.name || 'Unknown'}</p>
-                      <p className="text-sm text-amber-600 dark:text-amber-400" style={{ fontFamily: 'Cinzel, serif' }}>
+                      <p className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape, monospace' }}>⚔️ {char?.name || 'Unknown'}</p>
+                      <p className="text-sm text-amber-600 dark:text-amber-400" style={{ fontFamily: 'RuneScape, monospace' }}>
                         CB: {char?.combatLevel || 3} | Total: {char?.totalLevel || 32}
                       </p>
                     </div>
@@ -461,13 +461,13 @@ export function SummaryDashboard({
               })}
               
               {characters.length > 3 && (
-                <p className="text-sm text-amber-600 dark:text-amber-400 text-center pt-2 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
+                <p className="text-sm text-amber-600 dark:text-amber-400 text-center pt-2 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>
                   +{characters.length - 3} more characters
                 </p>
               )}
             </div>
           ) : (
-            <p className="text-amber-600 dark:text-amber-400 text-center py-6 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
+            <p className="text-amber-600 dark:text-amber-400 text-center py-6 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>
               👤 No characters added yet
             </p>
           )}
@@ -477,7 +477,7 @@ export function SummaryDashboard({
       {/* Top Goals */}
       <div className="osrs-card p-6">
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+          <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
             <Target className="h-5 w-5" />
             🎯 Purchase Goals Progress
           </h3>
@@ -500,7 +500,7 @@ export function SummaryDashboard({
                 return (
                   <div key={goal?.id || index} className="space-y-2 p-3 bg-card/60 border border-border rounded">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'Cinzel, serif' }}>
+                      <span className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape, monospace' }}>
                         🏆 {goal?.name || 'Unknown Goal'}
                       </span>
                       <span className="osrs-badge">
@@ -513,7 +513,7 @@ export function SummaryDashboard({
                         style={{ width: `${progress}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-sm text-amber-600" style={{ fontFamily: 'Cinzel, serif' }}>
+                    <div className="flex justify-between text-sm text-amber-600" style={{ fontFamily: 'RuneScape, monospace' }}>
                       <span>{formatGP(currentValue)} / {formatGP(targetValue)} GP</span>
                       <span className="font-bold">{progress.toFixed(1)}%</span>
                     </div>
@@ -537,7 +537,7 @@ export function SummaryDashboard({
                     }
                   }}
                   className="border-amber-600 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-semibold"
-                  style={{ fontFamily: 'Cinzel, serif' }}
+                  style={{ fontFamily: 'RuneScape, monospace' }}
                 >
                   <Target className="h-4 w-4 mr-2" />
                   View All {purchaseGoals.length} Goals ({purchaseGoals.length - 5} more)
@@ -546,7 +546,7 @@ export function SummaryDashboard({
             )}
           </div>
         ) : (
-          <p className="text-amber-600 text-center py-6 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>
+          <p className="text-amber-600 text-center py-6 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>
             🎯 No purchase goals added yet
           </p>
         )}

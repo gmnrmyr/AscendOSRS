@@ -132,7 +132,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                 value={newCharacter.name || ''}
                 onChange={(e) => setNewCharacter({...newCharacter, name: e.target.value})}
                 placeholder="Enter OSRS username"
-                className="bg-white dark:bg-slate-800"
+                className="bg-card"
               />
             </div>
             
@@ -142,7 +142,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                 value={newCharacter.type} 
                 onValueChange={(value: 'main' | 'alt' | 'ironman' | 'hardcore' | 'ultimate') => setNewCharacter({...newCharacter, type: value})}
               >
-                <SelectTrigger className="bg-white dark:bg-slate-800">
+                <SelectTrigger className="bg-card">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,7 +166,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                 placeholder="3"
                 min="3"
                 max="126"
-                className="bg-white dark:bg-slate-800"
+                className="bg-card"
               />
             </div>
 
@@ -179,7 +179,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
                 placeholder="32"
                 min="32"
                 max="2277"
-                className="bg-white dark:bg-slate-800"
+                className="bg-card"
               />
             </div>
           </div>
@@ -190,7 +190,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
               value={newCharacter.notes || ''}
               onChange={(e) => setNewCharacter({...newCharacter, notes: e.target.value})}
               placeholder="Additional notes about this character..."
-              className="bg-white dark:bg-slate-800"
+              className="bg-card"
             />
           </div>
 
@@ -204,7 +204,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
       {/* Characters List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {characters.map((character) => (
-          <Card key={character.id} className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
+          <Card key={character.id} className="bg-card border-amber-200 dark:border-amber-800">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -277,7 +277,7 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
       </div>
 
       {characters.length === 0 && (
-        <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
+        <Card className="bg-muted/40 border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Users className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-500 mb-2">No characters yet</h3>

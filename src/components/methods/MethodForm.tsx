@@ -46,9 +46,9 @@ export function MethodForm({ characters }: MethodFormProps) {
   };
 
   return (
-    <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+    <Card className="osrs-card">
       <CardHeader>
-        <CardTitle className="text-green-800">Add New Money Making Method</CardTitle>
+        <CardTitle className="osrs-title">Add New Money Making Method</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -450,7 +450,7 @@ export function EnhancedBankManager({
         )}
 
         {/* Coins Row */}
-        <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border">
+        <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
           <div className="flex-1">
             <Label className="text-base font-semibold">Gold Coins</Label>
             <p className="text-sm text-muted-foreground">1 GP each</p>
@@ -484,7 +484,7 @@ export function EnhancedBankManager({
         </div>
 
         {/* Platinum Tokens Row */}
-        <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border">
+        <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
           <div className="flex-1">
             <Label className="text-base font-semibold">Platinum Tokens</Label>
             <p className="text-sm text-muted-foreground">1,000 GP each</p>
@@ -518,7 +518,7 @@ export function EnhancedBankManager({
         </div>
 
         {/* Bank Value Row */}
-        <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border">
+        <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
           <div className="flex-1">
             <Label className="text-base font-semibold">Bank Value (Items)</Label>
             <p className="text-sm text-muted-foreground">Total value of all items excluding gold</p>
@@ -552,7 +552,7 @@ export function EnhancedBankManager({
         </div>
 
         {/* Total Bank Value */}
-        <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border">
+        <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
           <div className="flex-1">
             <Label className="text-base font-semibold">Total Bank Value</Label>
             <p className="text-sm text-muted-foreground">Including gold and items</p>

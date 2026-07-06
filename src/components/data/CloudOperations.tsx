@@ -672,7 +672,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
   }
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+    <Card className="osrs-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-blue-800">
           <Cloud className="h-5 w-5" />
@@ -731,7 +731,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;`;
                 </div>
               </div>
               
-              <div className="mt-3 p-2 bg-white dark:bg-gray-800/50 rounded border border-blue-200 dark:border-blue-600">
+              <div className="mt-3 p-2 bg-card/50 rounded border border-blue-200 dark:border-blue-600">
                 <p className="text-blue-800 dark:text-blue-200 text-xs font-medium">
                   💡 <strong>Quick Start:</strong> Most users should use "True Chunked Save" for saving and "Load from Cloud" for loading. The other buttons are for special cases and testing.
                 </p>

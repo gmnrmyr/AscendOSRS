@@ -92,7 +92,7 @@ export function CharacterBankDisplay({
 
   if (characters.length === 0) {
     return (
-      <Card className="bg-gray-50 dark:bg-gray-900/50 border-dashed">
+      <Card className="bg-muted/40 border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <Coins className="h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-500 mb-2">No characters available</h3>
@@ -112,7 +112,7 @@ export function CharacterBankDisplay({
           <div className="flex items-center gap-4">
             <Label className="text-blue-800 dark:text-blue-200 font-medium">Sort by:</Label>
             <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-              <SelectTrigger className="w-32 bg-white dark:bg-slate-800">
+              <SelectTrigger className="w-32 bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -144,7 +144,7 @@ export function CharacterBankDisplay({
         const isItemListExpanded = expandedItemLists[character.name] ?? true;
         
         return (
-          <Card key={character.id} className="bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-800">
+          <Card key={character.id} className="bg-card border-amber-200 dark:border-amber-800">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export function CharacterBankDisplay({
                     {isItemListExpanded ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {sortedItems.map((item) => (
-                          <div key={item.id} className="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-3 border">
+                          <div key={item.id} className="bg-muted/40 rounded-lg p-3 border">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-medium text-amber-800 dark:text-amber-200 truncate">
                                 {item.name}
@@ -248,7 +248,7 @@ export function CharacterBankDisplay({
                     ) : (
                       <div className="space-y-1">
                         {sortedItems.slice(0, 5).map((item) => (
-                          <div key={item.id} className="flex items-center justify-between py-1 px-2 bg-gray-50 dark:bg-gray-900/50 rounded text-sm">
+                          <div key={item.id} className="flex items-center justify-between py-1 px-2 bg-muted/40 rounded text-sm">
                             <span className="truncate">{item.name}</span>
                             <div className="flex items-center gap-2">
                               <span className="text-gray-500">{Math.floor(item.quantity).toLocaleString()}x</span>

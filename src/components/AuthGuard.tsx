@@ -22,7 +22,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-amber-100 to-amber-200 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">⚔️</div>
-          <p className="text-2xl text-amber-800 font-bold" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+          <p className="text-2xl text-amber-800 font-bold" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
             Loading thy realm...
           </p>
         </div>

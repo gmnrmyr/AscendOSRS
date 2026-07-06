@@ -38,7 +38,7 @@ export function GoalFormFields({ newGoal, setNewGoal, onItemSelect }: GoalFormFi
         
         <div>
           <Label>Current Price (GP)</Label>
-          <div className="bg-gray-100 dark:bg-gray-800 border rounded px-3 py-2 text-sm">
+          <div className="bg-muted border rounded px-3 py-2 text-sm">
             {newGoal.currentPrice ? (
               <span className="text-amber-700 dark:text-amber-300 font-medium">
                 {newGoal.currentPrice.toLocaleString()} GP
@@ -59,7 +59,7 @@ export function GoalFormFields({ newGoal, setNewGoal, onItemSelect }: GoalFormFi
             onChange={(e) => setNewGoal({...newGoal, quantity: Number(e.target.value)})}
             placeholder="1"
             min="1"
-            className="bg-white dark:bg-slate-800"
+            className="bg-card"
           />
         </div>
 
@@ -69,7 +69,7 @@ export function GoalFormFields({ newGoal, setNewGoal, onItemSelect }: GoalFormFi
             value={newGoal.priority} 
             onValueChange={(value) => setNewGoal({...newGoal, priority: value as PurchaseGoal['priority']})}
           >
-            <SelectTrigger className="bg-white dark:bg-slate-800">
+            <SelectTrigger className="bg-card">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -92,7 +92,7 @@ export function GoalFormFields({ newGoal, setNewGoal, onItemSelect }: GoalFormFi
             value={newGoal.category} 
             onValueChange={(value) => setNewGoal({...newGoal, category: value as PurchaseGoal['category']})}
           >
-            <SelectTrigger className="bg-white dark:bg-slate-800">
+            <SelectTrigger className="bg-card">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

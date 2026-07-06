@@ -108,7 +108,7 @@ export function GoldTokensManager({
                 value={autoInputValue}
                 onChange={(e) => setAutoInputValue(e.target.value)}
                 placeholder="Enter total GP value (e.g., 1000000)"
-                className="bg-white dark:bg-slate-800"
+                className="bg-card"
               />
               <Button
                 onClick={handleAutoInput}
@@ -136,7 +136,7 @@ export function GoldTokensManager({
               value={coins}
               onChange={(e) => updateGoldTokens(selectedCharacter, 'coins', Number(e.target.value))}
               placeholder="0"
-              className="h-12 text-lg font-medium bg-white dark:bg-slate-800 border-yellow-300 focus:border-yellow-500"
+              className="h-12 text-lg font-medium bg-card border-yellow-300 focus:border-yellow-500"
             />
             <p className="text-sm text-yellow-600 dark:text-yellow-400">
               Value: 1 GP each = {formatGP(coins)} GP
@@ -152,7 +152,7 @@ export function GoldTokensManager({
               value={platTokens}
               onChange={(e) => updateGoldTokens(selectedCharacter, 'platinum', Number(e.target.value))}
               placeholder="0"
-              className="h-12 text-lg font-medium bg-white dark:bg-slate-800 border-yellow-300 focus:border-yellow-500"
+              className="h-12 text-lg font-medium bg-card border-yellow-300 focus:border-yellow-500"
             />
             <p className="text-sm text-yellow-600 dark:text-yellow-400">
               Value: 1,000 GP each = {formatGP(platTokens * 1000)} GP

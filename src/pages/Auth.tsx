@@ -190,7 +190,7 @@ const Auth = () => {
 
       {/* Pixel Art Styled Logo Background */}
       <div className="absolute top-20 left-1/2 transform -translate-x-1/2">
-        <div className="text-6xl font-bold text-amber-600/20 dark:text-amber-400/30 select-none" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+        <div className="text-6xl font-bold text-amber-600/20 dark:text-amber-400/30 select-none" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
           ⚔️
         </div>
       </div>
@@ -201,7 +201,7 @@ const Auth = () => {
           <div className="text-center mb-4">
             <div className="flex items-center justify-center gap-2 mb-2">
               <img src="/logo.svg" alt="AscendOSRS" className="h-8 w-8" />
-              <h1 className="text-3xl font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+              <h1 className="text-3xl font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
                 AscendOSRS
               </h1>
             </div>

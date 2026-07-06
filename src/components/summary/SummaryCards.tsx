@@ -27,8 +27,8 @@ export function SummaryCards({
       <div className="osrs-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-blue-800 dark:text-blue-200 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>👥 Characters</p>
-            <p className="text-4xl font-bold text-blue-900 dark:text-blue-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>{charactersCount}</p>
+            <p className="text-blue-800 dark:text-blue-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>👥 Characters</p>
+            <p className="text-4xl font-bold text-blue-900 dark:text-blue-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>{charactersCount}</p>
           </div>
           <Users className="h-10 w-10 text-blue-700 dark:text-blue-300" />
         </div>
@@ -37,8 +37,8 @@ export function SummaryCards({
       <div className="osrs-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-green-800 dark:text-green-200 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>💰 Bank Sum</p>
-            <p className="text-3xl font-bold text-green-900 dark:text-green-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <p className="text-green-800 dark:text-green-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>💰 Bank Sum</p>
+            <p className="text-3xl font-bold text-green-900 dark:text-green-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               {formatGP(totalBankValue)} GP
             </p>
           </div>
@@ -49,8 +49,8 @@ export function SummaryCards({
       <div className="osrs-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-yellow-800 dark:text-yellow-200 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>🪙 Gold Sum</p>
-            <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <p className="text-yellow-800 dark:text-yellow-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>🪙 Gold Sum</p>
+            <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               {formatGP(totalGoldValue)} GP
             </p>
           </div>
@@ -61,8 +61,8 @@ export function SummaryCards({
       <div className="osrs-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-indigo-800 dark:text-indigo-200 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>💸 Current GP/Hr</p>
-            <p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <p className="text-indigo-800 dark:text-indigo-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>💸 Current GP/Hr</p>
+            <p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               {formatGP(currentGPHour)}/hr
             </p>
           </div>
@@ -73,8 +73,8 @@ export function SummaryCards({
       <div className="osrs-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-purple-800 dark:text-purple-200 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>🎯 Goals Value</p>
-            <p className="text-3xl font-bold text-purple-900 dark:text-purple-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <p className="text-purple-800 dark:text-purple-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>🎯 Goals Value</p>
+            <p className="text-3xl font-bold text-purple-900 dark:text-purple-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               {formatGP(totalGoalsValue)} GP
             </p>
           </div>
@@ -85,8 +85,8 @@ export function SummaryCards({
       <div className="osrs-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-orange-800 dark:text-orange-200 text-sm font-bold" style={{ fontFamily: 'Cinzel, serif' }}>⏰ Time to Goals</p>
-            <p className="text-2xl font-bold text-orange-900 dark:text-orange-100" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <p className="text-orange-800 dark:text-orange-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>⏰ Time to Goals</p>
+            <p className="text-2xl font-bold text-orange-900 dark:text-orange-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               {formatDays(daysToComplete)}
             </p>
           </div>

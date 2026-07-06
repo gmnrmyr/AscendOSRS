@@ -40,9 +40,9 @@ export function BankItemForm({ characters, onAddItem }: BankItemFormProps) {
   };
 
   return (
-    <Card className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
+    <Card className="osrs-card">
       <CardHeader>
-        <CardTitle className="text-yellow-800">Add Bank Item</CardTitle>
+        <CardTitle className="osrs-title">Add Bank Item</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -38,11 +38,11 @@ export function BuyUsACoffee() {
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Coffee className="h-12 w-12 text-amber-600" />
-            <h1 className="text-4xl font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <h1 className="text-4xl font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               Support Our Project
             </h1>
           </div>
-          <p className="text-lg text-amber-700 dark:text-amber-300 max-w-2xl mx-auto" style={{ fontFamily: 'Cinzel, serif' }}>
+          <p className="text-lg text-amber-700 dark:text-amber-300 max-w-2xl mx-auto" style={{ fontFamily: 'RuneScape, monospace' }}>
             Help us continue developing the ultimate OSRS wealth management tool! Your support keeps this project free and constantly improving.
           </p>
         </div>
@@ -58,7 +58,7 @@ export function BuyUsACoffee() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-amber-700" style={{ fontFamily: 'Cinzel, serif' }}>
+              <p className="text-amber-700" style={{ fontFamily: 'RuneScape, monospace' }}>
                 Support us with a one-time donation to keep the servers running and fuel our development!
               </p>
               <Button 
@@ -80,7 +80,7 @@ export function BuyUsACoffee() {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-blue-700" style={{ fontFamily: 'Cinzel, serif' }}>
+              <p className="text-blue-700" style={{ fontFamily: 'RuneScape, monospace' }}>
                 Prefer crypto? Send donations to our project wallet:
               </p>
               <div className="bg-blue-50 p-3 rounded border-2 border-blue-300">
@@ -102,7 +102,7 @@ export function BuyUsACoffee() {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <p className="text-purple-700" style={{ fontFamily: 'Cinzel, serif' }}>
+            <p className="text-purple-700" style={{ fontFamily: 'RuneScape, monospace' }}>
               PayPal donations will be available soon! Check back later.
             </p>
             <div className="bg-purple-50 p-3 rounded border-2 border-purple-300">
@@ -129,7 +129,7 @@ export function BuyUsACoffee() {
               {currentFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
                   <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                  <span className="text-green-800 text-sm" style={{ fontFamily: 'Cinzel, serif' }}>
+                  <span className="text-green-800 text-sm" style={{ fontFamily: 'RuneScape, monospace' }}>
                     {feature}
                   </span>
                 </div>
@@ -151,7 +151,7 @@ export function BuyUsACoffee() {
               {upcomingFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 rounded border border-blue-200">
                   <Clock className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                  <span className="text-blue-800 text-sm" style={{ fontFamily: 'Cinzel, serif' }}>
+                  <span className="text-blue-800 text-sm" style={{ fontFamily: 'RuneScape, monospace' }}>
                     {feature}
                   </span>
                 </div>
@@ -164,10 +164,10 @@ export function BuyUsACoffee() {
         <Card className="osrs-card bg-gradient-to-r from-green-100 to-emerald-100 border-green-600">
           <CardContent className="text-center py-8">
             <Star className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-            <h3 className="text-2xl font-bold text-green-800 mb-4" style={{ fontFamily: 'MedievalSharp, cursive' }}>
+            <h3 className="text-2xl font-bold text-green-800 mb-4" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
               Thank You for Your Support!
             </h3>
-            <p className="text-green-700 max-w-2xl mx-auto" style={{ fontFamily: 'Cinzel, serif' }}>
+            <p className="text-green-700 max-w-2xl mx-auto" style={{ fontFamily: 'RuneScape, monospace' }}>
               Every donation, no matter how small, helps us dedicate more time to improving this tool. 
               We're committed to keeping it free and open for the entire OSRS community!
             </p>

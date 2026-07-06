@@ -67,6 +67,9 @@ export function useAppData() {
   // Gate de salvamento: só persiste DEPOIS do load inicial, pra não gravar
   // defaults vazios por cima do save do disco.
   const [loaded, setLoaded] = useState(false);
+  // Gravação só é liberada quando o load do disco foi CONFIRMADO (ou instalação nova).
+  // Se o servidor estiver inacessível, canSave fica false e nada é salvo por cima.
+  const [canSave, setCanSave] = useState(false);
 
   const applyData = (d: any) => {
     if (Array.isArray(d.characters)) setCharacters(d.characters);
@@ -104,14 +107,19 @@ export function useAppData() {
         if (cancelled) return;
         if (server) {
           applyData(server); // disco ganha (compartilhado entre origins, sobrevive a limpar cache)
+          if (!cancelled) setCanSave(true);
         } else if (local) {
           applyData(local);            // primeira vez: migra o que já existia no browser
           try { await saveServerData(local); } catch (e) { console.error('Migração pro disco falhou:', e); }
+          if (!cancelled) setCanSave(true);
+        } else {
+          // instalação nova de verdade (sem disco e sem cache): pode salvar os defaults
+          if (!cancelled) setCanSave(true);
         }
-        // senão: mantém os defaults já no estado
       } catch (e) {
-        // server offline -> não perde nada, usa o cache local
-        console.warn('Persistência local (server) indisponível, usando localStorage:', e);
+        // server INACESSÍVEL: NÃO liberar gravação. Evita atropelar o save do disco
+        // com defaults/estado parcial (bug que apagou goals ao carregar em browser limpo).
+        console.warn('Persistência local (server) indisponível — gravação DESABILITADA nesta sessão até recarregar:', e);
         if (local && !cancelled) applyData(local);
       } finally {
         if (!cancelled) setLoaded(true);
@@ -183,7 +191,7 @@ export function useAppData() {
     bankData,
     hoursPerDay,
     wealthHistory,
-    enabled: loaded
+    enabled: canSave
   });
 
   const setAllData = (data: {

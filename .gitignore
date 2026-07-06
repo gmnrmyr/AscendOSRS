@@ -27,5 +27,7 @@ dist-ssr
 prototype/fixtures/
 .env.local
 
-# Save local do dashboard (local-first, fica só no Mac)
-data/
+# Save do dashboard: versionado de propósito (repo privado, projeto pessoal).
+# data/dashboard.json viaja no push pra sincronizar Mac <-> desk.
+# (o .runlog/ de logs continua ignorado)
+.runlog/

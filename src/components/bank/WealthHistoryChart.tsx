@@ -75,24 +75,24 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {sorted.length < 2 ? (
+        {sorted.length < 1 ? (
           <div className="py-10 text-center text-sm text-muted-foreground">
-            {sorted.length === 0 ? (
-              <>Ainda sem histórico. Um ponto é gravado automático por dia — ou clique em <b>Salvar snapshot</b> agora.</>
-            ) : (
-              <>
-                Só {sorted.length} ponto até agora ({formatGoldValue(latest.total)} gp). O gráfico aparece a partir do 2º dia.
-              </>
-            )}
+            Ainda sem histórico. Um ponto é gravado automático por dia — ou clique em <b>Salvar snapshot</b> agora.
           </div>
         ) : (
           <>
             <div className="mb-3 flex items-end gap-3">
               <span className="text-2xl font-bold text-cyan-600">{formatGoldValue(latest.total)}</span>
-              <span className={`pb-0.5 text-sm font-semibold ${deltaUp ? 'text-green-600' : 'text-red-500'}`}>
-                {deltaUp ? '▲' : '▼'} {formatGoldValue(Math.abs(delta))} ({deltaPct.toFixed(1)}%)
-                <span className="ml-1 font-normal text-muted-foreground">no período</span>
-              </span>
+              {sorted.length < 2 ? (
+                <span className="pb-0.5 text-sm font-normal text-muted-foreground">
+                  1º ponto gravado — a tendência aparece a partir do 2º dia.
+                </span>
+              ) : (
+                <span className={`pb-0.5 text-sm font-semibold ${deltaUp ? 'text-green-600' : 'text-red-500'}`}>
+                  {deltaUp ? '▲' : '▼'} {formatGoldValue(Math.abs(delta))} ({deltaPct.toFixed(1)}%)
+                  <span className="ml-1 font-normal text-muted-foreground">no período</span>
+                </span>
+              )}
             </div>
             <div style={{ width: '100%', height: 240 }}>
               <ResponsiveContainer>
@@ -118,7 +118,8 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     labelFormatter={(l) => `Dia ${l}`}
                     contentStyle={{ fontSize: 12, borderRadius: 8 }}
                   />
-                  <Area type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} fill="url(#wealthFill)" />
+                  <Area type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} fill="url(#wealthFill)" dot={{ r: 3, fill: '#06b6d4', strokeWidth: 0 }} />
+
                 </AreaChart>
               </ResponsiveContainer>
             </div>

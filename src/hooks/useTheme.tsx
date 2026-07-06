@@ -11,7 +11,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('system');
+  // Light é o padrão (visual OSRS parchment). O usuário pode trocar; a escolha fica salva.
+  const [theme, setTheme] = useState<Theme>('light');
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {

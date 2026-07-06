@@ -75,8 +75,8 @@
     {
       "id": "1",
       "name": "Twisted Bow",
-      "currentPrice": 1495066505,
-      "targetPrice": 1495066505,
+      "currentPrice": 1495165728,
+      "targetPrice": 1495165728,
       "quantity": 1,
       "priority": "B-",
       "category": "gear",
@@ -87,8 +87,8 @@
     {
       "id": "2",
       "name": "Scythe of Vitur",
-      "currentPrice": 1287860210,
-      "targetPrice": 1287860210,
+      "currentPrice": 1287872210,
+      "targetPrice": 1287872210,
       "quantity": 1,
       "priority": "S+",
       "category": "gear",
@@ -111,8 +111,8 @@
     {
       "id": "8",
       "name": "Dragon Claws",
-      "currentPrice": 39563081,
-      "targetPrice": 39563081,
+      "currentPrice": 39025492,
+      "targetPrice": 39025492,
       "quantity": 1,
       "priority": "B+",
       "category": "gear",
@@ -134,8 +134,8 @@
     },
     {
       "name": "Tumeken's shadow (uncharged)",
-      "currentPrice": 829161416,
-      "targetPrice": 829161416,
+      "currentPrice": 829500000,
+      "targetPrice": 829500000,
       "quantity": 1,
       "priority": "S+",
       "category": "gear",
@@ -158,8 +158,8 @@
     },
     {
       "name": "Zaryte crossbow",
-      "currentPrice": 388381424,
-      "targetPrice": 388381424,
+      "currentPrice": 389500000,
+      "targetPrice": 389500000,
       "quantity": 1,
       "priority": "S-",
       "category": "gear",
@@ -170,8 +170,8 @@
     },
     {
       "name": "Harmonised orb",
-      "currentPrice": 426400000,
-      "targetPrice": 426400000,
+      "currentPrice": 424188743,
+      "targetPrice": 424188743,
       "quantity": 1,
       "priority": "A+",
       "category": "gear",
@@ -194,8 +194,8 @@
     },
     {
       "name": "Ancestral robes set",
-      "currentPrice": 249260959,
-      "targetPrice": 249260959,
+      "currentPrice": 250286360,
+      "targetPrice": 250286360,
       "quantity": 1,
       "priority": "A+",
       "category": "gear",
@@ -206,8 +206,8 @@
     },
     {
       "name": "Ultor ring",
-      "currentPrice": 121000000,
-      "targetPrice": 121000000,
+      "currentPrice": 120194839,
+      "targetPrice": 120194839,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -218,8 +218,8 @@
     },
     {
       "name": "Venator bow (uncharged)",
-      "currentPrice": 60525000,
-      "targetPrice": 60525000,
+      "currentPrice": 60543969,
+      "targetPrice": 60543969,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -230,8 +230,8 @@
     },
     {
       "name": "Tonalztics of ralos (uncharged)",
-      "currentPrice": 54111847,
-      "targetPrice": 54111847,
+      "currentPrice": 54388502,
+      "targetPrice": 54388502,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -242,8 +242,8 @@
     },
     {
       "name": "Bellator ring",
-      "currentPrice": 23559735,
-      "targetPrice": 23559735,
+      "currentPrice": 23535435,
+      "targetPrice": 23535435,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -254,8 +254,8 @@
     },
     {
       "name": "Magus ring",
-      "currentPrice": 25306402,
-      "targetPrice": 25306402,
+      "currentPrice": 25316440,
+      "targetPrice": 25316440,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -266,8 +266,8 @@
     },
     {
       "name": "confliction gauntlets",
-      "currentPrice": 83985968,
-      "targetPrice": 83985968,
+      "currentPrice": 83989863,
+      "targetPrice": 83989863,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -290,8 +290,8 @@
     },
     {
       "name": "Eye of ayak (uncharged)",
-      "currentPrice": 49682492,
-      "targetPrice": 49682492,
+      "currentPrice": 50177670,
+      "targetPrice": 50177670,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -302,8 +302,8 @@
     },
     {
       "name": "Voidwaker",
-      "currentPrice": 37853647,
-      "targetPrice": 37853647,
+      "currentPrice": 38265798,
+      "targetPrice": 38265798,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -314,8 +314,8 @@
     },
     {
       "name": "Noxious halberd",
-      "currentPrice": 42525961,
-      "targetPrice": 42525961,
+      "currentPrice": 42213964,
+      "targetPrice": 42213964,
       "quantity": 1,
       "priority": "A",
       "category": "gear",
@@ -332,7 +332,7 @@
         "osrsId": 1387,
         "name": "Staff of fire",
         "quantity": 1,
-        "estimatedPrice": 925,
+        "estimatedPrice": 788,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -359,7 +359,7 @@
         "osrsId": 13190,
         "name": "Old school bond",
         "quantity": 1,
-        "estimatedPrice": 12379309,
+        "estimatedPrice": 12401916,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -377,7 +377,7 @@
         "osrsId": 1393,
         "name": "Fire battlestaff",
         "quantity": 6,
-        "estimatedPrice": 8847,
+        "estimatedPrice": 8683,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -386,7 +386,7 @@
         "osrsId": 3053,
         "name": "Lava battlestaff",
         "quantity": 1,
-        "estimatedPrice": 9284,
+        "estimatedPrice": 9069,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -395,7 +395,7 @@
         "osrsId": 11998,
         "name": "Smoke battlestaff",
         "quantity": 1,
-        "estimatedPrice": 1900978,
+        "estimatedPrice": 1897694,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -413,7 +413,7 @@
         "osrsId": 563,
         "name": "Law rune",
         "quantity": 108,
-        "estimatedPrice": 121,
+        "estimatedPrice": 119,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -422,7 +422,7 @@
         "osrsId": 556,
         "name": "Air rune",
         "quantity": 60909,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -431,7 +431,7 @@
         "osrsId": 554,
         "name": "Fire rune",
         "quantity": 10752,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -440,7 +440,7 @@
         "osrsId": 555,
         "name": "Water rune",
         "quantity": 52053,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -458,7 +458,7 @@
         "osrsId": 4699,
         "name": "Lava rune",
         "quantity": 1431,
-        "estimatedPrice": 28,
+        "estimatedPrice": 27,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -530,7 +530,7 @@
         "osrsId": 8013,
         "name": "Teleport to house",
         "quantity": 795,
-        "estimatedPrice": 882,
+        "estimatedPrice": 878,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -557,7 +557,7 @@
         "osrsId": 558,
         "name": "Mind rune",
         "quantity": 13587,
-        "estimatedPrice": 2,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -566,7 +566,7 @@
         "osrsId": 4698,
         "name": "Mud rune",
         "quantity": 110,
-        "estimatedPrice": 80,
+        "estimatedPrice": 81,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -710,7 +710,7 @@
         "osrsId": 12938,
         "name": "Zul-andra teleport",
         "quantity": 240,
-        "estimatedPrice": 11883,
+        "estimatedPrice": 12003,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -746,7 +746,7 @@
         "osrsId": 24607,
         "name": "Blighted ancient ice sack",
         "quantity": 97,
-        "estimatedPrice": 315,
+        "estimatedPrice": 309,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -755,7 +755,7 @@
         "osrsId": 560,
         "name": "Death rune",
         "quantity": 20120,
-        "estimatedPrice": 183,
+        "estimatedPrice": 180,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -764,7 +764,7 @@
         "osrsId": 566,
         "name": "Soul rune",
         "quantity": 8013,
-        "estimatedPrice": 389,
+        "estimatedPrice": 384,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -773,7 +773,7 @@
         "osrsId": 562,
         "name": "Chaos rune",
         "quantity": 10491,
-        "estimatedPrice": 108,
+        "estimatedPrice": 107,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -800,7 +800,7 @@
         "osrsId": 565,
         "name": "Blood rune",
         "quantity": 5372,
-        "estimatedPrice": 299,
+        "estimatedPrice": 291,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -818,7 +818,7 @@
         "osrsId": 27235,
         "name": "Masori mask (f)",
         "quantity": 1,
-        "estimatedPrice": 22129395,
+        "estimatedPrice": 21975816,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -836,7 +836,7 @@
         "osrsId": 26241,
         "name": "Virtus mask",
         "quantity": 1,
-        "estimatedPrice": 6905161,
+        "estimatedPrice": 6888090,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -845,7 +845,7 @@
         "osrsId": 22326,
         "name": "Justiciar faceguard",
         "quantity": 1,
-        "estimatedPrice": 9706793,
+        "estimatedPrice": 9704064,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -854,7 +854,7 @@
         "osrsId": 9672,
         "name": "Proselyte sallet",
         "quantity": 2,
-        "estimatedPrice": 5068,
+        "estimatedPrice": 4186,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -872,7 +872,7 @@
         "osrsId": 11804,
         "name": "Bandos godsword",
         "quantity": 1,
-        "estimatedPrice": 17682437,
+        "estimatedPrice": 17679493,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -890,7 +890,7 @@
         "osrsId": 27238,
         "name": "Masori body (f)",
         "quantity": 1,
-        "estimatedPrice": 77528678,
+        "estimatedPrice": 78278722,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -899,7 +899,7 @@
         "osrsId": 11832,
         "name": "Bandos chestplate",
         "quantity": 1,
-        "estimatedPrice": 22762717,
+        "estimatedPrice": 22994021,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -908,7 +908,7 @@
         "osrsId": 26243,
         "name": "Virtus robe top",
         "quantity": 1,
-        "estimatedPrice": 37849756,
+        "estimatedPrice": 37589256,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -917,7 +917,7 @@
         "osrsId": 22327,
         "name": "Justiciar chestguard",
         "quantity": 1,
-        "estimatedPrice": 10012833,
+        "estimatedPrice": 10138727,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -926,7 +926,7 @@
         "osrsId": 9674,
         "name": "Proselyte hauberk",
         "quantity": 1,
-        "estimatedPrice": 6909,
+        "estimatedPrice": 7098,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -962,7 +962,7 @@
         "osrsId": 27241,
         "name": "Masori chaps (f)",
         "quantity": 1,
-        "estimatedPrice": 54055782,
+        "estimatedPrice": 53548158,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -971,7 +971,7 @@
         "osrsId": 11834,
         "name": "Bandos tassets",
         "quantity": 1,
-        "estimatedPrice": 15205643,
+        "estimatedPrice": 15281011,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -980,7 +980,7 @@
         "osrsId": 26245,
         "name": "Virtus robe bottom",
         "quantity": 1,
-        "estimatedPrice": 26873957,
+        "estimatedPrice": 26997585,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -989,7 +989,7 @@
         "osrsId": 22328,
         "name": "Justiciar legguards",
         "quantity": 1,
-        "estimatedPrice": 8749824,
+        "estimatedPrice": 8668833,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -998,7 +998,7 @@
         "osrsId": 9676,
         "name": "Proselyte cuisse",
         "quantity": 1,
-        "estimatedPrice": 5308,
+        "estimatedPrice": 5730,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1016,7 +1016,7 @@
         "osrsId": 20997,
         "name": "Twisted bow",
         "quantity": 1,
-        "estimatedPrice": 1495066505,
+        "estimatedPrice": 1495165728,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1034,7 +1034,7 @@
         "osrsId": 13237,
         "name": "Pegasian boots",
         "quantity": 1,
-        "estimatedPrice": 31874012,
+        "estimatedPrice": 32095487,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1043,7 +1043,7 @@
         "osrsId": 13239,
         "name": "Primordial boots",
         "quantity": 1,
-        "estimatedPrice": 19076865,
+        "estimatedPrice": 19080831,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1052,7 +1052,7 @@
         "osrsId": 13235,
         "name": "Eternal boots",
         "quantity": 1,
-        "estimatedPrice": 3696908,
+        "estimatedPrice": 3697047,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1061,7 +1061,7 @@
         "osrsId": 22951,
         "name": "Boots of brimstone",
         "quantity": 1,
-        "estimatedPrice": 251337,
+        "estimatedPrice": 251007,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1070,7 +1070,7 @@
         "osrsId": 22954,
         "name": "Devout boots",
         "quantity": 1,
-        "estimatedPrice": 778730,
+        "estimatedPrice": 778444,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1088,7 +1088,7 @@
         "osrsId": 21012,
         "name": "Dragon hunter crossbow",
         "quantity": 1,
-        "estimatedPrice": 34877503,
+        "estimatedPrice": 34487503,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1124,7 +1124,7 @@
         "osrsId": 22975,
         "name": "Brimstone ring",
         "quantity": 1,
-        "estimatedPrice": 3334750,
+        "estimatedPrice": 3335784,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1133,7 +1133,7 @@
         "osrsId": 13263,
         "name": "Abyssal bludgeon",
         "quantity": 1,
-        "estimatedPrice": 17269973,
+        "estimatedPrice": 17154836,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1142,7 +1142,7 @@
         "osrsId": 22323,
         "name": "Sanguinesti staff",
         "quantity": 1,
-        "estimatedPrice": 20477823,
+        "estimatedPrice": 20431497,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1151,7 +1151,7 @@
         "osrsId": 11808,
         "name": "Zamorak godsword",
         "quantity": 1,
-        "estimatedPrice": 14729724,
+        "estimatedPrice": 14684860,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1160,7 +1160,7 @@
         "osrsId": 11785,
         "name": "Armadyl crossbow",
         "quantity": 1,
-        "estimatedPrice": 42003519,
+        "estimatedPrice": 41904557,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1169,7 +1169,7 @@
         "osrsId": 11806,
         "name": "Saradomin godsword",
         "quantity": 1,
-        "estimatedPrice": 22738734,
+        "estimatedPrice": 22607578,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1178,7 +1178,7 @@
         "osrsId": 11771,
         "name": "Archers ring (i)",
         "quantity": 1,
-        "estimatedPrice": 2103431,
+        "estimatedPrice": 2077310,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1187,7 +1187,7 @@
         "osrsId": 11772,
         "name": "Warrior ring (i)",
         "quantity": 1,
-        "estimatedPrice": 47920,
+        "estimatedPrice": 49077,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1196,7 +1196,7 @@
         "osrsId": 11770,
         "name": "Seers ring (i)",
         "quantity": 1,
-        "estimatedPrice": 669338,
+        "estimatedPrice": 669367,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1205,7 +1205,7 @@
         "osrsId": 20657,
         "name": "Ring of suffering (ri)",
         "quantity": 1,
-        "estimatedPrice": 18771032,
+        "estimatedPrice": 18755675,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1223,7 +1223,7 @@
         "osrsId": 21000,
         "name": "Twisted buckler",
         "quantity": 1,
-        "estimatedPrice": 20300000,
+        "estimatedPrice": 20743651,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1232,7 +1232,7 @@
         "osrsId": 22324,
         "name": "Ghrazi rapier",
         "quantity": 1,
-        "estimatedPrice": 25664250,
+        "estimatedPrice": 25932544,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1259,7 +1259,7 @@
         "osrsId": 19553,
         "name": "Amulet of torture",
         "quantity": 1,
-        "estimatedPrice": 18687462,
+        "estimatedPrice": 18714461,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1277,7 +1277,7 @@
         "osrsId": 6585,
         "name": "Amulet of fury",
         "quantity": 1,
-        "estimatedPrice": 2724769,
+        "estimatedPrice": 2733274,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1295,7 +1295,7 @@
         "osrsId": 12931,
         "name": "Serpentine helm",
         "quantity": 1,
-        "estimatedPrice": 3768341,
+        "estimatedPrice": 3749261,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1304,7 +1304,7 @@
         "osrsId": 21006,
         "name": "Kodai wand",
         "quantity": 1,
-        "estimatedPrice": 68986779,
+        "estimatedPrice": 68940823,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1322,7 +1322,7 @@
         "osrsId": 23943,
         "name": "Elven signet",
         "quantity": 1,
-        "estimatedPrice": 1056006,
+        "estimatedPrice": 1056142,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1331,7 +1331,7 @@
         "osrsId": 11773,
         "name": "Berserker ring (i)",
         "quantity": 1,
-        "estimatedPrice": 3012827,
+        "estimatedPrice": 3007961,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1340,7 +1340,7 @@
         "osrsId": 25985,
         "name": "Elidinis' ward",
         "quantity": 1,
-        "estimatedPrice": 3279983,
+        "estimatedPrice": 3234156,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1376,7 +1376,7 @@
         "osrsId": 22978,
         "name": "Dragon hunter lance",
         "quantity": 1,
-        "estimatedPrice": 52250839,
+        "estimatedPrice": 52222510,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1385,7 +1385,7 @@
         "osrsId": 27641,
         "name": "Saturated heart",
         "quantity": 1,
-        "estimatedPrice": 100641791,
+        "estimatedPrice": 101119602,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1403,7 +1403,7 @@
         "osrsId": 21015,
         "name": "Dinh's bulwark",
         "quantity": 1,
-        "estimatedPrice": 12199349,
+        "estimatedPrice": 12025268,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1412,7 +1412,7 @@
         "osrsId": 6889,
         "name": "Mage's book",
         "quantity": 1,
-        "estimatedPrice": 3649641,
+        "estimatedPrice": 3625491,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1421,7 +1421,7 @@
         "osrsId": 12692,
         "name": "Treasonous ring (i)",
         "quantity": 1,
-        "estimatedPrice": 89000,
+        "estimatedPrice": 88325,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1430,7 +1430,7 @@
         "osrsId": 25975,
         "name": "Lightbearer",
         "quantity": 1,
-        "estimatedPrice": 3787647,
+        "estimatedPrice": 3816104,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1448,7 +1448,7 @@
         "osrsId": 21634,
         "name": "Ancient wyvern shield",
         "quantity": 1,
-        "estimatedPrice": 28594319,
+        "estimatedPrice": 28606418,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1457,7 +1457,7 @@
         "osrsId": 21733,
         "name": "Guardian boots",
         "quantity": 1,
-        "estimatedPrice": 1851372,
+        "estimatedPrice": 1850430,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1511,7 +1511,7 @@
         "osrsId": 26219,
         "name": "Osmumten's fang",
         "quantity": 1,
-        "estimatedPrice": 18679541,
+        "estimatedPrice": 18674008,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1520,7 +1520,7 @@
         "osrsId": 13576,
         "name": "Dragon warhammer",
         "quantity": 1,
-        "estimatedPrice": 15277022,
+        "estimatedPrice": 15295851,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1529,7 +1529,7 @@
         "osrsId": 4162,
         "name": "Rock hammer",
         "quantity": 1,
-        "estimatedPrice": 1071,
+        "estimatedPrice": 1371,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1556,7 +1556,7 @@
         "osrsId": 11889,
         "name": "Zamorakian hasta",
         "quantity": 1,
-        "estimatedPrice": 1356452,
+        "estimatedPrice": 1356043,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1565,7 +1565,7 @@
         "osrsId": 11235,
         "name": "Dark bow",
         "quantity": 1,
-        "estimatedPrice": 1050189,
+        "estimatedPrice": 1081016,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1628,7 +1628,7 @@
         "osrsId": 21817,
         "name": "Bracelet of ethereum (uncharged)",
         "quantity": 14,
-        "estimatedPrice": 44142,
+        "estimatedPrice": 43758,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1646,7 +1646,7 @@
         "osrsId": 23285,
         "name": "Mole slippers",
         "quantity": 1,
-        "estimatedPrice": 158952,
+        "estimatedPrice": 168670,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1709,7 +1709,7 @@
         "osrsId": 22557,
         "name": "Amulet of avarice",
         "quantity": 1,
-        "estimatedPrice": 388931,
+        "estimatedPrice": 380405,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1727,7 +1727,7 @@
         "osrsId": 21003,
         "name": "Elder maul",
         "quantity": 1,
-        "estimatedPrice": 99846957,
+        "estimatedPrice": 100646000,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1736,7 +1736,7 @@
         "osrsId": 26235,
         "name": "Zaryte vambraces",
         "quantity": 1,
-        "estimatedPrice": 75216621,
+        "estimatedPrice": 75629931,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1745,7 +1745,7 @@
         "osrsId": 29577,
         "name": "Burning claws",
         "quantity": 1,
-        "estimatedPrice": 3970000,
+        "estimatedPrice": 4004448,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1763,7 +1763,7 @@
         "osrsId": 2,
         "name": "Steel cannonball",
         "quantity": 8571,
-        "estimatedPrice": 262,
+        "estimatedPrice": 266,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1772,7 +1772,7 @@
         "osrsId": 12695,
         "name": "Super combat potion(4)",
         "quantity": 1508,
-        "estimatedPrice": 12327,
+        "estimatedPrice": 12224,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1781,7 +1781,7 @@
         "osrsId": 2434,
         "name": "Prayer potion(4)",
         "quantity": 1637,
-        "estimatedPrice": 8630,
+        "estimatedPrice": 8509,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1790,7 +1790,7 @@
         "osrsId": 6685,
         "name": "Saradomin brew(4)",
         "quantity": 1641,
-        "estimatedPrice": 7179,
+        "estimatedPrice": 7165,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1799,7 +1799,7 @@
         "osrsId": 23685,
         "name": "Divine super combat potion(4)",
         "quantity": 509,
-        "estimatedPrice": 19179,
+        "estimatedPrice": 19023,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1817,7 +1817,7 @@
         "osrsId": 21978,
         "name": "Super antifire potion(4)",
         "quantity": 329,
-        "estimatedPrice": 20616,
+        "estimatedPrice": 20533,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1826,7 +1826,7 @@
         "osrsId": 23733,
         "name": "Divine ranging potion(4)",
         "quantity": 738,
-        "estimatedPrice": 6828,
+        "estimatedPrice": 6724,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1835,7 +1835,7 @@
         "osrsId": 11212,
         "name": "Dragon arrow",
         "quantity": 2634,
-        "estimatedPrice": 2295,
+        "estimatedPrice": 2307,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1853,7 +1853,7 @@
         "osrsId": 24635,
         "name": "Divine bastion potion(4)",
         "quantity": 163,
-        "estimatedPrice": 19181,
+        "estimatedPrice": 19182,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1871,7 +1871,7 @@
         "osrsId": 3144,
         "name": "Cooked karambwan",
         "quantity": 6273,
-        "estimatedPrice": 411,
+        "estimatedPrice": 418,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1880,7 +1880,7 @@
         "osrsId": 21944,
         "name": "Ruby dragon bolts (e)",
         "quantity": 1018,
-        "estimatedPrice": 2958,
+        "estimatedPrice": 3018,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1889,7 +1889,7 @@
         "osrsId": 21946,
         "name": "Diamond dragon bolts (e)",
         "quantity": 901,
-        "estimatedPrice": 2434,
+        "estimatedPrice": 2477,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1943,7 +1943,7 @@
         "osrsId": 21820,
         "name": "Revenant ether",
         "quantity": 11522,
-        "estimatedPrice": 178,
+        "estimatedPrice": 176,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1952,7 +1952,7 @@
         "osrsId": 10925,
         "name": "Sanfew serum(4)",
         "quantity": 82,
-        "estimatedPrice": 21780,
+        "estimatedPrice": 21861,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1961,7 +1961,7 @@
         "osrsId": 29824,
         "name": "Extended anti-venom+(4)",
         "quantity": 47,
-        "estimatedPrice": 23031,
+        "estimatedPrice": 22938,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1970,7 +1970,7 @@
         "osrsId": 13441,
         "name": "Anglerfish",
         "quantity": 672,
-        "estimatedPrice": 2878,
+        "estimatedPrice": 2899,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1979,7 +1979,7 @@
         "osrsId": 12913,
         "name": "Anti-venom+(4)",
         "quantity": 114,
-        "estimatedPrice": 12813,
+        "estimatedPrice": 12957,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -1997,7 +1997,7 @@
         "osrsId": 21967,
         "name": "Ruby dragon bolts",
         "quantity": 500,
-        "estimatedPrice": 2819,
+        "estimatedPrice": 2813,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2015,7 +2015,7 @@
         "osrsId": 21940,
         "name": "Sapphire dragon bolts (e)",
         "quantity": 489,
-        "estimatedPrice": 2606,
+        "estimatedPrice": 2607,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2024,7 +2024,7 @@
         "osrsId": 385,
         "name": "Shark",
         "quantity": 1195,
-        "estimatedPrice": 967,
+        "estimatedPrice": 958,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2033,7 +2033,7 @@
         "osrsId": 811,
         "name": "Rune dart",
         "quantity": 5117,
-        "estimatedPrice": 176,
+        "estimatedPrice": 172,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2042,7 +2042,7 @@
         "osrsId": 21326,
         "name": "Amethyst arrow",
         "quantity": 3603,
-        "estimatedPrice": 150,
+        "estimatedPrice": 149,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2060,7 +2060,7 @@
         "osrsId": 12625,
         "name": "Stamina potion(4)",
         "quantity": 133,
-        "estimatedPrice": 3804,
+        "estimatedPrice": 3775,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2105,7 +2105,7 @@
         "osrsId": 24598,
         "name": "Blighted super restore(4)",
         "quantity": 144,
-        "estimatedPrice": 2212,
+        "estimatedPrice": 2198,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2141,7 +2141,7 @@
         "osrsId": 892,
         "name": "Rune arrow",
         "quantity": 6938,
-        "estimatedPrice": 51,
+        "estimatedPrice": 47,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2159,7 +2159,7 @@
         "osrsId": 25849,
         "name": "Amethyst dart",
         "quantity": 850,
-        "estimatedPrice": 200,
+        "estimatedPrice": 204,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2177,7 +2177,7 @@
         "osrsId": 12905,
         "name": "Anti-venom(4)",
         "quantity": 14,
-        "estimatedPrice": 9576,
+        "estimatedPrice": 9575,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2222,7 +2222,7 @@
         "osrsId": 2442,
         "name": "Super defence(4)",
         "quantity": 5,
-        "estimatedPrice": 3699,
+        "estimatedPrice": 3700,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2231,7 +2231,7 @@
         "osrsId": 30125,
         "name": "Prayer regeneration potion(4)",
         "quantity": 3,
-        "estimatedPrice": 73524,
+        "estimatedPrice": 73728,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2303,7 +2303,7 @@
         "osrsId": 70,
         "name": "Magic longbow (u)",
         "quantity": 466,
-        "estimatedPrice": 815,
+        "estimatedPrice": 807,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2312,7 +2312,7 @@
         "osrsId": 1777,
         "name": "Bow string",
         "quantity": 2681,
-        "estimatedPrice": 131,
+        "estimatedPrice": 134,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2321,7 +2321,7 @@
         "osrsId": 5295,
         "name": "Ranarr seed",
         "quantity": 319,
-        "estimatedPrice": 26043,
+        "estimatedPrice": 26148,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2330,7 +2330,7 @@
         "osrsId": 5300,
         "name": "Snapdragon seed",
         "quantity": 83,
-        "estimatedPrice": 48510,
+        "estimatedPrice": 48045,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2420,7 +2420,7 @@
         "osrsId": 313,
         "name": "Fishing bait",
         "quantity": 15703,
-        "estimatedPrice": 4,
+        "estimatedPrice": 5,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2429,7 +2429,7 @@
         "osrsId": 946,
         "name": "Knife",
         "quantity": 2,
-        "estimatedPrice": 95,
+        "estimatedPrice": 99,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2906,7 +2906,7 @@
         "osrsId": 24740,
         "name": "Strange old lockpick (full)",
         "quantity": 1,
-        "estimatedPrice": 20090,
+        "estimatedPrice": 19970,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2915,7 +2915,7 @@
         "osrsId": 22603,
         "name": "Basalt",
         "quantity": 1,
-        "estimatedPrice": 6750,
+        "estimatedPrice": 4591,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -2942,7 +2942,7 @@
         "osrsId": 10008,
         "name": "Box trap",
         "quantity": 714,
-        "estimatedPrice": 30,
+        "estimatedPrice": 35,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3041,7 +3041,7 @@
         "osrsId": 10981,
         "name": "Cave goblin wire",
         "quantity": 48,
-        "estimatedPrice": 1471,
+        "estimatedPrice": 1389,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3059,7 +3059,7 @@
         "osrsId": 21143,
         "name": "Dodgy necklace",
         "quantity": 393,
-        "estimatedPrice": 1190,
+        "estimatedPrice": 1195,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3095,7 +3095,7 @@
         "osrsId": 1359,
         "name": "Rune axe",
         "quantity": 7,
-        "estimatedPrice": 7135,
+        "estimatedPrice": 7140,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3257,7 +3257,7 @@
         "osrsId": 8784,
         "name": "Gold leaf",
         "quantity": 1,
-        "estimatedPrice": 135292,
+        "estimatedPrice": 136535,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3311,7 +3311,7 @@
         "osrsId": 12411,
         "name": "Mos le'harmless teleport",
         "quantity": 19,
-        "estimatedPrice": 1197,
+        "estimatedPrice": 1109,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3329,7 +3329,7 @@
         "osrsId": 21183,
         "name": "Bracelet of slaughter",
         "quantity": 4,
-        "estimatedPrice": 2989,
+        "estimatedPrice": 2933,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3338,7 +3338,7 @@
         "osrsId": 314,
         "name": "Feather",
         "quantity": 6365,
-        "estimatedPrice": 3,
+        "estimatedPrice": 2,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3365,7 +3365,7 @@
         "osrsId": 12699,
         "name": "Super combat potion(2)",
         "quantity": 1,
-        "estimatedPrice": 7868,
+        "estimatedPrice": 6968,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3401,7 +3401,7 @@
         "osrsId": 139,
         "name": "Prayer potion(3)",
         "quantity": 5,
-        "estimatedPrice": 6255,
+        "estimatedPrice": 6256,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3464,7 +3464,7 @@
         "osrsId": 12627,
         "name": "Stamina potion(3)",
         "quantity": 6,
-        "estimatedPrice": 2752,
+        "estimatedPrice": 2753,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3527,7 +3527,7 @@
         "osrsId": 169,
         "name": "Ranging potion(3)",
         "quantity": 7,
-        "estimatedPrice": 1595,
+        "estimatedPrice": 1592,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3545,7 +3545,7 @@
         "osrsId": 6691,
         "name": "Saradomin brew(1)",
         "quantity": 1,
-        "estimatedPrice": 1850,
+        "estimatedPrice": 1740,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3563,7 +3563,7 @@
         "osrsId": 6687,
         "name": "Saradomin brew(3)",
         "quantity": 1,
-        "estimatedPrice": 5162,
+        "estimatedPrice": 5138,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3626,7 +3626,7 @@
         "osrsId": 3026,
         "name": "Super restore(3)",
         "quantity": 43,
-        "estimatedPrice": 7884,
+        "estimatedPrice": 7875,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3779,7 +3779,7 @@
         "osrsId": 113,
         "name": "Strength potion(4)",
         "quantity": 2,
-        "estimatedPrice": 98,
+        "estimatedPrice": 99,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3797,7 +3797,7 @@
         "osrsId": 229,
         "name": "Vial",
         "quantity": 539,
-        "estimatedPrice": 2,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3923,7 +3923,7 @@
         "osrsId": 32090,
         "name": "Shark paint",
         "quantity": 9,
-        "estimatedPrice": 2018,
+        "estimatedPrice": 1611,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3950,7 +3950,7 @@
         "osrsId": 11826,
         "name": "Armadyl helmet",
         "quantity": 1,
-        "estimatedPrice": 9554916,
+        "estimatedPrice": 9618600,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3959,7 +3959,7 @@
         "osrsId": 4712,
         "name": "Ahrim's robetop",
         "quantity": 1,
-        "estimatedPrice": 1551967,
+        "estimatedPrice": 1625547,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3968,7 +3968,7 @@
         "osrsId": 4714,
         "name": "Ahrim's robeskirt",
         "quantity": 1,
-        "estimatedPrice": 1702698,
+        "estimatedPrice": 1717346,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3977,7 +3977,7 @@
         "osrsId": 4940,
         "name": "Karil's leathertop 100",
         "quantity": 1,
-        "estimatedPrice": 1120479,
+        "estimatedPrice": 1117165,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -3995,7 +3995,7 @@
         "osrsId": 19921,
         "name": "Ancient d'hide boots",
         "quantity": 1,
-        "estimatedPrice": 230393,
+        "estimatedPrice": 238352,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4004,7 +4004,7 @@
         "osrsId": 10380,
         "name": "Guthix chaps",
         "quantity": 1,
-        "estimatedPrice": 172212,
+        "estimatedPrice": 173483,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4013,7 +4013,7 @@
         "osrsId": 19924,
         "name": "Bandos d'hide boots",
         "quantity": 1,
-        "estimatedPrice": 184132,
+        "estimatedPrice": 178632,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4031,7 +4031,7 @@
         "osrsId": 10370,
         "name": "Zamorak d'hide body",
         "quantity": 1,
-        "estimatedPrice": 106106,
+        "estimatedPrice": 110383,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4067,7 +4067,7 @@
         "osrsId": 4587,
         "name": "Dragon scimitar",
         "quantity": 2,
-        "estimatedPrice": 59202,
+        "estimatedPrice": 59117,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4103,7 +4103,7 @@
         "osrsId": 11840,
         "name": "Dragon boots",
         "quantity": 1,
-        "estimatedPrice": 235180,
+        "estimatedPrice": 235034,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4121,7 +4121,7 @@
         "osrsId": 10382,
         "name": "Guthix coif",
         "quantity": 2,
-        "estimatedPrice": 69250,
+        "estimatedPrice": 41590,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4157,7 +4157,7 @@
         "osrsId": 4982,
         "name": "Verac's flail 100",
         "quantity": 1,
-        "estimatedPrice": 100000,
+        "estimatedPrice": 100052,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4166,7 +4166,7 @@
         "osrsId": 4675,
         "name": "Ancient staff",
         "quantity": 2,
-        "estimatedPrice": 60030,
+        "estimatedPrice": 61076,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4184,7 +4184,7 @@
         "osrsId": 4856,
         "name": "Ahrim's hood 100",
         "quantity": 1,
-        "estimatedPrice": 323500,
+        "estimatedPrice": 313686,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4193,7 +4193,7 @@
         "osrsId": 10828,
         "name": "Helm of neitiznot",
         "quantity": 4,
-        "estimatedPrice": 48807,
+        "estimatedPrice": 49153,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4211,7 +4211,7 @@
         "osrsId": 20223,
         "name": "Unholy blessing",
         "quantity": 6,
-        "estimatedPrice": 10811,
+        "estimatedPrice": 9451,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4220,7 +4220,7 @@
         "osrsId": 20235,
         "name": "Ancient blessing",
         "quantity": 2,
-        "estimatedPrice": 3419,
+        "estimatedPrice": 3017,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4238,7 +4238,7 @@
         "osrsId": 20232,
         "name": "War blessing",
         "quantity": 4,
-        "estimatedPrice": 9939,
+        "estimatedPrice": 10321,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4247,7 +4247,7 @@
         "osrsId": 12273,
         "name": "Bandos cloak",
         "quantity": 1,
-        "estimatedPrice": 74664,
+        "estimatedPrice": 56733,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4256,7 +4256,7 @@
         "osrsId": 4749,
         "name": "Torag's platebody",
         "quantity": 1,
-        "estimatedPrice": 356587,
+        "estimatedPrice": 356410,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4265,7 +4265,7 @@
         "osrsId": 4976,
         "name": "Verac's helm 100",
         "quantity": 1,
-        "estimatedPrice": 125782,
+        "estimatedPrice": 132354,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4301,7 +4301,7 @@
         "osrsId": 6739,
         "name": "Dragon axe",
         "quantity": 1,
-        "estimatedPrice": 79518,
+        "estimatedPrice": 79625,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4310,7 +4310,7 @@
         "osrsId": 3755,
         "name": "Farseer helm",
         "quantity": 1,
-        "estimatedPrice": 37635,
+        "estimatedPrice": 36276,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4337,7 +4337,7 @@
         "osrsId": 2497,
         "name": "Black d'hide chaps",
         "quantity": 11,
-        "estimatedPrice": 3067,
+        "estimatedPrice": 3375,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4346,7 +4346,7 @@
         "osrsId": 1275,
         "name": "Rune pickaxe",
         "quantity": 3,
-        "estimatedPrice": 18867,
+        "estimatedPrice": 18440,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4355,7 +4355,7 @@
         "osrsId": 9731,
         "name": "Mind shield",
         "quantity": 1,
-        "estimatedPrice": 96159,
+        "estimatedPrice": 89595,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4436,7 +4436,7 @@
         "osrsId": 4170,
         "name": "Slayer's staff",
         "quantity": 1,
-        "estimatedPrice": 22403,
+        "estimatedPrice": 21353,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4472,7 +4472,7 @@
         "osrsId": 20727,
         "name": "Leaf-bladed battleaxe",
         "quantity": 1,
-        "estimatedPrice": 62451,
+        "estimatedPrice": 61950,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4481,7 +4481,7 @@
         "osrsId": 3105,
         "name": "Climbing boots",
         "quantity": 8,
-        "estimatedPrice": 702,
+        "estimatedPrice": 718,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4616,7 +4616,7 @@
         "osrsId": 28988,
         "name": "Blue moon spear",
         "quantity": 1,
-        "estimatedPrice": 360455,
+        "estimatedPrice": 365796,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4679,7 +4679,7 @@
         "osrsId": 853,
         "name": "Maple shortbow",
         "quantity": 22,
-        "estimatedPrice": 194,
+        "estimatedPrice": 193,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4688,7 +4688,7 @@
         "osrsId": 890,
         "name": "Adamant arrow",
         "quantity": 6795,
-        "estimatedPrice": 34,
+        "estimatedPrice": 33,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4697,7 +4697,7 @@
         "osrsId": 1704,
         "name": "Amulet of glory",
         "quantity": 1,
-        "estimatedPrice": 10510,
+        "estimatedPrice": 10561,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -4769,7 +4769,7 @@
         "osrsId": 4151,
         "name": "Abyssal whip",
         "quantity": 1,
-        "estimatedPrice": 986073,
+        "estimatedPrice": 977058,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -5255,7 +5255,7 @@
         "osrsId": 5521,
         "name": "Binding necklace",
         "quantity": 26,
-        "estimatedPrice": 506,
+        "estimatedPrice": 512,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -5291,7 +5291,7 @@
         "osrsId": 12785,
         "name": "Ring of wealth (i)",
         "quantity": 1,
-        "estimatedPrice": 11006,
+        "estimatedPrice": 11000,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -5597,7 +5597,7 @@
         "osrsId": 22595,
         "name": "Efh salt",
         "quantity": 250,
-        "estimatedPrice": 125,
+        "estimatedPrice": 127,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -5606,7 +5606,7 @@
         "osrsId": 31515,
         "name": "Umbral frag",
         "quantity": 38,
-        "estimatedPrice": 3332,
+        "estimatedPrice": 3360,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -5930,7 +5930,7 @@
         "osrsId": 5341,
         "name": "Rake",
         "quantity": 1,
-        "estimatedPrice": 140,
+        "estimatedPrice": 166,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -5948,7 +5948,7 @@
         "osrsId": 952,
         "name": "Spade",
         "quantity": 2,
-        "estimatedPrice": 131,
+        "estimatedPrice": 130,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6020,7 +6020,7 @@
         "osrsId": 26945,
         "name": "Pharaoh's sceptre (uncharged)",
         "quantity": 1,
-        "estimatedPrice": 6515015,
+        "estimatedPrice": 6464200,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6038,7 +6038,7 @@
         "osrsId": 2347,
         "name": "Hammer",
         "quantity": 1,
-        "estimatedPrice": 103,
+        "estimatedPrice": 102,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6092,7 +6092,7 @@
         "osrsId": 1783,
         "name": "Bucket of sand",
         "quantity": 84,
-        "estimatedPrice": 9,
+        "estimatedPrice": 8,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6137,7 +6137,7 @@
         "osrsId": 888,
         "name": "Mithril arrow",
         "quantity": 80,
-        "estimatedPrice": 7,
+        "estimatedPrice": 8,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6218,7 +6218,7 @@
         "osrsId": 5321,
         "name": "Watermelon seed",
         "quantity": 167,
-        "estimatedPrice": 119,
+        "estimatedPrice": 118,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6263,7 +6263,7 @@
         "osrsId": 5322,
         "name": "Tomato seed",
         "quantity": 559,
-        "estimatedPrice": 8,
+        "estimatedPrice": 9,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6281,7 +6281,7 @@
         "osrsId": 5324,
         "name": "Cabbage seed",
         "quantity": 875,
-        "estimatedPrice": 8,
+        "estimatedPrice": 10,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6299,7 +6299,7 @@
         "osrsId": 5307,
         "name": "Hammerstone seed",
         "quantity": 1838,
-        "estimatedPrice": 4,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6308,7 +6308,7 @@
         "osrsId": 5306,
         "name": "Jute seed",
         "quantity": 1,
-        "estimatedPrice": 4,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6317,7 +6317,7 @@
         "osrsId": 5096,
         "name": "Marigold seed",
         "quantity": 310,
-        "estimatedPrice": 4,
+        "estimatedPrice": 5,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6326,7 +6326,7 @@
         "osrsId": 5097,
         "name": "Rosemary seed",
         "quantity": 133,
-        "estimatedPrice": 19,
+        "estimatedPrice": 18,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6335,7 +6335,7 @@
         "osrsId": 5098,
         "name": "Nasturtium seed",
         "quantity": 212,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6353,7 +6353,7 @@
         "osrsId": 5102,
         "name": "Cadavaberry seed",
         "quantity": 177,
-        "estimatedPrice": 11,
+        "estimatedPrice": 9,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6407,7 +6407,7 @@
         "osrsId": 5293,
         "name": "Tarromin seed",
         "quantity": 57,
-        "estimatedPrice": 7,
+        "estimatedPrice": 8,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6416,7 +6416,7 @@
         "osrsId": 5305,
         "name": "Barley seed",
         "quantity": 2225,
-        "estimatedPrice": 7,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6425,7 +6425,7 @@
         "osrsId": 5296,
         "name": "Toadflax seed",
         "quantity": 10,
-        "estimatedPrice": 1080,
+        "estimatedPrice": 1075,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6443,7 +6443,7 @@
         "osrsId": 5323,
         "name": "Strawberry seed",
         "quantity": 76,
-        "estimatedPrice": 2,
+        "estimatedPrice": 5,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6452,7 +6452,7 @@
         "osrsId": 5291,
         "name": "Guam seed",
         "quantity": 135,
-        "estimatedPrice": 26,
+        "estimatedPrice": 24,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6461,7 +6461,7 @@
         "osrsId": 22879,
         "name": "Snape grass seed",
         "quantity": 4,
-        "estimatedPrice": 12336,
+        "estimatedPrice": 12361,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6533,7 +6533,7 @@
         "osrsId": 5280,
         "name": "Cactus seed",
         "quantity": 14,
-        "estimatedPrice": 5,
+        "estimatedPrice": 15,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6551,7 +6551,7 @@
         "osrsId": 5302,
         "name": "Lantadyme seed",
         "quantity": 8,
-        "estimatedPrice": 158,
+        "estimatedPrice": 144,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6569,7 +6569,7 @@
         "osrsId": 21488,
         "name": "Mahogany seed",
         "quantity": 1,
-        "estimatedPrice": 157,
+        "estimatedPrice": 202,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6587,7 +6587,7 @@
         "osrsId": 5285,
         "name": "Orange tree seed",
         "quantity": 7,
-        "estimatedPrice": 12,
+        "estimatedPrice": 13,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6605,7 +6605,7 @@
         "osrsId": 5301,
         "name": "Cadantine seed",
         "quantity": 4,
-        "estimatedPrice": 5023,
+        "estimatedPrice": 4655,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6632,7 +6632,7 @@
         "osrsId": 5313,
         "name": "Willow seed",
         "quantity": 12,
-        "estimatedPrice": 61,
+        "estimatedPrice": 63,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6641,7 +6641,7 @@
         "osrsId": 5288,
         "name": "Papaya tree seed",
         "quantity": 16,
-        "estimatedPrice": 1101,
+        "estimatedPrice": 1017,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6650,7 +6650,7 @@
         "osrsId": 5290,
         "name": "Calquat tree seed",
         "quantity": 5,
-        "estimatedPrice": 523,
+        "estimatedPrice": 537,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6668,7 +6668,7 @@
         "osrsId": 5283,
         "name": "Apple tree seed",
         "quantity": 4,
-        "estimatedPrice": 11,
+        "estimatedPrice": 10,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -6677,7 +6677,7 @@
         "osrsId": 5299,
         "name": "Kwuarm seed",
         "quantity": 2,
-        "estimatedPrice": 1262,
+        "estimatedPrice": 1205,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7262,7 +7262,7 @@
         "osrsId": 859,
         "name": "Magic longbow",
         "quantity": 1,
-        "estimatedPrice": 1103,
+        "estimatedPrice": 1082,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7289,7 +7289,7 @@
         "osrsId": 2572,
         "name": "Ring of wealth",
         "quantity": 1,
-        "estimatedPrice": 11006,
+        "estimatedPrice": 11000,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7343,7 +7343,7 @@
         "osrsId": 2355,
         "name": "Silver bar",
         "quantity": 1,
-        "estimatedPrice": 97,
+        "estimatedPrice": 96,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7370,7 +7370,7 @@
         "osrsId": 1625,
         "name": "Uncut opal",
         "quantity": 1,
-        "estimatedPrice": 54,
+        "estimatedPrice": 47,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7379,7 +7379,7 @@
         "osrsId": 1993,
         "name": "Jug of wine",
         "quantity": 1,
-        "estimatedPrice": 4,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7415,7 +7415,7 @@
         "osrsId": 958,
         "name": "Grey wolf fur",
         "quantity": 1,
-        "estimatedPrice": 14,
+        "estimatedPrice": 13,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7469,7 +7469,7 @@
         "osrsId": 1619,
         "name": "Uncut ruby",
         "quantity": 1,
-        "estimatedPrice": 1076,
+        "estimatedPrice": 1075,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7487,7 +7487,7 @@
         "osrsId": 211,
         "name": "Grimy avantoe",
         "quantity": 1,
-        "estimatedPrice": 1379,
+        "estimatedPrice": 1351,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7496,7 +7496,7 @@
         "osrsId": 2485,
         "name": "Grimy lantadyme",
         "quantity": 1,
-        "estimatedPrice": 1116,
+        "estimatedPrice": 1115,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7514,7 +7514,7 @@
         "osrsId": 1299,
         "name": "Mithril longsword",
         "quantity": 1,
-        "estimatedPrice": 598,
+        "estimatedPrice": 650,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7523,7 +7523,7 @@
         "osrsId": 43,
         "name": "Adamant arrowtips",
         "quantity": 5,
-        "estimatedPrice": 115,
+        "estimatedPrice": 116,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7541,7 +7541,7 @@
         "osrsId": 1731,
         "name": "Amulet of power",
         "quantity": 1,
-        "estimatedPrice": 2163,
+        "estimatedPrice": 2138,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7550,7 +7550,7 @@
         "osrsId": 6332,
         "name": "Mahogany logs",
         "quantity": 1,
-        "estimatedPrice": 195,
+        "estimatedPrice": 207,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7559,7 +7559,7 @@
         "osrsId": 822,
         "name": "Mithril dart tip",
         "quantity": 3,
-        "estimatedPrice": 125,
+        "estimatedPrice": 123,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7568,7 +7568,7 @@
         "osrsId": 823,
         "name": "Adamant dart tip",
         "quantity": 3,
-        "estimatedPrice": 194,
+        "estimatedPrice": 195,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7577,7 +7577,7 @@
         "osrsId": 9380,
         "name": "Adamant bolts(unf)",
         "quantity": 3,
-        "estimatedPrice": 168,
+        "estimatedPrice": 184,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7586,7 +7586,7 @@
         "osrsId": 1135,
         "name": "Green d'hide body",
         "quantity": 1,
-        "estimatedPrice": 4255,
+        "estimatedPrice": 4175,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7802,7 +7802,7 @@
         "osrsId": 5075,
         "name": "Bird nest",
         "quantity": 1,
-        "estimatedPrice": 4673,
+        "estimatedPrice": 4664,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7829,7 +7829,7 @@
         "osrsId": 569,
         "name": "Fire orb",
         "quantity": 1,
-        "estimatedPrice": 1693,
+        "estimatedPrice": 1686,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7856,7 +7856,7 @@
         "osrsId": 21347,
         "name": "Amethyst",
         "quantity": 1,
-        "estimatedPrice": 3008,
+        "estimatedPrice": 3016,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7865,7 +7865,7 @@
         "osrsId": 25853,
         "name": "Amethyst dart tip",
         "quantity": 8,
-        "estimatedPrice": 369,
+        "estimatedPrice": 371,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7874,7 +7874,7 @@
         "osrsId": 1835,
         "name": "Desert robe",
         "quantity": 1,
-        "estimatedPrice": 170,
+        "estimatedPrice": 171,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7883,7 +7883,7 @@
         "osrsId": 536,
         "name": "Dragon bones",
         "quantity": 1,
-        "estimatedPrice": 3054,
+        "estimatedPrice": 3032,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7910,7 +7910,7 @@
         "osrsId": 1163,
         "name": "Rune full helm",
         "quantity": 1,
-        "estimatedPrice": 20704,
+        "estimatedPrice": 20549,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7919,7 +7919,7 @@
         "osrsId": 830,
         "name": "Rune javelin",
         "quantity": 50,
-        "estimatedPrice": 124,
+        "estimatedPrice": 132,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7973,7 +7973,7 @@
         "osrsId": 1079,
         "name": "Rune platelegs",
         "quantity": 1,
-        "estimatedPrice": 37752,
+        "estimatedPrice": 37669,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -7991,7 +7991,7 @@
         "osrsId": 1303,
         "name": "Rune longsword",
         "quantity": 1,
-        "estimatedPrice": 18506,
+        "estimatedPrice": 18584,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8027,7 +8027,7 @@
         "osrsId": 23303,
         "name": "Monk's robe top (t)",
         "quantity": 1,
-        "estimatedPrice": 27878,
+        "estimatedPrice": 27628,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8045,7 +8045,7 @@
         "osrsId": 8780,
         "name": "Teak plank",
         "quantity": 1,
-        "estimatedPrice": 811,
+        "estimatedPrice": 815,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8063,7 +8063,7 @@
         "osrsId": 8782,
         "name": "Mahogany plank",
         "quantity": 1,
-        "estimatedPrice": 1931,
+        "estimatedPrice": 1948,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8099,7 +8099,7 @@
         "osrsId": 19582,
         "name": "Dragon javelin tips",
         "quantity": 40,
-        "estimatedPrice": 706,
+        "estimatedPrice": 710,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8108,7 +8108,7 @@
         "osrsId": 11232,
         "name": "Dragon dart tip",
         "quantity": 40,
-        "estimatedPrice": 1325,
+        "estimatedPrice": 1320,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8117,7 +8117,7 @@
         "osrsId": 868,
         "name": "Rune knife",
         "quantity": 25,
-        "estimatedPrice": 182,
+        "estimatedPrice": 176,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8126,7 +8126,7 @@
         "osrsId": 1149,
         "name": "Dragon med helm",
         "quantity": 1,
-        "estimatedPrice": 58475,
+        "estimatedPrice": 58322,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8144,7 +8144,7 @@
         "osrsId": 1127,
         "name": "Rune platebody",
         "quantity": 1,
-        "estimatedPrice": 38642,
+        "estimatedPrice": 38326,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8153,7 +8153,7 @@
         "osrsId": 2491,
         "name": "Black d'hide vambraces",
         "quantity": 1,
-        "estimatedPrice": 1888,
+        "estimatedPrice": 1876,
         "category": "stackable",
         "character": "Lazy Priest"
       },
@@ -8182,7 +8182,7 @@
         "osrsId": 3053,
         "name": "Lava battlestaff",
         "quantity": 1,
-        "estimatedPrice": 9284,
+        "estimatedPrice": 9069,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8191,7 +8191,7 @@
         "osrsId": 1387,
         "name": "Staff of fire",
         "quantity": 2,
-        "estimatedPrice": 925,
+        "estimatedPrice": 788,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8200,7 +8200,7 @@
         "osrsId": 1399,
         "name": "Earth battlestaff",
         "quantity": 1,
-        "estimatedPrice": 8697,
+        "estimatedPrice": 8669,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8209,7 +8209,7 @@
         "osrsId": 1407,
         "name": "Mystic earth staff",
         "quantity": 1,
-        "estimatedPrice": 24774,
+        "estimatedPrice": 24780,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8227,7 +8227,7 @@
         "osrsId": 563,
         "name": "Law rune",
         "quantity": 3010,
-        "estimatedPrice": 121,
+        "estimatedPrice": 119,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8236,7 +8236,7 @@
         "osrsId": 556,
         "name": "Air rune",
         "quantity": 1386,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8245,7 +8245,7 @@
         "osrsId": 554,
         "name": "Fire rune",
         "quantity": 19556,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8263,7 +8263,7 @@
         "osrsId": 555,
         "name": "Water rune",
         "quantity": 868,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8272,7 +8272,7 @@
         "osrsId": 4699,
         "name": "Lava rune",
         "quantity": 174,
-        "estimatedPrice": 28,
+        "estimatedPrice": 27,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8281,7 +8281,7 @@
         "osrsId": 558,
         "name": "Mind rune",
         "quantity": 1,
-        "estimatedPrice": 2,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8290,7 +8290,7 @@
         "osrsId": 566,
         "name": "Soul rune",
         "quantity": 81,
-        "estimatedPrice": 389,
+        "estimatedPrice": 384,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8299,7 +8299,7 @@
         "osrsId": 565,
         "name": "Blood rune",
         "quantity": 264,
-        "estimatedPrice": 299,
+        "estimatedPrice": 291,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8308,7 +8308,7 @@
         "osrsId": 562,
         "name": "Chaos rune",
         "quantity": 18803,
-        "estimatedPrice": 108,
+        "estimatedPrice": 107,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8317,7 +8317,7 @@
         "osrsId": 560,
         "name": "Death rune",
         "quantity": 17200,
-        "estimatedPrice": 183,
+        "estimatedPrice": 180,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8488,7 +8488,7 @@
         "osrsId": 2552,
         "name": "Ring of dueling(8)",
         "quantity": 1,
-        "estimatedPrice": 854,
+        "estimatedPrice": 867,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8524,7 +8524,7 @@
         "osrsId": 12938,
         "name": "Zul-andra teleport",
         "quantity": 1,
-        "estimatedPrice": 11883,
+        "estimatedPrice": 12003,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8542,7 +8542,7 @@
         "osrsId": 2114,
         "name": "Pineapple",
         "quantity": 7,
-        "estimatedPrice": 209,
+        "estimatedPrice": 214,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8560,7 +8560,7 @@
         "osrsId": 4089,
         "name": "Mystic hat",
         "quantity": 1,
-        "estimatedPrice": 13049,
+        "estimatedPrice": 12628,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8569,7 +8569,7 @@
         "osrsId": 12931,
         "name": "Serpentine helm",
         "quantity": 1,
-        "estimatedPrice": 3768341,
+        "estimatedPrice": 3749261,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8596,7 +8596,7 @@
         "osrsId": 10828,
         "name": "Helm of neitiznot",
         "quantity": 1,
-        "estimatedPrice": 48807,
+        "estimatedPrice": 49153,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8632,7 +8632,7 @@
         "osrsId": 4940,
         "name": "Karil's leathertop 100",
         "quantity": 1,
-        "estimatedPrice": 1120479,
+        "estimatedPrice": 1117165,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8704,7 +8704,7 @@
         "osrsId": 20657,
         "name": "Ring of suffering (ri)",
         "quantity": 1,
-        "estimatedPrice": 18771032,
+        "estimatedPrice": 18755675,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8722,7 +8722,7 @@
         "osrsId": 2497,
         "name": "Black d'hide chaps",
         "quantity": 1,
-        "estimatedPrice": 3067,
+        "estimatedPrice": 3375,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8731,7 +8731,7 @@
         "osrsId": 19553,
         "name": "Amulet of torture",
         "quantity": 1,
-        "estimatedPrice": 18687462,
+        "estimatedPrice": 18714461,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8767,7 +8767,7 @@
         "osrsId": 4886,
         "name": "Dharok's greataxe 100",
         "quantity": 1,
-        "estimatedPrice": 2012666,
+        "estimatedPrice": 2013623,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8803,7 +8803,7 @@
         "osrsId": 1215,
         "name": "Dragon dagger",
         "quantity": 1,
-        "estimatedPrice": 17515,
+        "estimatedPrice": 17450,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8812,7 +8812,7 @@
         "osrsId": 6328,
         "name": "Snakeskin boots",
         "quantity": 1,
-        "estimatedPrice": 483,
+        "estimatedPrice": 700,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8821,7 +8821,7 @@
         "osrsId": 4097,
         "name": "Mystic boots",
         "quantity": 1,
-        "estimatedPrice": 5156,
+        "estimatedPrice": 5486,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8830,7 +8830,7 @@
         "osrsId": 11840,
         "name": "Dragon boots",
         "quantity": 1,
-        "estimatedPrice": 235180,
+        "estimatedPrice": 235034,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8848,7 +8848,7 @@
         "osrsId": 9185,
         "name": "Rune crossbow",
         "quantity": 1,
-        "estimatedPrice": 9260,
+        "estimatedPrice": 8870,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8884,7 +8884,7 @@
         "osrsId": 11771,
         "name": "Archers ring (i)",
         "quantity": 1,
-        "estimatedPrice": 2103431,
+        "estimatedPrice": 2077310,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8902,7 +8902,7 @@
         "osrsId": 11772,
         "name": "Warrior ring (i)",
         "quantity": 1,
-        "estimatedPrice": 47920,
+        "estimatedPrice": 49077,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8929,7 +8929,7 @@
         "osrsId": 4162,
         "name": "Rock hammer",
         "quantity": 1,
-        "estimatedPrice": 1071,
+        "estimatedPrice": 1371,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8938,7 +8938,7 @@
         "osrsId": 2491,
         "name": "Black d'hide vambraces",
         "quantity": 2,
-        "estimatedPrice": 1888,
+        "estimatedPrice": 1876,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8947,7 +8947,7 @@
         "osrsId": 4587,
         "name": "Dragon scimitar",
         "quantity": 1,
-        "estimatedPrice": 59202,
+        "estimatedPrice": 59117,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8965,7 +8965,7 @@
         "osrsId": 11773,
         "name": "Berserker ring (i)",
         "quantity": 1,
-        "estimatedPrice": 3012827,
+        "estimatedPrice": 3007961,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -8983,7 +8983,7 @@
         "osrsId": 2866,
         "name": "Ogre arrow",
         "quantity": 78,
-        "estimatedPrice": 192,
+        "estimatedPrice": 202,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9019,7 +9019,7 @@
         "osrsId": 20232,
         "name": "War blessing",
         "quantity": 1,
-        "estimatedPrice": 9939,
+        "estimatedPrice": 10321,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9028,7 +9028,7 @@
         "osrsId": 4164,
         "name": "Facemask",
         "quantity": 1,
-        "estimatedPrice": 378,
+        "estimatedPrice": 344,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9190,7 +9190,7 @@
         "osrsId": 4168,
         "name": "Nose peg",
         "quantity": 7,
-        "estimatedPrice": 440,
+        "estimatedPrice": 375,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9226,7 +9226,7 @@
         "osrsId": 10069,
         "name": "Spotted cape",
         "quantity": 1,
-        "estimatedPrice": 779,
+        "estimatedPrice": 749,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9262,7 +9262,7 @@
         "osrsId": 3105,
         "name": "Climbing boots",
         "quantity": 1,
-        "estimatedPrice": 702,
+        "estimatedPrice": 718,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9370,7 +9370,7 @@
         "osrsId": 12695,
         "name": "Super combat potion(4)",
         "quantity": 130,
-        "estimatedPrice": 12327,
+        "estimatedPrice": 12224,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9379,7 +9379,7 @@
         "osrsId": 23685,
         "name": "Divine super combat potion(4)",
         "quantity": 53,
-        "estimatedPrice": 19179,
+        "estimatedPrice": 19023,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9442,7 +9442,7 @@
         "osrsId": 13441,
         "name": "Anglerfish",
         "quantity": 495,
-        "estimatedPrice": 2878,
+        "estimatedPrice": 2899,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9478,7 +9478,7 @@
         "osrsId": 22449,
         "name": "Battlemage potion(4)",
         "quantity": 3,
-        "estimatedPrice": 13737,
+        "estimatedPrice": 13730,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9514,7 +9514,7 @@
         "osrsId": 2434,
         "name": "Prayer potion(4)",
         "quantity": 11,
-        "estimatedPrice": 8630,
+        "estimatedPrice": 8509,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9523,7 +9523,7 @@
         "osrsId": 451,
         "name": "Runite ore",
         "quantity": 17,
-        "estimatedPrice": 10377,
+        "estimatedPrice": 10339,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9532,7 +9532,7 @@
         "osrsId": 453,
         "name": "Coal",
         "quantity": 1,
-        "estimatedPrice": 157,
+        "estimatedPrice": 149,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9550,7 +9550,7 @@
         "osrsId": 2313,
         "name": "Pie dish",
         "quantity": 1525,
-        "estimatedPrice": 37,
+        "estimatedPrice": 38,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9559,7 +9559,7 @@
         "osrsId": 3144,
         "name": "Cooked karambwan",
         "quantity": 1000,
-        "estimatedPrice": 411,
+        "estimatedPrice": 418,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9604,7 +9604,7 @@
         "osrsId": 851,
         "name": "Maple longbow",
         "quantity": 1665,
-        "estimatedPrice": 267,
+        "estimatedPrice": 275,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9613,7 +9613,7 @@
         "osrsId": 1607,
         "name": "Sapphire",
         "quantity": 946,
-        "estimatedPrice": 228,
+        "estimatedPrice": 229,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9622,7 +9622,7 @@
         "osrsId": 1603,
         "name": "Ruby",
         "quantity": 295,
-        "estimatedPrice": 850,
+        "estimatedPrice": 872,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9631,7 +9631,7 @@
         "osrsId": 1601,
         "name": "Diamond",
         "quantity": 99,
-        "estimatedPrice": 1615,
+        "estimatedPrice": 1633,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9640,7 +9640,7 @@
         "osrsId": 1605,
         "name": "Emerald",
         "quantity": 22,
-        "estimatedPrice": 434,
+        "estimatedPrice": 424,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9658,7 +9658,7 @@
         "osrsId": 1623,
         "name": "Uncut sapphire",
         "quantity": 138,
-        "estimatedPrice": 239,
+        "estimatedPrice": 236,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9667,7 +9667,7 @@
         "osrsId": 1619,
         "name": "Uncut ruby",
         "quantity": 38,
-        "estimatedPrice": 1076,
+        "estimatedPrice": 1075,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9676,7 +9676,7 @@
         "osrsId": 1617,
         "name": "Uncut diamond",
         "quantity": 13,
-        "estimatedPrice": 2513,
+        "estimatedPrice": 2556,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9694,7 +9694,7 @@
         "osrsId": 2357,
         "name": "Gold bar",
         "quantity": 11,
-        "estimatedPrice": 89,
+        "estimatedPrice": 92,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9703,7 +9703,7 @@
         "osrsId": 1271,
         "name": "Adamant pickaxe",
         "quantity": 4,
-        "estimatedPrice": 1535,
+        "estimatedPrice": 1575,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9721,7 +9721,7 @@
         "osrsId": 2347,
         "name": "Hammer",
         "quantity": 19,
-        "estimatedPrice": 103,
+        "estimatedPrice": 102,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9739,7 +9739,7 @@
         "osrsId": 5341,
         "name": "Rake",
         "quantity": 1,
-        "estimatedPrice": 140,
+        "estimatedPrice": 166,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9748,7 +9748,7 @@
         "osrsId": 952,
         "name": "Spade",
         "quantity": 3,
-        "estimatedPrice": 131,
+        "estimatedPrice": 130,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9865,7 +9865,7 @@
         "osrsId": 1837,
         "name": "Desert boots",
         "quantity": 1,
-        "estimatedPrice": 99,
+        "estimatedPrice": 84,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -9883,7 +9883,7 @@
         "osrsId": 1835,
         "name": "Desert robe",
         "quantity": 1,
-        "estimatedPrice": 170,
+        "estimatedPrice": 171,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10207,7 +10207,7 @@
         "osrsId": 10006,
         "name": "Bird snare",
         "quantity": 2,
-        "estimatedPrice": 80,
+        "estimatedPrice": 72,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10234,7 +10234,7 @@
         "osrsId": 5396,
         "name": "Oranges(5)",
         "quantity": 219,
-        "estimatedPrice": 883,
+        "estimatedPrice": 905,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10279,7 +10279,7 @@
         "osrsId": 1359,
         "name": "Rune axe",
         "quantity": 1,
-        "estimatedPrice": 7135,
+        "estimatedPrice": 7140,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10360,7 +10360,7 @@
         "osrsId": 1275,
         "name": "Rune pickaxe",
         "quantity": 1,
-        "estimatedPrice": 18867,
+        "estimatedPrice": 18440,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10531,7 +10531,7 @@
         "osrsId": 12627,
         "name": "Stamina potion(3)",
         "quantity": 5,
-        "estimatedPrice": 2752,
+        "estimatedPrice": 2753,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10576,7 +10576,7 @@
         "osrsId": 3026,
         "name": "Super restore(3)",
         "quantity": 4,
-        "estimatedPrice": 7884,
+        "estimatedPrice": 7875,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10612,7 +10612,7 @@
         "osrsId": 115,
         "name": "Strength potion(3)",
         "quantity": 1,
-        "estimatedPrice": 56,
+        "estimatedPrice": 63,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10693,7 +10693,7 @@
         "osrsId": 12699,
         "name": "Super combat potion(2)",
         "quantity": 14,
-        "estimatedPrice": 7868,
+        "estimatedPrice": 6968,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10720,7 +10720,7 @@
         "osrsId": 3018,
         "name": "Super energy(3)",
         "quantity": 5,
-        "estimatedPrice": 1842,
+        "estimatedPrice": 1849,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10774,7 +10774,7 @@
         "osrsId": 2,
         "name": "Steel cannonball",
         "quantity": 648,
-        "estimatedPrice": 262,
+        "estimatedPrice": 266,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10783,7 +10783,7 @@
         "osrsId": 21146,
         "name": "Necklace of passage(5)",
         "quantity": 7,
-        "estimatedPrice": 1402,
+        "estimatedPrice": 1500,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10837,7 +10837,7 @@
         "osrsId": 8790,
         "name": "Bolt of cloth",
         "quantity": 8,
-        "estimatedPrice": 377,
+        "estimatedPrice": 390,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10855,7 +10855,7 @@
         "osrsId": 1127,
         "name": "Rune platebody",
         "quantity": 1,
-        "estimatedPrice": 38642,
+        "estimatedPrice": 38326,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10882,7 +10882,7 @@
         "osrsId": 1731,
         "name": "Amulet of power",
         "quantity": 30,
-        "estimatedPrice": 2163,
+        "estimatedPrice": 2138,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10900,7 +10900,7 @@
         "osrsId": 1333,
         "name": "Rune scimitar",
         "quantity": 1,
-        "estimatedPrice": 14811,
+        "estimatedPrice": 14847,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10936,7 +10936,7 @@
         "osrsId": 1163,
         "name": "Rune full helm",
         "quantity": 7,
-        "estimatedPrice": 20704,
+        "estimatedPrice": 20549,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10954,7 +10954,7 @@
         "osrsId": 1135,
         "name": "Green d'hide body",
         "quantity": 2,
-        "estimatedPrice": 4255,
+        "estimatedPrice": 4175,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10963,7 +10963,7 @@
         "osrsId": 371,
         "name": "Raw swordfish",
         "quantity": 27,
-        "estimatedPrice": 186,
+        "estimatedPrice": 184,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10972,7 +10972,7 @@
         "osrsId": 853,
         "name": "Maple shortbow",
         "quantity": 215,
-        "estimatedPrice": 194,
+        "estimatedPrice": 193,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -10981,7 +10981,7 @@
         "osrsId": 113,
         "name": "Strength potion(4)",
         "quantity": 184,
-        "estimatedPrice": 98,
+        "estimatedPrice": 99,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11017,7 +11017,7 @@
         "osrsId": 843,
         "name": "Oak shortbow",
         "quantity": 16,
-        "estimatedPrice": 42,
+        "estimatedPrice": 39,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11296,7 +11296,7 @@
         "osrsId": 10826,
         "name": "Neitiznot shield",
         "quantity": 1,
-        "estimatedPrice": 2960,
+        "estimatedPrice": 3077,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11305,7 +11305,7 @@
         "osrsId": 10822,
         "name": "Yak-hide armour",
         "quantity": 1,
-        "estimatedPrice": 1279,
+        "estimatedPrice": 1363,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11395,7 +11395,7 @@
         "osrsId": 314,
         "name": "Feather",
         "quantity": 728,
-        "estimatedPrice": 3,
+        "estimatedPrice": 2,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11404,7 +11404,7 @@
         "osrsId": 229,
         "name": "Vial",
         "quantity": 47595,
-        "estimatedPrice": 2,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11485,7 +11485,7 @@
         "osrsId": 8013,
         "name": "Teleport to house",
         "quantity": 3883,
-        "estimatedPrice": 882,
+        "estimatedPrice": 878,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11494,7 +11494,7 @@
         "osrsId": 946,
         "name": "Knife",
         "quantity": 1,
-        "estimatedPrice": 95,
+        "estimatedPrice": 99,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11557,7 +11557,7 @@
         "osrsId": 313,
         "name": "Fishing bait",
         "quantity": 18674,
-        "estimatedPrice": 4,
+        "estimatedPrice": 5,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11584,7 +11584,7 @@
         "osrsId": 225,
         "name": "Limpwurt root",
         "quantity": 170,
-        "estimatedPrice": 268,
+        "estimatedPrice": 271,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11593,7 +11593,7 @@
         "osrsId": 2970,
         "name": "Mort myre fungus",
         "quantity": 79,
-        "estimatedPrice": 229,
+        "estimatedPrice": 235,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11611,7 +11611,7 @@
         "osrsId": 5371,
         "name": "Willow sapling",
         "quantity": 21,
-        "estimatedPrice": 540,
+        "estimatedPrice": 516,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11638,7 +11638,7 @@
         "osrsId": 5498,
         "name": "Orange sapling",
         "quantity": 30,
-        "estimatedPrice": 51,
+        "estimatedPrice": 94,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11665,7 +11665,7 @@
         "osrsId": 2361,
         "name": "Adamantite bar",
         "quantity": 10871,
-        "estimatedPrice": 1899,
+        "estimatedPrice": 1889,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11683,7 +11683,7 @@
         "osrsId": 5295,
         "name": "Ranarr seed",
         "quantity": 25,
-        "estimatedPrice": 26043,
+        "estimatedPrice": 26148,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11692,7 +11692,7 @@
         "osrsId": 2353,
         "name": "Steel bar",
         "quantity": 440,
-        "estimatedPrice": 569,
+        "estimatedPrice": 574,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11701,7 +11701,7 @@
         "osrsId": 359,
         "name": "Raw tuna",
         "quantity": 617,
-        "estimatedPrice": 58,
+        "estimatedPrice": 59,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11746,7 +11746,7 @@
         "osrsId": 1777,
         "name": "Bow string",
         "quantity": 1,
-        "estimatedPrice": 131,
+        "estimatedPrice": 134,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11782,7 +11782,7 @@
         "osrsId": 526,
         "name": "Bones",
         "quantity": 8,
-        "estimatedPrice": 30,
+        "estimatedPrice": 31,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11854,7 +11854,7 @@
         "osrsId": 6055,
         "name": "Weeds",
         "quantity": 3,
-        "estimatedPrice": 234,
+        "estimatedPrice": 235,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11908,7 +11908,7 @@
         "osrsId": 32047,
         "name": "Teak hull parts",
         "quantity": 3,
-        "estimatedPrice": 760,
+        "estimatedPrice": 800,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11917,7 +11917,7 @@
         "osrsId": 32044,
         "name": "Oak hull parts",
         "quantity": 10,
-        "estimatedPrice": 530,
+        "estimatedPrice": 368,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11926,7 +11926,7 @@
         "osrsId": 139,
         "name": "Prayer potion(3)",
         "quantity": 1,
-        "estimatedPrice": 6255,
+        "estimatedPrice": 6256,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -11953,7 +11953,7 @@
         "osrsId": 5300,
         "name": "Snapdragon seed",
         "quantity": 4,
-        "estimatedPrice": 48510,
+        "estimatedPrice": 48045,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12016,7 +12016,7 @@
         "osrsId": 8882,
         "name": "Bone bolts",
         "quantity": 10986,
-        "estimatedPrice": 7,
+        "estimatedPrice": 8,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12034,7 +12034,7 @@
         "osrsId": 5288,
         "name": "Papaya tree seed",
         "quantity": 7,
-        "estimatedPrice": 1101,
+        "estimatedPrice": 1017,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12052,7 +12052,7 @@
         "osrsId": 1513,
         "name": "Magic logs",
         "quantity": 350,
-        "estimatedPrice": 813,
+        "estimatedPrice": 801,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12061,7 +12061,7 @@
         "osrsId": 31910,
         "name": "Mithril cannonball",
         "quantity": 30,
-        "estimatedPrice": 145,
+        "estimatedPrice": 149,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12070,7 +12070,7 @@
         "osrsId": 1704,
         "name": "Amulet of glory",
         "quantity": 1,
-        "estimatedPrice": 10510,
+        "estimatedPrice": 10561,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12088,7 +12088,7 @@
         "osrsId": 892,
         "name": "Rune arrow",
         "quantity": 6,
-        "estimatedPrice": 51,
+        "estimatedPrice": 47,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12097,7 +12097,7 @@
         "osrsId": 385,
         "name": "Shark",
         "quantity": 4,
-        "estimatedPrice": 967,
+        "estimatedPrice": 958,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12106,7 +12106,7 @@
         "osrsId": 20223,
         "name": "Unholy blessing",
         "quantity": 1,
-        "estimatedPrice": 10811,
+        "estimatedPrice": 9451,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12133,7 +12133,7 @@
         "osrsId": 886,
         "name": "Steel arrow",
         "quantity": 98,
-        "estimatedPrice": 9,
+        "estimatedPrice": 8,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12142,7 +12142,7 @@
         "osrsId": 1185,
         "name": "Rune sq shield",
         "quantity": 12,
-        "estimatedPrice": 22472,
+        "estimatedPrice": 22730,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12151,7 +12151,7 @@
         "osrsId": 859,
         "name": "Magic longbow",
         "quantity": 3,
-        "estimatedPrice": 1103,
+        "estimatedPrice": 1082,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12223,7 +12223,7 @@
         "osrsId": 22124,
         "name": "Superior dragon bones",
         "quantity": 90,
-        "estimatedPrice": 20352,
+        "estimatedPrice": 20378,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12232,7 +12232,7 @@
         "osrsId": 2489,
         "name": "Red d'hide vambraces",
         "quantity": 1,
-        "estimatedPrice": 1521,
+        "estimatedPrice": 1541,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12241,7 +12241,7 @@
         "osrsId": 377,
         "name": "Raw lobster",
         "quantity": 308,
-        "estimatedPrice": 123,
+        "estimatedPrice": 124,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12250,7 +12250,7 @@
         "osrsId": 331,
         "name": "Raw salmon",
         "quantity": 1320,
-        "estimatedPrice": 45,
+        "estimatedPrice": 46,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12268,7 +12268,7 @@
         "osrsId": 329,
         "name": "Salmon",
         "quantity": 87,
-        "estimatedPrice": 39,
+        "estimatedPrice": 38,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12277,7 +12277,7 @@
         "osrsId": 1197,
         "name": "Mithril kiteshield",
         "quantity": 1,
-        "estimatedPrice": 1164,
+        "estimatedPrice": 1156,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12286,7 +12286,7 @@
         "osrsId": 1069,
         "name": "Steel platelegs",
         "quantity": 3,
-        "estimatedPrice": 337,
+        "estimatedPrice": 405,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12313,7 +12313,7 @@
         "osrsId": 1383,
         "name": "Staff of water",
         "quantity": 3,
-        "estimatedPrice": 1175,
+        "estimatedPrice": 1181,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12322,7 +12322,7 @@
         "osrsId": 1385,
         "name": "Staff of earth",
         "quantity": 1,
-        "estimatedPrice": 668,
+        "estimatedPrice": 532,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12385,7 +12385,7 @@
         "osrsId": 1476,
         "name": "White bead",
         "quantity": 3,
-        "estimatedPrice": 1469,
+        "estimatedPrice": 1295,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12430,7 +12430,7 @@
         "osrsId": 1317,
         "name": "Adamant 2h sword",
         "quantity": 1,
-        "estimatedPrice": 3438,
+        "estimatedPrice": 3685,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12439,7 +12439,7 @@
         "osrsId": 1683,
         "name": "Dragonstone amulet (u)",
         "quantity": 1,
-        "estimatedPrice": 9898,
+        "estimatedPrice": 9897,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12457,7 +12457,7 @@
         "osrsId": 1133,
         "name": "Studded body",
         "quantity": 1,
-        "estimatedPrice": 204,
+        "estimatedPrice": 249,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12466,7 +12466,7 @@
         "osrsId": 23733,
         "name": "Divine ranging potion(4)",
         "quantity": 2,
-        "estimatedPrice": 6828,
+        "estimatedPrice": 6724,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12511,7 +12511,7 @@
         "osrsId": 1305,
         "name": "Dragon longsword",
         "quantity": 1,
-        "estimatedPrice": 59055,
+        "estimatedPrice": 59038,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12538,7 +12538,7 @@
         "osrsId": 6319,
         "name": "Proboscis",
         "quantity": 9,
-        "estimatedPrice": 274,
+        "estimatedPrice": 190,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12547,7 +12547,7 @@
         "osrsId": 5933,
         "name": "Willow branch",
         "quantity": 2,
-        "estimatedPrice": 1815,
+        "estimatedPrice": 1695,
         "category": "stackable",
         "character": "CafeEcigarro"
       },
@@ -12576,7 +12576,7 @@
         "osrsId": 554,
         "name": "Fire rune",
         "quantity": 1680,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12585,7 +12585,7 @@
         "osrsId": 556,
         "name": "Air rune",
         "quantity": 55897,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12594,7 +12594,7 @@
         "osrsId": 563,
         "name": "Law rune",
         "quantity": 954,
-        "estimatedPrice": 121,
+        "estimatedPrice": 119,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12603,7 +12603,7 @@
         "osrsId": 555,
         "name": "Water rune",
         "quantity": 38843,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12621,7 +12621,7 @@
         "osrsId": 558,
         "name": "Mind rune",
         "quantity": 8445,
-        "estimatedPrice": 2,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12639,7 +12639,7 @@
         "osrsId": 560,
         "name": "Death rune",
         "quantity": 1,
-        "estimatedPrice": 183,
+        "estimatedPrice": 180,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12666,7 +12666,7 @@
         "osrsId": 8011,
         "name": "Ardougne teleport",
         "quantity": 10,
-        "estimatedPrice": 543,
+        "estimatedPrice": 545,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12738,7 +12738,7 @@
         "osrsId": 2552,
         "name": "Ring of dueling(8)",
         "quantity": 28,
-        "estimatedPrice": 854,
+        "estimatedPrice": 867,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12864,7 +12864,7 @@
         "osrsId": 1113,
         "name": "Rune chainbody",
         "quantity": 2,
-        "estimatedPrice": 29416,
+        "estimatedPrice": 29460,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12873,7 +12873,7 @@
         "osrsId": 1135,
         "name": "Green d'hide body",
         "quantity": 1,
-        "estimatedPrice": 4255,
+        "estimatedPrice": 4175,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12882,7 +12882,7 @@
         "osrsId": 1127,
         "name": "Rune platebody",
         "quantity": 1,
-        "estimatedPrice": 38642,
+        "estimatedPrice": 38326,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12945,7 +12945,7 @@
         "osrsId": 9185,
         "name": "Rune crossbow",
         "quantity": 1,
-        "estimatedPrice": 9260,
+        "estimatedPrice": 8870,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12954,7 +12954,7 @@
         "osrsId": 1099,
         "name": "Green d'hide chaps",
         "quantity": 4,
-        "estimatedPrice": 1982,
+        "estimatedPrice": 2124,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -12990,7 +12990,7 @@
         "osrsId": 4170,
         "name": "Slayer's staff",
         "quantity": 1,
-        "estimatedPrice": 22403,
+        "estimatedPrice": 21353,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13017,7 +13017,7 @@
         "osrsId": 853,
         "name": "Maple shortbow",
         "quantity": 3,
-        "estimatedPrice": 194,
+        "estimatedPrice": 193,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13026,7 +13026,7 @@
         "osrsId": 1333,
         "name": "Rune scimitar",
         "quantity": 1,
-        "estimatedPrice": 14811,
+        "estimatedPrice": 14847,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13062,7 +13062,7 @@
         "osrsId": 1731,
         "name": "Amulet of power",
         "quantity": 2,
-        "estimatedPrice": 2163,
+        "estimatedPrice": 2138,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13089,7 +13089,7 @@
         "osrsId": 1704,
         "name": "Amulet of glory",
         "quantity": 1,
-        "estimatedPrice": 10510,
+        "estimatedPrice": 10561,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13107,7 +13107,7 @@
         "osrsId": 890,
         "name": "Adamant arrow",
         "quantity": 1102,
-        "estimatedPrice": 34,
+        "estimatedPrice": 33,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13179,7 +13179,7 @@
         "osrsId": 385,
         "name": "Shark",
         "quantity": 9,
-        "estimatedPrice": 967,
+        "estimatedPrice": 958,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13224,7 +13224,7 @@
         "osrsId": 13441,
         "name": "Anglerfish",
         "quantity": 29,
-        "estimatedPrice": 2878,
+        "estimatedPrice": 2899,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13251,7 +13251,7 @@
         "osrsId": 12695,
         "name": "Super combat potion(4)",
         "quantity": 20,
-        "estimatedPrice": 12327,
+        "estimatedPrice": 12224,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13287,7 +13287,7 @@
         "osrsId": 453,
         "name": "Coal",
         "quantity": 718,
-        "estimatedPrice": 157,
+        "estimatedPrice": 149,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13296,7 +13296,7 @@
         "osrsId": 2347,
         "name": "Hammer",
         "quantity": 2,
-        "estimatedPrice": 103,
+        "estimatedPrice": 102,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13305,7 +13305,7 @@
         "osrsId": 1387,
         "name": "Staff of fire",
         "quantity": 1,
-        "estimatedPrice": 925,
+        "estimatedPrice": 788,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13440,7 +13440,7 @@
         "osrsId": 1592,
         "name": "Ring mould",
         "quantity": 1,
-        "estimatedPrice": 388,
+        "estimatedPrice": 383,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13467,7 +13467,7 @@
         "osrsId": 952,
         "name": "Spade",
         "quantity": 1,
-        "estimatedPrice": 131,
+        "estimatedPrice": 130,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13476,7 +13476,7 @@
         "osrsId": 946,
         "name": "Knife",
         "quantity": 4,
-        "estimatedPrice": 95,
+        "estimatedPrice": 99,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13503,7 +13503,7 @@
         "osrsId": 1275,
         "name": "Rune pickaxe",
         "quantity": 3,
-        "estimatedPrice": 18867,
+        "estimatedPrice": 18440,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13548,7 +13548,7 @@
         "osrsId": 1269,
         "name": "Steel pickaxe",
         "quantity": 10,
-        "estimatedPrice": 249,
+        "estimatedPrice": 157,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13584,7 +13584,7 @@
         "osrsId": 12627,
         "name": "Stamina potion(3)",
         "quantity": 1,
-        "estimatedPrice": 2752,
+        "estimatedPrice": 2753,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -13926,7 +13926,7 @@
         "osrsId": 229,
         "name": "Vial",
         "quantity": 2071,
-        "estimatedPrice": 2,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "Lazy Wyverns"
       },
@@ -14000,7 +14000,7 @@
         "osrsId": 8013,
         "name": "Teleport to house",
         "quantity": 50,
-        "estimatedPrice": 882,
+        "estimatedPrice": 878,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14018,7 +14018,7 @@
         "osrsId": 563,
         "name": "Law rune",
         "quantity": 178,
-        "estimatedPrice": 121,
+        "estimatedPrice": 119,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14027,7 +14027,7 @@
         "osrsId": 556,
         "name": "Air rune",
         "quantity": 36,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14036,7 +14036,7 @@
         "osrsId": 554,
         "name": "Fire rune",
         "quantity": 695,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14045,7 +14045,7 @@
         "osrsId": 555,
         "name": "Water rune",
         "quantity": 222,
-        "estimatedPrice": 5,
+        "estimatedPrice": 6,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14054,7 +14054,7 @@
         "osrsId": 4698,
         "name": "Mud rune",
         "quantity": 44,
-        "estimatedPrice": 80,
+        "estimatedPrice": 81,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14072,7 +14072,7 @@
         "osrsId": 558,
         "name": "Mind rune",
         "quantity": 550,
-        "estimatedPrice": 2,
+        "estimatedPrice": 3,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14117,7 +14117,7 @@
         "osrsId": 1135,
         "name": "Green d'hide body",
         "quantity": 1,
-        "estimatedPrice": 4255,
+        "estimatedPrice": 4175,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14171,7 +14171,7 @@
         "osrsId": 1704,
         "name": "Amulet of glory",
         "quantity": 2,
-        "estimatedPrice": 10510,
+        "estimatedPrice": 10561,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14198,7 +14198,7 @@
         "osrsId": 4164,
         "name": "Facemask",
         "quantity": 2,
-        "estimatedPrice": 378,
+        "estimatedPrice": 344,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14207,7 +14207,7 @@
         "osrsId": 1333,
         "name": "Rune scimitar",
         "quantity": 1,
-        "estimatedPrice": 14811,
+        "estimatedPrice": 14847,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14225,7 +14225,7 @@
         "osrsId": 10069,
         "name": "Spotted cape",
         "quantity": 1,
-        "estimatedPrice": 779,
+        "estimatedPrice": 749,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14234,7 +14234,7 @@
         "osrsId": 888,
         "name": "Mithril arrow",
         "quantity": 4016,
-        "estimatedPrice": 7,
+        "estimatedPrice": 8,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14252,7 +14252,7 @@
         "osrsId": 13441,
         "name": "Anglerfish",
         "quantity": 7,
-        "estimatedPrice": 2878,
+        "estimatedPrice": 2899,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14261,7 +14261,7 @@
         "osrsId": 385,
         "name": "Shark",
         "quantity": 24,
-        "estimatedPrice": 967,
+        "estimatedPrice": 958,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14279,7 +14279,7 @@
         "osrsId": 6685,
         "name": "Saradomin brew(4)",
         "quantity": 1,
-        "estimatedPrice": 7179,
+        "estimatedPrice": 7165,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14297,7 +14297,7 @@
         "osrsId": 2357,
         "name": "Gold bar",
         "quantity": 19410,
-        "estimatedPrice": 89,
+        "estimatedPrice": 92,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14306,7 +14306,7 @@
         "osrsId": 1601,
         "name": "Diamond",
         "quantity": 14275,
-        "estimatedPrice": 1615,
+        "estimatedPrice": 1633,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14315,7 +14315,7 @@
         "osrsId": 1359,
         "name": "Rune axe",
         "quantity": 3,
-        "estimatedPrice": 7135,
+        "estimatedPrice": 7140,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14324,7 +14324,7 @@
         "osrsId": 1275,
         "name": "Rune pickaxe",
         "quantity": 1,
-        "estimatedPrice": 18867,
+        "estimatedPrice": 18440,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14351,7 +14351,7 @@
         "osrsId": 1603,
         "name": "Ruby",
         "quantity": 6,
-        "estimatedPrice": 850,
+        "estimatedPrice": 872,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14396,7 +14396,7 @@
         "osrsId": 946,
         "name": "Knife",
         "quantity": 1,
-        "estimatedPrice": 95,
+        "estimatedPrice": 99,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14468,7 +14468,7 @@
         "osrsId": 1592,
         "name": "Ring mould",
         "quantity": 1,
-        "estimatedPrice": 388,
+        "estimatedPrice": 383,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14855,7 +14855,7 @@
         "osrsId": 2347,
         "name": "Hammer",
         "quantity": 1,
-        "estimatedPrice": 103,
+        "estimatedPrice": 102,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14891,7 +14891,7 @@
         "osrsId": 1048,
         "name": "White partyhat",
         "quantity": 2,
-        "estimatedPrice": 26177,
+        "estimatedPrice": 25142,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14909,7 +14909,7 @@
         "osrsId": 1448,
         "name": "Mind talisman",
         "quantity": 1,
-        "estimatedPrice": 1169,
+        "estimatedPrice": 1163,
         "category": "stackable",
         "character": "Lazy Jr"
       },
@@ -14975,18 +14975,18 @@
     },
     {
       "date": "2026-07-06",
-      "ts": "2026-07-06T03:45:46.081Z",
-      "total": 3973044211,
+      "ts": "2026-07-06T03:57:06.091Z",
+      "total": 3974896548,
       "byChar": {
-        "Lazy Priest": 3358056967,
-        "CafeEcigarro": 525955331,
-        "Lazy Wyverns": 49386812,
-        "Lazy Jr": 39645101
+        "Lazy Priest": 3359627873,
+        "CafeEcigarro": 525825500,
+        "Lazy Wyverns": 49480368,
+        "Lazy Jr": 39962807
       },
       "items": {
         "Staff of fire": [
           4,
-          925
+          788
         ],
         "Coins": [
           432275640,
@@ -14994,35 +14994,35 @@
         ],
         "Old school bond": [
           1,
-          12379309
+          12401916
         ],
         "Fire battlestaff": [
           6,
-          8847
+          8683
         ],
         "Lava battlestaff": [
           2,
-          9284
+          9069
         ],
         "Smoke battlestaff": [
           1,
-          1900978
+          1897694
         ],
         "Law rune": [
           4250,
-          121
+          119
         ],
         "Air rune": [
           118228,
-          5
+          6
         ],
         "Fire rune": [
           32683,
-          5
+          6
         ],
         "Water rune": [
           91986,
-          5
+          6
         ],
         "Earth rune": [
           67270,
@@ -15030,11 +15030,11 @@
         ],
         "Lava rune": [
           1605,
-          28
+          27
         ],
         "Teleport to house": [
           4728,
-          882
+          878
         ],
         "Bones to peaches": [
           328,
@@ -15046,11 +15046,11 @@
         ],
         "Mind rune": [
           22583,
-          2
+          3
         ],
         "Mud rune": [
           154,
-          80
+          81
         ],
         "Dust rune": [
           504,
@@ -15058,7 +15058,7 @@
         ],
         "Zul-andra teleport": [
           241,
-          11883
+          12003
         ],
         "Lassar teleport": [
           101,
@@ -15066,19 +15066,19 @@
         ],
         "Blighted ancient ice sack": [
           97,
-          315
+          309
         ],
         "Death rune": [
           37321,
-          183
+          180
         ],
         "Soul rune": [
           8094,
-          389
+          384
         ],
         "Chaos rune": [
           29294,
-          108
+          107
         ],
         "Cosmic rune": [
           9149,
@@ -15090,63 +15090,63 @@
         ],
         "Blood rune": [
           5636,
-          299
+          291
         ],
         "Masori mask (f)": [
           1,
-          22129395
+          21975816
         ],
         "Virtus mask": [
           1,
-          6905161
+          6888090
         ],
         "Justiciar faceguard": [
           1,
-          9706793
+          9704064
         ],
         "Proselyte sallet": [
           4,
-          5068
+          4554
         ],
         "Bandos godsword": [
           1,
-          17682437
+          17679493
         ],
         "Masori body (f)": [
           1,
-          77528678
+          78278722
         ],
         "Bandos chestplate": [
           1,
-          22762717
+          22994021
         ],
         "Virtus robe top": [
           1,
-          37849756
+          37589256
         ],
         "Justiciar chestguard": [
           1,
-          10012833
+          10138727
         ],
         "Proselyte hauberk": [
           2,
-          6909
+          7098
         ],
         "Masori chaps (f)": [
           1,
-          54055782
+          53548158
         ],
         "Bandos tassets": [
           1,
-          15205643
+          15281011
         ],
         "Virtus robe bottom": [
           1,
-          26873957
+          26997585
         ],
         "Justiciar legguards": [
           1,
-          8749824
+          8668833
         ],
         "Proselyte cuisse": [
           2,
@@ -15154,71 +15154,71 @@
         ],
         "Twisted bow": [
           1,
-          1495066505
+          1495165728
         ],
         "Pegasian boots": [
           1,
-          31874012
+          32095487
         ],
         "Primordial boots": [
           1,
-          19076865
+          19080831
         ],
         "Eternal boots": [
           1,
-          3696908
+          3697047
         ],
         "Boots of brimstone": [
           1,
-          251337
+          251007
         ],
         "Devout boots": [
           1,
-          778730
+          778444
         ],
         "Dragon hunter crossbow": [
           1,
-          34877503
+          34487503
         ],
         "Brimstone ring": [
           1,
-          3334750
+          3335784
         ],
         "Abyssal bludgeon": [
           1,
-          17269973
+          17154836
         ],
         "Sanguinesti staff": [
           1,
-          20477823
+          20431497
         ],
         "Zamorak godsword": [
           1,
-          14729724
+          14684860
         ],
         "Armadyl crossbow": [
           1,
-          42003519
+          41904557
         ],
         "Saradomin godsword": [
           1,
-          22738734
+          22607578
         ],
         "Archers ring (i)": [
           2,
-          2103431
+          2077310
         ],
         "Warrior ring (i)": [
           2,
-          47920
+          49077
         ],
         "Seers ring (i)": [
           1,
-          669338
+          669367
         ],
         "Ring of suffering (ri)": [
           2,
-          18771032
+          18755675
         ],
         "Staff of the dead": [
           1,
@@ -15226,27 +15226,27 @@
         ],
         "Twisted buckler": [
           1,
-          20300000
+          20743651
         ],
         "Ghrazi rapier": [
           1,
-          25664250
+          25932544
         ],
         "Amulet of torture": [
           2,
-          18687462
+          18714461
         ],
         "Amulet of fury": [
           1,
-          2724769
+          2733274
         ],
         "Serpentine helm": [
           2,
-          3768341
+          3749261
         ],
         "Kodai wand": [
           1,
-          68986779
+          68940823
         ],
         "Toxic blowpipe": [
           2,
@@ -15254,15 +15254,15 @@
         ],
         "Elven signet": [
           1,
-          1056006
+          1056142
         ],
         "Berserker ring (i)": [
           2,
-          3012827
+          3007961
         ],
         "Elidinis' ward": [
           1,
-          3279983
+          3234156
         ],
         "Dragonfire shield": [
           1,
@@ -15270,11 +15270,11 @@
         ],
         "Dragon hunter lance": [
           1,
-          52250839
+          52222510
         ],
         "Saturated heart": [
           1,
-          100641791
+          101119602
         ],
         "Rune thrownaxe": [
           3057,
@@ -15282,19 +15282,19 @@
         ],
         "Dinh's bulwark": [
           1,
-          12199349
+          12025268
         ],
         "Mage's book": [
           1,
-          3649641
+          3625491
         ],
         "Treasonous ring (i)": [
           1,
-          89000
+          88325
         ],
         "Lightbearer": [
           1,
-          3787647
+          3816104
         ],
         "Trident of the swamp": [
           1,
@@ -15302,11 +15302,11 @@
         ],
         "Ancient wyvern shield": [
           1,
-          28594319
+          28606418
         ],
         "Guardian boots": [
           1,
-          1851372
+          1850430
         ],
         "Granite ring (i)": [
           1,
@@ -15326,23 +15326,23 @@
         ],
         "Osmumten's fang": [
           1,
-          18679541
+          18674008
         ],
         "Dragon warhammer": [
           1,
-          15277022
+          15295851
         ],
         "Rock hammer": [
           2,
-          1071
+          1371
         ],
         "Zamorakian hasta": [
           1,
-          1356452
+          1356043
         ],
         "Dark bow": [
           1,
-          1050189
+          1081016
         ],
         "Zamorakian spear": [
           1,
@@ -15350,7 +15350,7 @@
         ],
         "Bracelet of ethereum (uncharged)": [
           28,
-          44142
+          43758
         ],
         "Mole slippers": [
           2,
@@ -15374,23 +15374,23 @@
         ],
         "Amulet of avarice": [
           1,
-          388931
+          380405
         ],
         "Elder maul": [
           1,
-          99846957
+          100646000
         ],
         "Zaryte vambraces": [
           1,
-          75216621
+          75629931
         ],
         "Burning claws": [
           1,
-          3970000
+          4004448
         ],
         "Steel cannonball": [
           9219,
-          262
+          266
         ],
         "Super combat potion(4)": [
           1659,
@@ -15414,7 +15414,7 @@
         ],
         "Super antifire potion(4)": [
           329,
-          20616
+          20533
         ],
         "Divine ranging potion(4)": [
           743,
@@ -15422,7 +15422,7 @@
         ],
         "Dragon arrow": [
           2634,
-          2295
+          2307
         ],
         "Dragon bolts": [
           1500,
@@ -15430,7 +15430,7 @@
         ],
         "Divine bastion potion(4)": [
           163,
-          19181
+          19182
         ],
         "Ranging potion(4)": [
           1737,
@@ -15438,15 +15438,15 @@
         ],
         "Cooked karambwan": [
           7273,
-          411
+          418
         ],
         "Ruby dragon bolts (e)": [
           1018,
-          2958
+          3018
         ],
         "Diamond dragon bolts (e)": [
           901,
-          2434
+          2477
         ],
         "Amethyst broad bolts": [
           11562,
@@ -15470,11 +15470,11 @@
         ],
         "Revenant ether": [
           11522,
-          178
+          176
         ],
         "Sanfew serum(4)": [
           82,
-          21780
+          21861
         ],
         "Extended anti-venom+(4)": [
           63,
@@ -15482,11 +15482,11 @@
         ],
         "Anglerfish": [
           1203,
-          2878
+          2899
         ],
         "Anti-venom+(4)": [
           114,
-          12813
+          12957
         ],
         "Guthix rest(4)": [
           498,
@@ -15494,7 +15494,7 @@
         ],
         "Ruby dragon bolts": [
           500,
-          2819
+          2813
         ],
         "Extended super antifire(4)": [
           82,
@@ -15502,19 +15502,19 @@
         ],
         "Sapphire dragon bolts (e)": [
           489,
-          2606
+          2607
         ],
         "Shark": [
           1232,
-          967
+          958
         ],
         "Rune dart": [
           5117,
-          176
+          172
         ],
         "Amethyst arrow": [
           3603,
-          150
+          149
         ],
         "Broad bolts": [
           10931,
@@ -15542,7 +15542,7 @@
         ],
         "Blighted super restore(4)": [
           144,
-          2212
+          2198
         ],
         "Bastion potion(4)": [
           24,
@@ -15558,7 +15558,7 @@
         ],
         "Rune arrow": [
           6944,
-          51
+          47
         ],
         "Iorwerth camp teleport": [
           99,
@@ -15566,7 +15566,7 @@
         ],
         "Amethyst dart": [
           850,
-          200
+          204
         ],
         "Divine super attack potion(4)": [
           52,
@@ -15574,7 +15574,7 @@
         ],
         "Anti-venom(4)": [
           14,
-          9576
+          9575
         ],
         "Mithril brutal": [
           659,
@@ -15594,7 +15594,7 @@
         ],
         "Prayer regeneration potion(4)": [
           3,
-          73524
+          73728
         ],
         "Moonlight moth mix (2)": [
           20,
@@ -15618,19 +15618,19 @@
         ],
         "Magic longbow (u)": [
           466,
-          815
+          807
         ],
         "Bow string": [
           2682,
-          131
+          134
         ],
         "Ranarr seed": [
           344,
-          26043
+          26148
         ],
         "Snapdragon seed": [
           87,
-          48510
+          48045
         ],
         "Steel nails": [
           3119,
@@ -15646,11 +15646,11 @@
         ],
         "Fishing bait": [
           34377,
-          4
+          5
         ],
         "Knife": [
           8,
-          95
+          99
         ],
         "Chisel": [
           4,
@@ -15686,15 +15686,15 @@
         ],
         "Strange old lockpick (full)": [
           1,
-          20090
+          19970
         ],
         "Basalt": [
           1,
-          6750
+          4591
         ],
         "Box trap": [
           714,
-          30
+          35
         ],
         "Amulet of glory(4)": [
           10,
@@ -15702,15 +15702,15 @@
         ],
         "Cave goblin wire": [
           48,
-          1471
+          1389
         ],
         "Dodgy necklace": [
           393,
-          1190
+          1195
         ],
         "Rune axe": [
           11,
-          7135
+          7140
         ],
         "Fishing rod": [
           5,
@@ -15742,7 +15742,7 @@
         ],
         "Gold leaf": [
           1,
-          135292
+          136535
         ],
         "Lantern lens": [
           2,
@@ -15750,15 +15750,15 @@
         ],
         "Mos le'harmless teleport": [
           19,
-          1197
+          1109
         ],
         "Bracelet of slaughter": [
           4,
-          2989
+          2933
         ],
         "Feather": [
           7093,
-          3
+          2
         ],
         "Divine super combat potion(3)": [
           4,
@@ -15766,7 +15766,7 @@
         ],
         "Super combat potion(2)": [
           15,
-          7868
+          6968
         ],
         "Super combat potion(3)": [
           21,
@@ -15842,7 +15842,7 @@
         ],
         "Saradomin brew(1)": [
           1,
-          1850
+          1740
         ],
         "Saradomin brew(2)": [
           11,
@@ -15850,7 +15850,7 @@
         ],
         "Saradomin brew(3)": [
           1,
-          5162
+          5138
         ],
         "Divine super defence potion(3)": [
           2,
@@ -15930,7 +15930,7 @@
         ],
         "Vial": [
           50364,
-          2
+          3
         ],
         "Menaphite remedy(2)": [
           1,
@@ -15962,23 +15962,23 @@
         ],
         "Shark paint": [
           9,
-          2018
+          1611
         ],
         "Armadyl helmet": [
           1,
-          9554916
+          9618600
         ],
         "Ahrim's robetop": [
           1,
-          1551967
+          1625547
         ],
         "Ahrim's robeskirt": [
           1,
-          1702698
+          1717346
         ],
         "Karil's leathertop 100": [
           2,
-          1120479
+          1117165
         ],
         "Ancient d'hide boots": [
           2,
@@ -16014,7 +16014,7 @@
         ],
         "Dragon scimitar": [
           3,
-          59202
+          59117
         ],
         "Guthan's helm 100": [
           1,
@@ -16030,11 +16030,11 @@
         ],
         "Dragon boots": [
           2,
-          235180
+          235034
         ],
         "Guthix coif": [
           2,
-          69250
+          41590
         ],
         "Bandos coif": [
           5,
@@ -16042,11 +16042,11 @@
         ],
         "Verac's flail 100": [
           1,
-          100000
+          100052
         ],
         "Ancient staff": [
           2,
-          60030
+          61076
         ],
         "Bandos bracers": [
           1,
@@ -16054,15 +16054,15 @@
         ],
         "Ahrim's hood 100": [
           1,
-          323500
+          313686
         ],
         "Helm of neitiznot": [
           5,
-          48807
+          49153
         ],
         "Unholy blessing": [
           7,
-          10811
+          9451
         ],
         "Ancient blessing": [
           4,
@@ -16074,19 +16074,19 @@
         ],
         "War blessing": [
           5,
-          9939
+          10321
         ],
         "Bandos cloak": [
           1,
-          74664
+          56733
         ],
         "Torag's platebody": [
           1,
-          356587
+          356410
         ],
         "Verac's helm 100": [
           1,
-          125782
+          132354
         ],
         "Trident of the seas": [
           2,
@@ -16094,11 +16094,11 @@
         ],
         "Dragon axe": [
           1,
-          79518
+          79625
         ],
         "Farseer helm": [
           1,
-          37635
+          36276
         ],
         "Black d'hide body": [
           4,
@@ -16106,15 +16106,15 @@
         ],
         "Black d'hide chaps": [
           12,
-          3067
+          3375
         ],
         "Rune pickaxe": [
           8,
-          18867
+          18440
         ],
         "Mind shield": [
           1,
-          96159
+          89595
         ],
         "Mirror shield": [
           2,
@@ -16134,7 +16134,7 @@
         ],
         "Slayer's staff": [
           2,
-          22403
+          21353
         ],
         "Armadyl stole": [
           3,
@@ -16150,11 +16150,11 @@
         ],
         "Leaf-bladed battleaxe": [
           1,
-          62451
+          61950
         ],
         "Climbing boots": [
           9,
-          702
+          718
         ],
         "Empty fishbowl": [
           1,
@@ -16162,7 +16162,7 @@
         ],
         "Blue moon spear": [
           1,
-          360455
+          365796
         ],
         "Blue moon helm": [
           1,
@@ -16186,15 +16186,15 @@
         ],
         "Adamant arrow": [
           7897,
-          34
+          33
         ],
         "Amulet of glory": [
           5,
-          10510
+          10561
         ],
         "Abyssal whip": [
           1,
-          986073
+          977058
         ],
         "Bones to bananas": [
           71,
@@ -16222,11 +16222,11 @@
         ],
         "Binding necklace": [
           26,
-          506
+          512
         ],
         "Ring of wealth (i)": [
           1,
-          11006
+          11000
         ],
         "Salvor's paint": [
           1,
@@ -16242,11 +16242,11 @@
         ],
         "Efh salt": [
           250,
-          125
+          127
         ],
         "Umbral frag": [
           38,
-          3332
+          3360
         ],
         "Pillar frag": [
           1,
@@ -16266,7 +16266,7 @@
         ],
         "Rake": [
           3,
-          140
+          166
         ],
         "Spade": [
           8,
@@ -16274,11 +16274,11 @@
         ],
         "Pharaoh's sceptre (uncharged)": [
           1,
-          6515015
+          6464200
         ],
         "Hammer": [
           23,
-          103
+          102
         ],
         "Saw": [
           3,
@@ -16290,7 +16290,7 @@
         ],
         "Bucket of sand": [
           84,
-          9
+          8
         ],
         "Team-40 cape": [
           135,
@@ -16310,7 +16310,7 @@
         ],
         "Mithril arrow": [
           4096,
-          7
+          8
         ],
         "Master scroll book (empty)": [
           1,
@@ -16318,7 +16318,7 @@
         ],
         "Watermelon seed": [
           167,
-          119
+          118
         ],
         "Asgarnian seed": [
           986,
@@ -16338,7 +16338,7 @@
         ],
         "Tomato seed": [
           559,
-          8
+          9
         ],
         "Woad seed": [
           125,
@@ -16346,7 +16346,7 @@
         ],
         "Cabbage seed": [
           875,
-          8
+          10
         ],
         "Dwellberry seed": [
           135,
@@ -16354,23 +16354,23 @@
         ],
         "Hammerstone seed": [
           1838,
-          4
+          3
         ],
         "Jute seed": [
           1,
-          4
+          3
         ],
         "Marigold seed": [
           310,
-          4
+          5
         ],
         "Rosemary seed": [
           133,
-          19
+          18
         ],
         "Nasturtium seed": [
           212,
-          5
+          6
         ],
         "Limpwurt seed": [
           123,
@@ -16378,7 +16378,7 @@
         ],
         "Cadavaberry seed": [
           177,
-          11
+          9
         ],
         "Belladonna seed": [
           16,
@@ -16402,15 +16402,15 @@
         ],
         "Tarromin seed": [
           57,
-          7
+          8
         ],
         "Barley seed": [
           2225,
-          7
+          6
         ],
         "Toadflax seed": [
           10,
-          1080
+          1075
         ],
         "Sweetcorn seed": [
           318,
@@ -16418,15 +16418,15 @@
         ],
         "Strawberry seed": [
           76,
-          2
+          5
         ],
         "Guam seed": [
           135,
-          26
+          24
         ],
         "Snape grass seed": [
           4,
-          12336
+          12361
         ],
         "Seaweed spore": [
           6,
@@ -16458,7 +16458,7 @@
         ],
         "Cactus seed": [
           14,
-          5
+          15
         ],
         "Potato cactus seed": [
           17,
@@ -16466,7 +16466,7 @@
         ],
         "Lantadyme seed": [
           8,
-          158
+          144
         ],
         "Banana tree seed": [
           6,
@@ -16474,7 +16474,7 @@
         ],
         "Mahogany seed": [
           1,
-          157
+          202
         ],
         "Teak seed": [
           10,
@@ -16482,7 +16482,7 @@
         ],
         "Orange tree seed": [
           7,
-          12
+          13
         ],
         "Dwarf weed seed": [
           4,
@@ -16490,7 +16490,7 @@
         ],
         "Cadantine seed": [
           4,
-          5023
+          4655
         ],
         "Acorn": [
           4,
@@ -16502,15 +16502,15 @@
         ],
         "Willow seed": [
           12,
-          61
+          63
         ],
         "Papaya tree seed": [
           23,
-          1101
+          1017
         ],
         "Calquat tree seed": [
           5,
-          523
+          537
         ],
         "Pineapple seed": [
           2,
@@ -16518,11 +16518,11 @@
         ],
         "Apple tree seed": [
           4,
-          11
+          10
         ],
         "Kwuarm seed": [
           2,
-          1262
+          1205
         ],
         "Willow leaves": [
           1,
@@ -16562,7 +16562,7 @@
         ],
         "Ring of wealth": [
           1,
-          11006
+          11000
         ],
         "Peaceful blessing": [
           2,
@@ -16622,7 +16622,7 @@
         ],
         "Uncut ruby": [
           40,
-          1076
+          1075
         ],
         "Grimy torstol": [
           2,
@@ -16642,11 +16642,11 @@
         ],
         "Mithril longsword": [
           11,
-          598
+          650
         ],
         "Adamant arrowtips": [
           5,
-          115
+          116
         ],
         "Adamantite nails": [
           3,
@@ -16662,15 +16662,15 @@
         ],
         "Mithril dart tip": [
           3,
-          125
+          123
         ],
         "Adamant dart tip": [
           3,
-          194
+          195
         ],
         "Adamant bolts(unf)": [
           3,
-          168
+          184
         ],
         "Green d'hide body": [
           6,
@@ -16682,7 +16682,7 @@
         ],
         "Bird nest": [
           1,
-          4673
+          4664
         ],
         "Jug": [
           5,
@@ -16690,23 +16690,23 @@
         ],
         "Fire orb": [
           3,
-          1693
+          1686
         ],
         "Amethyst": [
           1,
-          3008
+          3016
         ],
         "Amethyst dart tip": [
           8,
-          369
+          371
         ],
         "Desert robe": [
           2,
-          170
+          171
         ],
         "Dragon bones": [
           5,
-          3054
+          3032
         ],
         "Black dragonhide": [
           15,
@@ -16718,15 +16718,15 @@
         ],
         "Rune full helm": [
           10,
-          20704
+          20617
         ],
         "Rune javelin": [
           50,
-          124
+          132
         ],
         "Rune platelegs": [
           1,
-          37752
+          37669
         ],
         "Lava scale": [
           10,
@@ -16734,7 +16734,7 @@
         ],
         "Rune longsword": [
           1,
-          18506
+          18584
         ],
         "Ensouled dragon head": [
           2,
@@ -16750,7 +16750,7 @@
         ],
         "Monk's robe top (t)": [
           1,
-          27878
+          27628
         ],
         "Oak plank": [
           13,
@@ -16758,35 +16758,35 @@
         ],
         "Teak plank": [
           1,
-          811
+          815
         ],
         "Mahogany plank": [
           1,
-          1931
+          1948
         ],
         "Dragon javelin tips": [
           40,
-          706
+          710
         ],
         "Dragon dart tip": [
           40,
-          1325
+          1320
         ],
         "Rune knife": [
           25,
-          182
+          176
         ],
         "Dragon med helm": [
           1,
-          58475
+          58322
         ],
         "Rune platebody": [
           3,
-          38642
+          38326
         ],
         "Black d'hide vambraces": [
           3,
-          1888
+          1876
         ],
         "Mushroom potato": [
           1,
@@ -16794,11 +16794,11 @@
         ],
         "Earth battlestaff": [
           1,
-          8697
+          8669
         ],
         "Mystic earth staff": [
           1,
-          24774
+          24780
         ],
         "Falador teleport": [
           99,
@@ -16818,7 +16818,7 @@
         ],
         "Ring of dueling(8)": [
           29,
-          854
+          867
         ],
         "Orange": [
           3,
@@ -16826,11 +16826,11 @@
         ],
         "Pineapple": [
           7,
-          209
+          214
         ],
         "Mystic hat": [
           1,
-          13049
+          12628
         ],
         "Dharok's helm 100": [
           1,
@@ -16870,7 +16870,7 @@
         ],
         "Dharok's greataxe 100": [
           1,
-          2012666
+          2013623
         ],
         "Guthan's chainskirt 75": [
           1,
@@ -16882,19 +16882,19 @@
         ],
         "Dragon dagger": [
           1,
-          17515
+          17450
         ],
         "Snakeskin boots": [
           1,
-          483
+          700
         ],
         "Mystic boots": [
           1,
-          5156
+          5486
         ],
         "Rune crossbow": [
           2,
-          9260
+          8870
         ],
         "Anti-dragon shield": [
           1,
@@ -16906,7 +16906,7 @@
         ],
         "Ogre arrow": [
           78,
-          192
+          202
         ],
         "Team-20 cape": [
           1,
@@ -16914,7 +16914,7 @@
         ],
         "Facemask": [
           3,
-          378
+          344
         ],
         "Magic shortbow": [
           3,
@@ -16926,11 +16926,11 @@
         ],
         "Nose peg": [
           7,
-          440
+          375
         ],
         "Spotted cape": [
           2,
-          779
+          749
         ],
         "Ring of wealth (5)": [
           1,
@@ -16946,7 +16946,7 @@
         ],
         "Battlemage potion(4)": [
           3,
-          13737
+          13730
         ],
         "Restore potion(4)": [
           100,
@@ -16958,11 +16958,11 @@
         ],
         "Runite ore": [
           17,
-          10377
+          10339
         ],
         "Coal": [
           719,
-          157
+          149
         ],
         "Pastry dough": [
           902,
@@ -16970,27 +16970,27 @@
         ],
         "Pie dish": [
           1525,
-          37
+          38
         ],
         "Maple longbow": [
           1665,
-          267
+          275
         ],
         "Sapphire": [
           946,
-          228
+          229
         ],
         "Ruby": [
           301,
-          850
+          872
         ],
         "Diamond": [
           14374,
-          1615
+          1633
         ],
         "Emerald": [
           22,
-          434
+          424
         ],
         "Uncut emerald": [
           65,
@@ -16998,19 +16998,19 @@
         ],
         "Uncut sapphire": [
           138,
-          239
+          236
         ],
         "Uncut diamond": [
           13,
-          2513
+          2556
         ],
         "Gold bar": [
           19421,
-          89
+          92
         ],
         "Adamant pickaxe": [
           4,
-          1535
+          1575
         ],
         "Tinderbox": [
           5,
@@ -17022,7 +17022,7 @@
         ],
         "Desert boots": [
           1,
-          99
+          84
         ],
         "Desert shirt": [
           1,
@@ -17066,7 +17066,7 @@
         ],
         "Bird snare": [
           2,
-          80
+          72
         ],
         "Maple sapling": [
           40,
@@ -17074,7 +17074,7 @@
         ],
         "Oranges(5)": [
           219,
-          883
+          905
         ],
         "Black pickaxe": [
           4,
@@ -17102,7 +17102,7 @@
         ],
         "Strength potion(3)": [
           1,
-          56
+          63
         ],
         "Energy potion(1)": [
           7,
@@ -17118,11 +17118,11 @@
         ],
         "Super energy(3)": [
           5,
-          1842
+          1849
         ],
         "Necklace of passage(5)": [
           7,
-          1402
+          1500
         ],
         "Lumbridge teleport": [
           1,
@@ -17138,11 +17138,11 @@
         ],
         "Bolt of cloth": [
           8,
-          377
+          390
         ],
         "Rune scimitar": [
           3,
-          14811
+          14847
         ],
         "Red cape": [
           2,
@@ -17154,7 +17154,7 @@
         ],
         "Raw swordfish": [
           27,
-          186
+          184
         ],
         "Amulet of strength": [
           21,
@@ -17166,7 +17166,7 @@
         ],
         "Oak shortbow": [
           16,
-          42
+          39
         ],
         "Monkey nuts": [
           1,
@@ -17178,11 +17178,11 @@
         ],
         "Neitiznot shield": [
           1,
-          2960
+          3077
         ],
         "Yak-hide armour": [
           2,
-          1279
+          1363
         ],
         "Summer pie": [
           101,
@@ -17190,15 +17190,15 @@
         ],
         "Limpwurt root": [
           170,
-          268
+          271
         ],
         "Mort myre fungus": [
           79,
-          229
+          235
         ],
         "Willow sapling": [
           21,
-          540
+          516
         ],
         "Apples(5)": [
           92,
@@ -17206,7 +17206,7 @@
         ],
         "Orange sapling": [
           30,
-          51
+          94
         ],
         "Strawberries(5)": [
           60,
@@ -17218,15 +17218,15 @@
         ],
         "Adamantite bar": [
           10871,
-          1899
+          1889
         ],
         "Steel bar": [
           440,
-          569
+          574
         ],
         "Raw tuna": [
           617,
-          58
+          59
         ],
         "Teak sapling": [
           67,
@@ -17246,7 +17246,7 @@
         ],
         "Bones": [
           8,
-          30
+          31
         ],
         "Lunar isle teleport": [
           1,
@@ -17258,7 +17258,7 @@
         ],
         "Weeds": [
           3,
-          234
+          235
         ],
         "Pineapple sapling": [
           82,
@@ -17278,11 +17278,11 @@
         ],
         "Teak hull parts": [
           3,
-          760
+          800
         ],
         "Oak hull parts": [
           10,
-          530
+          368
         ],
         "Soda ash": [
           344,
@@ -17298,7 +17298,7 @@
         ],
         "Bone bolts": [
           10986,
-          7
+          8
         ],
         "Dorgeshuun crossbow": [
           6,
@@ -17310,11 +17310,11 @@
         ],
         "Magic logs": [
           350,
-          813
+          801
         ],
         "Mithril cannonball": [
           30,
-          145
+          149
         ],
         "Jade necklace": [
           8,
@@ -17330,11 +17330,11 @@
         ],
         "Steel arrow": [
           98,
-          9
+          8
         ],
         "Rune sq shield": [
           12,
-          22472
+          22730
         ],
         "Torstol": [
           68,
@@ -17354,19 +17354,19 @@
         ],
         "Superior dragon bones": [
           90,
-          20352
+          20378
         ],
         "Red d'hide vambraces": [
           1,
-          1521
+          1541
         ],
         "Raw lobster": [
           308,
-          123
+          124
         ],
         "Raw salmon": [
           1320,
-          45
+          46
         ],
         "Trout": [
           279,
@@ -17374,15 +17374,15 @@
         ],
         "Salmon": [
           87,
-          39
+          38
         ],
         "Mithril kiteshield": [
           1,
-          1164
+          1156
         ],
         "Steel platelegs": [
           3,
-          337
+          405
         ],
         "Bear feet": [
           1,
@@ -17390,11 +17390,11 @@
         ],
         "Staff of water": [
           3,
-          1175
+          1181
         ],
         "Staff of earth": [
           1,
-          668
+          532
         ],
         "Staff of air": [
           4,
@@ -17418,7 +17418,7 @@
         ],
         "White bead": [
           3,
-          1469
+          1295
         ],
         "Black bead": [
           2,
@@ -17430,15 +17430,15 @@
         ],
         "Adamant 2h sword": [
           1,
-          3438
+          3685
         ],
         "Dragonstone amulet (u)": [
           1,
-          9898
+          9897
         ],
         "Studded body": [
           1,
-          204
+          249
         ],
         "Divine super strength potion(3)": [
           2,
@@ -17458,7 +17458,7 @@
         ],
         "Dragon longsword": [
           1,
-          59055
+          59038
         ],
         "Cow slippers": [
           1,
@@ -17470,11 +17470,11 @@
         ],
         "Proboscis": [
           9,
-          274
+          190
         ],
         "Willow branch": [
           2,
-          1815
+          1695
         ],
         "Purple firelighter": [
           35,
@@ -17486,7 +17486,7 @@
         ],
         "Ardougne teleport": [
           10,
-          543
+          545
         ],
         "Skills necklace(6)": [
           4,
@@ -17498,7 +17498,7 @@
         ],
         "Rune chainbody": [
           2,
-          29416
+          29460
         ],
         "Blue wizard robe": [
           3,
@@ -17510,7 +17510,7 @@
         ],
         "Green d'hide chaps": [
           4,
-          1982
+          2124
         ],
         "Rune kiteshield": [
           6,
@@ -17566,7 +17566,7 @@
         ],
         "Ring mould": [
           2,
-          388
+          383
         ],
         "Necklace mould": [
           2,
@@ -17578,7 +17578,7 @@
         ],
         "Steel pickaxe": [
           10,
-          249
+          157
         ],
         "Skills necklace": [
           4,
@@ -17598,11 +17598,11 @@
         ],
         "White partyhat": [
           2,
-          26177
+          25142
         ],
         "Mind talisman": [
           1,
-          1169
+          1163
         ],
         "Blue partyhat": [
           1,
@@ -17611,5 +17611,5 @@
       }
     }
   ],
-  "savedAt": "2026-07-06T03:45:47.465Z"
+  "savedAt": "2026-07-06T03:57:07.346Z"
 }

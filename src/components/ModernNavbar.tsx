@@ -89,7 +89,7 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
                   onClick={() => handleTabClick(item.id)}
                   variant="ghost"
                   className={`pixel-tab ${
-                    activeTab === item.id ? 'bg-gray-900 text-white' : 'bg-transparent'
+                    activeTab === item.id ? 'pixel-tab-active' : ''
                   }`}
                 >
                   {item.label}
@@ -151,7 +151,7 @@ export function ModernNavbar({ activeTab, onTabChange }: ModernNavbarProps) {
                   onClick={() => handleTabClick(item.id)}
                   variant="ghost"
                   className={`w-full justify-start pixel-tab ${
-                    activeTab === item.id ? 'bg-gray-900 text-white' : 'bg-transparent'
+                    activeTab === item.id ? 'pixel-tab-active' : ''
                   }`}
                 >
                   {item.label}

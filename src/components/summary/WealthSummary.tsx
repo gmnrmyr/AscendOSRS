@@ -13,7 +13,7 @@ export function WealthSummary({ totalBankValue, totalGoalValue, formatGP }: Weal
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border-green-200 dark:border-green-800">
+      <Card className="osrs-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -29,7 +29,7 @@ export function WealthSummary({ totalBankValue, totalGoalValue, formatGP }: Weal
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200 dark:border-amber-800">
+      <Card className="osrs-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -45,7 +45,7 @@ export function WealthSummary({ totalBankValue, totalGoalValue, formatGP }: Weal
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-200 dark:border-blue-800">
+      <Card className="osrs-card">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>

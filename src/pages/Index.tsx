@@ -11,7 +11,7 @@ const IndexContent = () => {
 
   return (
     <AppStateProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen">
         <ModernNavbar activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Summary Navbar - Always visible and sticky */}

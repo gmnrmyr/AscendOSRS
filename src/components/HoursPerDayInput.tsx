@@ -9,16 +9,16 @@ export function HoursPerDayInput() {
   const { hoursPerDay, setHoursPerDay } = useAppState();
 
   return (
-    <Card className="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+    <Card className="osrs-card">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+        <CardTitle className="osrs-title flex items-center gap-2">
           <Clock className="h-5 w-5" />
           Hours Per Day
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="max-w-xs">
-          <Label htmlFor="hours" className="text-blue-700 dark:text-blue-300">How many hours per day do you play?</Label>
+          <Label htmlFor="hours" className="text-muted-foreground">How many hours per day do you play?</Label>
           <Input
             id="hours"
             type="number"
@@ -26,7 +26,7 @@ export function HoursPerDayInput() {
             max="24"
             value={hoursPerDay}
             onChange={(e) => setHoursPerDay(Number(e.target.value))}
-            className="bg-white dark:bg-slate-800"
+            className="pixel-input w-full"
           />
         </div>
       </CardContent>

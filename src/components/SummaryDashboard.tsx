@@ -281,7 +281,7 @@ export function SummaryDashboard({
 
       {/* AI Insights */}
       {aiInsights.length > 0 && (
-        <div className="osrs-card p-6 bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 border-purple-600 dark:border-purple-400">
+        <div className="osrs-card p-6">
           <div className="mb-4">
             <h3 className="text-2xl font-bold text-purple-800 dark:text-purple-200 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
               <Brain className="h-6 w-6" />
@@ -291,7 +291,7 @@ export function SummaryDashboard({
           
           <div className="space-y-3">
             {aiInsights.map((insight, index) => (
-              <div key={index} className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg">
+              <div key={index} className="p-3 bg-card/60 border border-border rounded-lg">
                 <p className="text-purple-800 dark:text-purple-200 font-medium" style={{ fontFamily: 'Cinzel, serif' }}>
                   {insight}
                 </p>
@@ -303,7 +303,7 @@ export function SummaryDashboard({
 
       {/* Current Earnings Breakdown */}
       {currentGPHour > 0 && (
-        <div className="osrs-card p-6 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border-green-600 dark:border-green-400">
+        <div className="osrs-card p-6">
           <div className="mb-4">
             <h3 className="text-2xl font-bold text-green-800 dark:text-green-200 flex items-center gap-2" style={{ fontFamily: 'MedievalSharp, cursive' }}>
               <DollarSign className="h-6 w-6" />
@@ -312,19 +312,19 @@ export function SummaryDashboard({
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 border-2 border-green-600 dark:border-green-400 rounded">
+            <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
               <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'MedievalSharp, cursive' }}>
                 {formatGP(currentGPHour)}/hr
               </p>
               <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Hourly Rate</p>
             </div>
-            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 border-2 border-green-600 dark:border-green-400 rounded">
+            <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
               <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'MedievalSharp, cursive' }}>
                 {formatGP(currentGPHour * hoursPerDay)} GP
               </p>
               <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'Cinzel, serif' }}>Daily ({hoursPerDay}h)</p>
             </div>
-            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 border-2 border-green-600 dark:border-green-400 rounded">
+            <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
               <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'MedievalSharp, cursive' }}>
                 {formatGP(currentGPHour * hoursPerDay * 30)} GP
               </p>
@@ -340,12 +340,12 @@ export function SummaryDashboard({
             {Object.entries(methodsByCharacter).map(([character, methods]) => {
               const characterTotal = methods.reduce((sum, method) => sum + (method?.gpHour || 0), 0);
               return (
-                <div key={character} className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded">
+                <div key={character} className="p-3 bg-card/60 border border-border rounded">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-green-800 dark:text-green-200" style={{ fontFamily: 'Cinzel, serif' }}>
                       ⚔️ {character}
                     </span>
-                    <span className="osrs-badge bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200">
+                    <span className="osrs-badge">
                       {formatGP(characterTotal)}/hr
                     </span>
                   </div>
@@ -394,13 +394,13 @@ export function SummaryDashboard({
               </div>
               
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded">
+                <div className="p-3 bg-card/60 border border-border rounded">
                   <p className="text-amber-600 dark:text-amber-400 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>Daily ({hoursPerDay}h)</p>
                   <p className="font-bold text-green-700 dark:text-green-300 text-lg" style={{ fontFamily: 'MedievalSharp, cursive' }}>
                     {formatGP((bestMethod.gpHour || 0) * hoursPerDay)} GP
                   </p>
                 </div>
-                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded">
+                <div className="p-3 bg-card/60 border border-border rounded">
                   <p className="text-amber-600 dark:text-amber-400 font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>Monthly</p>
                   <p className="font-bold text-green-700 dark:text-green-300 text-lg" style={{ fontFamily: 'MedievalSharp, cursive' }}>
                     {formatGP((bestMethod.gpHour || 0) * hoursPerDay * 30)} GP
@@ -409,7 +409,7 @@ export function SummaryDashboard({
               </div>
 
               {bestMethod.requirements && (
-                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded">
+                <div className="p-3 bg-card/60 border border-border rounded">
                   <p className="text-amber-600 dark:text-amber-400 text-sm font-semibold" style={{ fontFamily: 'Cinzel, serif' }}>Requirements:</p>
                   <p className="text-sm text-amber-800 dark:text-amber-200">{bestMethod.requirements}</p>
                 </div>
@@ -446,7 +446,7 @@ export function SummaryDashboard({
                   }, 0) : (char?.bank || 0);
                 
                 return (
-                  <div key={char?.id || index} className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-400 dark:border-amber-700 rounded">
+                  <div key={char?.id || index} className="flex items-center justify-between p-3 bg-card/60 border border-amber-400 dark:border-amber-700 rounded">
                     <div>
                       <p className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'Cinzel, serif' }}>⚔️ {char?.name || 'Unknown'}</p>
                       <p className="text-sm text-amber-600 dark:text-amber-400" style={{ fontFamily: 'Cinzel, serif' }}>
@@ -498,7 +498,7 @@ export function SummaryDashboard({
                 const progress = targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0;
                 
                 return (
-                  <div key={goal?.id || index} className="space-y-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded">
+                  <div key={goal?.id || index} className="space-y-2 p-3 bg-card/60 border border-border rounded">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'Cinzel, serif' }}>
                         🏆 {goal?.name || 'Unknown Goal'}

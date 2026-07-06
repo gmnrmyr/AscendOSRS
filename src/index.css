@@ -1,81 +1,87 @@
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=MedievalSharp&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Modern pixel-inspired design system with high contrast */
+/* ==========================================================================
+   Tema OSRS — parchment/bronze (light default) + stone escuro (dark opcional).
+   As variáveis alimentam o shadcn, então retematizam quase tudo de graça.
+   ========================================================================== */
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* Pure white */
-    --foreground: 0 0% 8%; /* Near black */
+    /* Parchment claro (pergaminho de quest/mapa) */
+    --background: 41 40% 71%;      /* couro/pergaminho de fundo */
+    --foreground: 36 42% 13%;      /* tinta marrom escura */
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 8%;
+    --card: 44 56% 87%;            /* painel de pergaminho claro */
+    --card-foreground: 36 42% 13%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
+    --popover: 44 56% 89%;
+    --popover-foreground: 36 42% 13%;
 
-    --primary: 142 76% 36%; /* Modern green */
-    --primary-foreground: 0 0% 98%;
+    --primary: 32 72% 40%;         /* bronze/âmbar (botões) */
+    --primary-foreground: 44 60% 94%;
 
-    --secondary: 210 40% 98%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary: 43 45% 78%;       /* tan mais claro */
+    --secondary-foreground: 36 42% 15%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 44 43% 80%;
+    --muted-foreground: 38 30% 32%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent: 43 48% 76%;
+    --accent-foreground: 36 42% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 6 66% 40%;      /* vermelho OSRS */
+    --destructive-foreground: 44 60% 94%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
+    --border: 37 44% 34%;          /* bronze escuro (moldura) */
+    --input: 37 40% 40%;
+    --ring: 45 66% 47%;            /* dourado (foco) */
 
-    --radius: 0.25rem; /* Sharp, pixel-like corners */
+    --radius: 0.2rem;              /* cantos quase retos, estilo interface OSRS */
 
-    /* Pixel-inspired colors */
-    --pixel-green: 142 76% 36%;
-    --pixel-blue: 217 91% 60%;
-    --pixel-purple: 262 83% 58%;
-    --pixel-orange: 25 95% 53%;
-    --pixel-red: 0 84% 60%;
-    --pixel-yellow: 48 96% 53%;
-    --pixel-gray: 215 28% 17%;
+    /* Acentos temáticos reutilizáveis */
+    --gold: 45 68% 47%;
+    --osrs-orange: 33 100% 56%;
+    --osrs-yellow: 52 96% 52%;
+    --bronze-hi: 44 60% 90%;
+    --bronze-lo: 38 40% 18%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Stone/couro escuro (painel clássico da interface OSRS) */
+    --background: 41 18% 12%;
+    --foreground: 43 43% 83%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 38 16% 19%;
+    --card-foreground: 43 43% 83%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 38 16% 19%;
+    --popover-foreground: 43 43% 83%;
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 222.2 84% 4.9%;
+    --primary: 45 66% 47%;         /* dourado */
+    --primary-foreground: 38 30% 12%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 38 14% 26%;
+    --secondary-foreground: 43 43% 83%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 38 14% 24%;
+    --muted-foreground: 42 25% 62%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 38 16% 28%;
+    --accent-foreground: 43 43% 83%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 6 60% 42%;
+    --destructive-foreground: 43 43% 90%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 142 76% 36%;
+    --border: 38 30% 30%;
+    --input: 38 26% 32%;
+    --ring: 45 66% 47%;
+
+    --bronze-hi: 44 40% 55%;
+    --bronze-lo: 38 40% 8%;
   }
 }
 
@@ -89,162 +95,211 @@
     font-family: 'Inter', sans-serif;
   }
 
+  /* Fundo de pergaminho com leve textura (só gradientes, sem imagem externa) */
   body:not(.dark) {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background-color: #c9b78b;
+    background-image:
+      radial-gradient(hsla(44, 40%, 100%, 0.22) 1px, transparent 1px),
+      radial-gradient(hsla(30, 45%, 18%, 0.06) 1px, transparent 1px),
+      linear-gradient(135deg, #d4c295 0%, #c1ac7c 100%);
+    background-size: 6px 6px, 6px 6px, 100% 100%;
+    background-position: 0 0, 3px 3px, 0 0;
+    background-attachment: fixed;
   }
 
   body.dark {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background-color: #211d16;
+    background-image:
+      radial-gradient(hsla(44, 30%, 60%, 0.045) 1px, transparent 1px),
+      linear-gradient(135deg, #2a251b 0%, #1c1913 100%);
+    background-size: 6px 6px, 100% 100%;
+    background-attachment: fixed;
   }
 
-  /* Fix for shadcn components in dark mode */
-  .dark input, .dark textarea, .dark select {
-    @apply bg-gray-800 border-gray-600 text-gray-100;
+  /* Inputs coerentes com o pergaminho */
+  input, textarea, select {
+    @apply bg-card border-border text-foreground;
   }
-
-  .dark input:focus, .dark textarea:focus, .dark select:focus {
-    @apply ring-amber-500 border-amber-500;
+  input:focus, textarea:focus, select:focus {
+    @apply ring-1 ring-[hsl(var(--gold))] border-[hsl(var(--gold))];
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'MedievalSharp', 'JetBrains Mono', monospace;
     font-weight: 600;
-    letter-spacing: -0.025em;
+    letter-spacing: 0.01em;
   }
 }
 
 @layer components {
-  /* Modern pixel-inspired components */
-  .pixel-button {
-    @apply bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 font-medium px-4 py-2;
-    @apply shadow-[4px_4px_0px_0px_theme(colors.gray.900)] dark:shadow-[4px_4px_0px_0px_theme(colors.gray.100)];
-    @apply hover:shadow-[2px_2px_0px_0px_theme(colors.gray.900)] dark:hover:shadow-[2px_2px_0px_0px_theme(colors.gray.100)] hover:translate-x-[2px] hover:translate-y-[2px];
-    @apply active:shadow-[0px_0px_0px_0px_theme(colors.gray.900)] dark:active:shadow-[0px_0px_0px_0px_theme(colors.gray.100)] active:translate-x-[4px] active:translate-y-[4px];
-    @apply transition-all duration-150 ease-out;
-    font-family: 'JetBrains Mono', monospace;
+  /* ---- Painel OSRS: pergaminho com moldura de bronze belevada ---- */
+  .pixel-card {
+    background:
+      linear-gradient(hsla(44, 55%, 92%, 0.35), hsla(44, 45%, 80%, 0.12)),
+      hsl(var(--card));
+    border: 2px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow:
+      inset 0 0 0 1px hsla(var(--bronze-hi), 0.45),
+      inset 0 -3px 8px hsla(var(--bronze-lo), 0.16),
+      0 3px 8px hsla(30, 40%, 8%, 0.35);
   }
+
+  /* ---- Botões de bronze belevados ---- */
+  .pixel-button {
+    background: linear-gradient(hsl(38 42% 62%), hsl(35 40% 48%));
+    border: 2px solid hsl(var(--border));
+    color: hsl(44 55% 96%);
+    border-radius: var(--radius);
+    box-shadow: inset 0 1px 0 hsla(var(--bronze-hi), 0.6), 0 2px 4px hsla(30, 40%, 8%, 0.35);
+    @apply px-4 py-2 font-medium transition-all duration-150;
+    font-family: 'MedievalSharp', cursive;
+    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.6);
+  }
+  .pixel-button:hover { filter: brightness(1.07); }
+  .pixel-button:active { filter: brightness(0.95); transform: translateY(1px); }
 
   .pixel-button-primary {
-    @apply bg-green-500 border-2 border-green-700 text-white font-medium px-4 py-2 shadow-[4px_4px_0px_0px_theme(colors.green.700)];
-    @apply hover:shadow-[2px_2px_0px_0px_theme(colors.green.700)] hover:translate-x-[2px] hover:translate-y-[2px];
-    @apply active:shadow-[0px_0px_0px_0px_theme(colors.green.700)] active:translate-x-[4px] active:translate-y-[4px];
-    @apply transition-all duration-150 ease-out;
-    font-family: 'JetBrains Mono', monospace;
+    background: linear-gradient(hsl(33 62% 46%), hsl(32 64% 36%));
+    border: 2px solid hsl(var(--gold));
+    color: hsl(44 60% 95%);
+    border-radius: var(--radius);
+    box-shadow: inset 0 1px 0 hsla(var(--bronze-hi), 0.5), 0 2px 4px hsla(30, 40%, 8%, 0.4);
+    @apply px-4 py-2 font-medium transition-all duration-150;
+    font-family: 'MedievalSharp', cursive;
+    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.6);
   }
-
-  .pixel-card {
-    @apply bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100;
-    @apply shadow-[8px_8px_0px_0px_theme(colors.gray.900)] dark:shadow-[8px_8px_0px_0px_theme(colors.gray.100)];
-    @apply rounded-none;
-  }
+  .pixel-button-primary:hover { filter: brightness(1.08); }
 
   .pixel-input {
-    @apply bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 px-3 py-2;
-    @apply focus:ring-0 focus:border-blue-500 focus:shadow-[4px_4px_0px_0px_theme(colors.blue.500)];
-    @apply transition-all duration-150 ease-out;
+    @apply bg-card border-2 border-border text-foreground px-3 py-2;
+    border-radius: var(--radius);
+    @apply focus:ring-1 focus:ring-[hsl(var(--gold))] focus:border-[hsl(var(--gold))];
+    @apply transition-all duration-150;
     font-family: 'JetBrains Mono', monospace;
   }
 
   .pixel-badge {
-    @apply bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-medium px-2 py-1 text-xs border-2 border-gray-900 dark:border-gray-100;
+    @apply text-xs font-semibold px-2 py-1;
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
     font-family: 'JetBrains Mono', monospace;
   }
 
+  /* ---- Abas de navegação estilo pergaminho ---- */
   .pixel-tab {
-    @apply bg-white dark:bg-gray-800 border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 font-medium px-4 py-2;
-    @apply hover:bg-gray-50 dark:hover:bg-gray-700 data-[state=active]:bg-gray-900 dark:data-[state=active]:bg-gray-100 data-[state=active]:text-white dark:data-[state=active]:text-gray-900;
-    @apply transition-colors duration-150;
-    font-family: 'JetBrains Mono', monospace;
+    background: linear-gradient(hsl(43 42% 82%), hsl(41 40% 73%));
+    border: 2px solid hsl(var(--border));
+    color: hsl(var(--foreground)) !important;
+    border-radius: var(--radius);
+    box-shadow: inset 0 1px 0 hsla(var(--bronze-hi), 0.6);
+    @apply px-4 py-2 font-medium transition-all duration-150;
+    font-family: 'MedievalSharp', cursive;
+  }
+  .dark .pixel-tab {
+    background: linear-gradient(hsl(38 16% 26%), hsl(38 16% 20%));
+  }
+  .pixel-tab:hover { filter: brightness(1.05); }
+
+  /* Aba ativa: bronze escuro com texto dourado */
+  .pixel-tab-active,
+  .pixel-tab[data-state="active"] {
+    background: linear-gradient(hsl(33 60% 42%), hsl(32 62% 32%)) !important;
+    border-color: hsl(var(--gold)) !important;
+    color: hsl(48 80% 82%) !important;
+    box-shadow: inset 0 1px 0 hsla(var(--bronze-hi), 0.5), 0 0 0 1px hsla(var(--gold), 0.3);
+    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.7);
   }
 
+  /* ---- Classes osrs-* (mantidas, refinadas) ---- */
   .osrs-card {
-    @apply bg-white dark:bg-gray-800 border-2 border-amber-400 dark:border-amber-600 rounded-lg;
-    @apply shadow-lg dark:shadow-xl;
+    background: hsl(var(--card));
+    border: 2px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: inset 0 0 0 1px hsla(var(--bronze-hi), 0.4), 0 2px 6px hsla(30, 40%, 8%, 0.3);
     @apply transition-colors duration-150;
   }
 
   .osrs-badge {
-    @apply bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700;
-    @apply px-2 py-1 text-xs font-semibold rounded;
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border: 1px solid hsl(var(--border));
+    @apply px-2 py-1 text-xs font-semibold;
+    border-radius: var(--radius);
     font-family: 'JetBrains Mono', monospace;
   }
 
   .osrs-progress {
-    @apply bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600;
+    background: hsl(38 30% 30%);
+    border: 2px solid hsl(var(--border));
+    border-radius: var(--radius);
+    @apply overflow-hidden;
   }
 
   .osrs-progress-fill {
-    @apply bg-gradient-to-r from-amber-500 to-yellow-500 h-full transition-all duration-300 ease-out;
+    background: linear-gradient(90deg, hsl(var(--gold)), hsl(var(--osrs-orange)));
+    @apply h-full transition-all duration-300 ease-out;
   }
 
   .osrs-title {
-    @apply text-amber-800 dark:text-amber-200 font-bold;
+    color: hsl(var(--osrs-orange));
+    @apply font-bold;
     font-family: 'MedievalSharp', cursive;
+    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.4);
   }
 
   .osrs-button {
-    @apply bg-amber-600 hover:bg-amber-700 text-white border-2 border-amber-700 dark:border-amber-500;
-    @apply shadow-lg hover:shadow-xl transition-all duration-150;
-    font-family: 'JetBrains Mono', monospace;
+    background: linear-gradient(hsl(33 62% 46%), hsl(32 64% 36%));
+    color: hsl(44 60% 95%);
+    border: 2px solid hsl(var(--gold));
+    border-radius: var(--radius);
+    @apply transition-all duration-150;
+    font-family: 'MedievalSharp', cursive;
+    text-shadow: 0 1px 1px hsla(30, 50%, 10%, 0.6);
   }
+  .osrs-button:hover { filter: brightness(1.08); }
 
   .osrs-button-secondary {
-    @apply border-amber-600 dark:border-amber-400 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20;
-    font-family: 'JetBrains Mono', monospace;
+    border: 2px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    @apply hover:bg-[hsl(var(--accent))];
+    border-radius: var(--radius);
+    font-family: 'MedievalSharp', cursive;
   }
 
+  /* ---- Navbar translúcida com base de bronze ---- */
   .navbar-blur {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
-
   .navbar-blur:not(.dark) {
-    background: rgba(255, 255, 255, 0.8);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: hsla(43, 45%, 80%, 0.88);
+    border-bottom: 2px solid hsl(var(--border));
   }
-
   .dark .navbar-blur {
-    background: rgba(15, 23, 42, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: hsla(38, 16%, 14%, 0.9);
+    border-bottom: 2px solid hsl(var(--border));
   }
 
-  .navbar-hidden {
-    transform: translateY(-100%);
-  }
-
-  .navbar-visible {
-    transform: translateY(0);
-  }
+  .navbar-hidden { transform: translateY(-100%); }
+  .navbar-visible { transform: translateY(0); }
 }
 
-/* Custom scrollbar with pixel styling */
-::-webkit-scrollbar {
-  width: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
+/* ---- Scrollbar de bronze ---- */
+::-webkit-scrollbar { width: 12px; }
+::-webkit-scrollbar-track { background: hsl(41 30% 60%); }
 ::-webkit-scrollbar-thumb {
-  background: #374151;
-  border: 2px solid #f1f5f9;
+  background: hsl(37 44% 34%);
+  border: 2px solid hsl(41 30% 60%);
+  border-radius: 2px;
 }
+::-webkit-scrollbar-thumb:hover { background: hsl(45 66% 40%); }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #1f2937;
-}
-
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: #1e293b;
-}
-
+.dark ::-webkit-scrollbar-track { background: hsl(38 16% 16%); }
 .dark ::-webkit-scrollbar-thumb {
-  background: #64748b;
-  border: 2px solid #1e293b;
+  background: hsl(38 30% 34%);
+  border: 2px solid hsl(38 16% 16%);
 }
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+.dark ::-webkit-scrollbar-thumb:hover { background: hsl(45 66% 44%); }

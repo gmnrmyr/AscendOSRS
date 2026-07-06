@@ -35,7 +35,7 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
   return (
     <Tabs value={activeTab} className="space-y-8">
       <TabsContent value="summary">
-        <div className="pixel-card dark:bg-gray-800 p-6">
+        <div className="pixel-card p-6">
           <SummaryDashboard 
             characters={characters}
             moneyMethods={moneyMethods}
@@ -47,7 +47,7 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
       </TabsContent>
 
       <TabsContent value="characters">
-        <div className="pixel-card dark:bg-gray-800 p-6">
+        <div className="pixel-card p-6">
           <CharacterManager 
             characters={characters}
             setCharacters={setCharacters}
@@ -56,7 +56,7 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
       </TabsContent>
 
       <TabsContent value="methods">
-        <div className="pixel-card dark:bg-gray-800 p-6">
+        <div className="pixel-card p-6">
           <MoneyMakingMethods 
             methods={moneyMethods}
             setMethods={setMoneyMethods}
@@ -66,7 +66,7 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
       </TabsContent>
 
       <TabsContent value="goals">
-        <div className="pixel-card dark:bg-gray-800 p-6">
+        <div className="pixel-card p-6">
           <PurchaseGoals 
             goals={purchaseGoals}
             setGoals={setPurchaseGoals}
@@ -75,7 +75,7 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
       </TabsContent>
 
       <TabsContent value="bank">
-        <div className="pixel-card dark:bg-gray-800 p-6">
+        <div className="pixel-card p-6">
           <BankTracker
             characters={characters}
             bankData={bankData}
@@ -88,7 +88,7 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
       </TabsContent>
 
       <TabsContent value="data">
-        <div className="pixel-card dark:bg-gray-800 p-6">
+        <div className="pixel-card p-6">
           <DataManager 
             characters={characters}
             moneyMethods={moneyMethods}

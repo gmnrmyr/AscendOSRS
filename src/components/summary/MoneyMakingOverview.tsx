@@ -30,7 +30,7 @@ export function MoneyMakingOverview({ methods, formatGP }: MoneyMakingOverviewPr
     method.gpHour > max.gpHour ? method : max, activeMethods[0]) : null;
 
   return (
-    <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 border-purple-200 dark:border-purple-800">
+    <Card className="osrs-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
           <DollarSign className="h-5 w-5" />
@@ -61,7 +61,7 @@ export function MoneyMakingOverview({ methods, formatGP }: MoneyMakingOverviewPr
               <span className="font-semibold">Top Active Method: {topMethod.name}</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">
+              <Badge variant="outline" className="text-green-700 border-green-300">
                 {formatGP(topMethod.gpHour)}/hr
               </Badge>
               {topMethod.character && (
@@ -69,7 +69,7 @@ export function MoneyMakingOverview({ methods, formatGP }: MoneyMakingOverviewPr
                   {topMethod.character}
                 </Badge>
               )}
-              <Badge variant="outline" className="text-orange-700 border-orange-300 bg-orange-50">
+              <Badge variant="outline" className="text-orange-700 border-orange-300">
                 <Clock className="h-3 w-3 mr-1" />
                 Intensity {topMethod.clickIntensity}/5
               </Badge>

@@ -67,7 +67,7 @@ export function GoalCard({
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg text-gray-900 flex items-center gap-2">
+          <CardTitle className="text-lg text-foreground flex items-center gap-2">
             {goal.imageUrl && (
               <img
                 src={goal.imageUrl}
@@ -123,13 +123,28 @@ export function GoalCard({
           <Badge className={(getCategoryColor || getCategoryColorDefault)(goal.category)}>
             {goal.category}
           </Badge>
+          <button
+            type="button"
+            onClick={() => onUpdate && onUpdate(goal.id, 'buyable', goal.buyable === false ? true : false)}
+            title={goal.buyable === false
+              ? 'Conquista/skill — não conta no orçamento de ouro. Clique pra marcar comprável.'
+              : 'Comprável no GE — conta no orçamento de ouro. Clique pra marcar conquista.'}
+          >
+            <Badge
+              className={goal.buyable === false
+                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border border-amber-300 dark:border-amber-700 cursor-pointer'
+                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 cursor-pointer'}
+            >
+              {goal.buyable === false ? '🏆 Conquista' : '🪙 Comprável'}
+            </Badge>
+          </button>
           {typeof goal.importance === 'number' && (
             <Badge
               title={goal.importanceReason || ''}
               className={
                 goal.importance >= 80 ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                 : goal.importance >= 50 ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                : 'bg-gray-100 text-gray-700 border border-gray-300'
+                : 'bg-gray-100 text-foreground border border-gray-300'
               }
             >
               ⚡ {goal.importance}
@@ -141,12 +156,12 @@ export function GoalCard({
         )}
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Hash className="h-4 w-4" />
           <span>Quantity: {goal.quantity}</span>
         </div>
         
-        <div className="flex items-center gap-2 text-lg font-semibold text-green-600">
+        <div className="flex items-center gap-2 text-lg font-semibold text-green-600 dark:text-green-400">
           <DollarSign className="h-5 w-5" />
           <span className="cursor-help" title={`${totalCost.toLocaleString()} gp`}>
             {formatGP ? formatGP(totalCost) : formatGPDefault(totalCost)} GP
@@ -154,7 +169,7 @@ export function GoalCard({
         </div>
 
         {targetTotal && (
-          <div className="flex items-center gap-2 text-sm text-blue-600">
+          <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
             <Target className="h-4 w-4" />
             <span className="cursor-help" title={`${targetTotal.toLocaleString()} gp`}>
               Target: {formatGP ? formatGP(targetTotal) : formatGPDefault(targetTotal)} GP
@@ -164,8 +179,8 @@ export function GoalCard({
 
         {goal.notes && (
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-1">Notes:</p>
-            <p className="text-sm text-gray-600">{goal.notes}</p>
+            <p className="text-sm font-medium text-foreground mb-1">Notes:</p>
+            <p className="text-sm text-muted-foreground">{goal.notes}</p>
           </div>
         )}
       </CardContent>

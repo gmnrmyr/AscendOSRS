@@ -24,6 +24,8 @@ interface PurchaseGoal {
   notes: string;
   imageUrl?: string;
   itemId?: number;
+  buyable?: boolean; // false = conquista/skill (não compra no GE). undefined => comprável
+  targetCustom?: boolean;
 }
 
 interface PurchaseGoalsProps {
@@ -38,7 +40,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'priority'>('priority');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showFilters, setShowFilters] = useState(false);
-  
+  const [filterBuyable, setFilterBuyable] = useState<'all' | 'buyable' | 'unbuyable'>('all');
+
   const { toast } = useToast();
   const { metadata } = useItemsRefresh();
   const [isPricing, setIsPricing] = useState(false);
@@ -339,6 +342,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     .filter(goal => {
       if (filterPriority !== 'all' && goal.priority !== filterPriority) return false;
       if (filterCategory !== 'all' && goal.category !== filterCategory) return false;
+      if (filterBuyable === 'buyable' && goal.buyable === false) return false;
+      if (filterBuyable === 'unbuyable' && goal.buyable !== false) return false;
       return true;
     })
     .sort((a, b) => {
@@ -361,6 +366,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     });
 
   const totalGoalValue = goals.reduce((sum, goal) => sum + getTotalCost(goal), 0);
+  // Só compráveis contam no orçamento de ouro (conquistas/skills não se compram no GE).
+  const buyableGoals = goals.filter(g => g.buyable !== false);
+  const buyableGoalValue = buyableGoals.reduce((sum, goal) => sum + getTotalCost(goal), 0);
+  const unbuyableCount = goals.length - buyableGoals.length;
 
   // ---- Ouro disponível vs goals ----
   // Toggle "só a conta principal" (OFF por padrão): compara os goals com o ouro
@@ -387,7 +396,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   }, [bankData]);
 
   const availableGold = mainOnly ? mainGold : totalGold;
-  const goldPct = totalGoalValue > 0 ? Math.min(100, (availableGold / totalGoalValue) * 100) : 100;
+  const goldPct = buyableGoalValue > 0 ? Math.min(100, (availableGold / buyableGoalValue) * 100) : 100;
 
   // Format the timestamp nicely
   const formatLastUpdate = (timestamp: string | null) => {
@@ -476,7 +485,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                 {formatGP(availableGold)} GP
               </span>
               <span className="text-sm text-muted-foreground">
-                de <span className="font-semibold text-foreground cursor-help" title={`${totalGoalValue.toLocaleString()} gp em objetivos`}>{formatGP(totalGoalValue)} GP</span> em objetivos
+                de <span className="font-semibold text-foreground cursor-help" title={`${buyableGoalValue.toLocaleString()} gp em compráveis`}>{formatGP(buyableGoalValue)} GP</span> em compráveis
               </span>
             </div>
 
@@ -484,12 +493,29 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
               <div className="osrs-progress-fill" style={{ width: `${goldPct}%` }} />
             </div>
             <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-              <span>{goldPct.toFixed(1)}% coberto</span>
+              <span>{goldPct.toFixed(1)}% coberto{unbuyableCount > 0 ? ` · ${unbuyableCount} conquista${unbuyableCount > 1 ? 's' : ''} fora` : ''}</span>
               <span>
-                {availableGold >= totalGoalValue
-                  ? 'Dá pra bancar tudo ✔'
-                  : `Faltam ${formatGP(totalGoalValue - availableGold)} GP`}
+                {availableGold >= buyableGoalValue
+                  ? 'Dá pra bancar os compráveis ✔'
+                  : `Faltam ${formatGP(buyableGoalValue - availableGold)} GP`}
               </span>
+            </div>
+
+            {/* Filtro comprável / conquista */}
+            <div className="mt-3 flex rounded border border-border overflow-hidden w-fit">
+              {([['all','Todos'],['buyable','🪙 Compráveis'],['unbuyable','🏆 Conquistas']] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setFilterBuyable(key)}
+                  className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                    filterBuyable === key
+                      ? 'bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]'
+                      : 'bg-transparent text-muted-foreground hover:bg-accent'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </CardContent>
         </Card>

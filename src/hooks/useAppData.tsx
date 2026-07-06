@@ -45,6 +45,8 @@ interface PurchaseGoal {
   category: 'gear' | 'consumables' | 'materials' | 'other';
   notes: string;
   imageUrl?: string;
+  buyable?: boolean; // false = conquista/skill (não compra no GE). undefined => comprável
+  targetCustom?: boolean;
 }
 
 interface BankItem {

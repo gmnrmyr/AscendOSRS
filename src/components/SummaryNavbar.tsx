@@ -26,10 +26,10 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
     if (isRefreshing) return;
     setIsRefreshing(true);
     try {
-      const { bankChanged, goalsChanged } = await refreshAllPrices();
+      const { bankChanged, goalsChanged, methodsChanged } = await refreshAllPrices();
       toast({
         title: "Preços atualizados (GE ao vivo)",
-        description: `${bankChanged} itens de banco e ${goalsChanged} goals reprecificados.`,
+        description: `${bankChanged} itens de banco, ${goalsChanged} goals e ${methodsChanged} methods (gp/hr da Wiki) atualizados.`,
       });
     } catch (e) {
       console.error("Falha ao atualizar preços globais:", e);

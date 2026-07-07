@@ -4,6 +4,7 @@ import { useDataPersistence } from './useDataPersistence';
 import { loadServerData, saveServerData } from '@/services/localStore';
 import { upsertSnapshot, type WealthSnapshot } from '@/services/wealthHistory';
 import { ensurePrices, priceOf, priceOfVariant, idByName, itemImageUrl } from '@/services/priceEngine';
+import { fetchWikiMethods, matchWikiMethod } from '@/services/mmgLive';
 import { 
   getDefaultCharacters, 
   getDefaultMoneyMethods, 
@@ -159,9 +160,10 @@ export function useAppData() {
   }, [loaded, canSave, pricedOnLoad]);
 
   // Atualização GLOBAL de preços: reprecifica TODOS os itens de TODOS os bancos
-  // (com fallback variante->base) + TODOS os goals, com o preço GE ao vivo. Depois
-  // re-carimba o snapshot de hoje com os valores novos. Devolve o que mudou.
-  const refreshAllPrices = async (force = true): Promise<{ bankChanged: number; goalsChanged: number }> => {
+  // (untradeable -> tradeable via mapping do RuneLite) + TODOS os goals + o gp/hr
+  // dos money methods (profit ao vivo das guias da OSRS Wiki). Depois re-carimba
+  // o snapshot de hoje com os valores novos. Devolve o que mudou.
+  const refreshAllPrices = async (force = true): Promise<{ bankChanged: number; goalsChanged: number; methodsChanged: number }> => {
     await ensurePrices(force); // force = /latest fresco (ignora cache de 10min)
 
     let bankChanged = 0;
@@ -194,10 +196,30 @@ export function useAppData() {
     });
     setPurchaseGoals(nextGoals);
 
+    // gp/hr dos methods pelo profit ao vivo das guias da Wiki (matching conservador:
+    // sem match = mantém o valor manual; match errado nunca entra). Falha silenciosa
+    // se offline — preço de banco/goal não depende disso.
+    let methodsChanged = 0;
+    try {
+      const wiki = await fetchWikiMethods();
+      if (wiki.length > 0) {
+        const nextMethods = moneyMethods.map((m) => {
+          const hit = matchWikiMethod(m.name, wiki);
+          if (!hit || hit.profit <= 0) return m;
+          if (hit.profit === m.gpHour) return m;
+          methodsChanged++;
+          return { ...m, gpHour: hit.profit, profit: hit.profit, wikiName: hit.name } as typeof m;
+        });
+        if (methodsChanged > 0) setMoneyMethods(nextMethods);
+      }
+    } catch (e) {
+      console.warn('Profit ao vivo dos methods indisponível (mantendo valores):', e);
+    }
+
     // snapshot de hoje reflete os preços novos (usa o bank recém-reprecificado)
     setWealthHistory((prev) => upsertSnapshot(prev, characters, nextBank));
 
-    return { bankChanged, goalsChanged };
+    return { bankChanged, goalsChanged, methodsChanged };
   };
 
   // Use persistence hook for auto-saving (só depois do load inicial)

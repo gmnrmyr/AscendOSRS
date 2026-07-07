@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execFile } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -140,6 +141,80 @@ app.post('/api/data', async (req, res) => {
   } catch (err) {
     console.error('Erro salvando save:', err);
     res.status(500).json({ error: 'Failed to write save' });
+  }
+});
+
+// ============================================================
+//  Money Making Guide ao vivo (OSRS Wiki): a página-índice do MMG é
+//  recalculada pela Wiki com preço de GE ao vivo. Parseamos a tabela
+//  (nome do método + profit/hr) e servimos como JSON. Cache 10 min.
+// ============================================================
+let mmgCache = { at: 0, data: null };
+app.get('/api/mmg', async (req, res) => {
+  try {
+    if (mmgCache.data && Date.now() - mmgCache.at < 10 * 60 * 1000) {
+      return res.status(200).json(mmgCache.data);
+    }
+    const j = await fetchWithRetry(
+      'https://oldschool.runescape.wiki/api.php?action=parse&page=Money_making_guide&format=json&prop=text'
+    );
+    const html = j?.parse?.text?.['*'] || '';
+    const methods = [];
+    for (const row of html.split('</tr>')) {
+      const link = row.match(/href="\/w\/Money_making_guide\/([^"]+)"[^>]*>([^<]+)<\/a>/);
+      if (!link) continue;
+      const prof = row.match(/data-sort-value="(-?[\d.]+)"/) || row.match(/>\s*(-?[\d,]{4,})\s*</);
+      if (!prof) continue;
+      const profit = Math.round(parseFloat(String(prof[1]).replace(/,/g, '')));
+      if (!Number.isFinite(profit)) continue;
+      methods.push({ slug: link[1], name: link[2].trim(), profit });
+    }
+    if (methods.length === 0) throw new Error('MMG parse: 0 métodos (layout da Wiki mudou?)');
+    mmgCache = { at: Date.now(), data: { updatedAt: new Date().toISOString(), methods } };
+    res.status(200).json(mmgCache.data);
+  } catch (err) {
+    console.error('Erro no /api/mmg:', err);
+    // serve cache velho se tiver (melhor stale que nada)
+    if (mmgCache.data) return res.status(200).json(mmgCache.data);
+    res.status(500).json({ error: 'Failed to fetch money making guide' });
+  }
+});
+
+// ============================================================
+//  Item mappings do RuneLite (untradeable -> tradeable + noted -> unnoted).
+//  Os JSONs bundled no app são um snapshot; aqui servimos a versão do disco
+//  e REGENERAMOS sozinhos quando o arquivo passa de 7 dias (roda o
+//  scripts/generate-item-mappings.mjs). Itens novos do jogo entram sem rebuild.
+// ============================================================
+const MAPPINGS_FILE = path.join(__dirname, 'src/data/itemMappings.json');
+const NOTED_FILE = path.join(__dirname, 'src/data/notedItems.json');
+const GEN_SCRIPT = path.join(__dirname, 'scripts/generate-item-mappings.mjs');
+let regenInFlight = null;
+
+app.get('/api/item-mappings', async (req, res) => {
+  try {
+    const st = await fs.stat(MAPPINGS_FILE).catch(() => null);
+    const ageMs = st ? Date.now() - st.mtimeMs : Infinity;
+    if (ageMs > 7 * 24 * 60 * 60 * 1000) {
+      // regenera (uma vez por vez); se falhar (offline/GitHub fora), serve o que tem
+      regenInFlight ??= new Promise((resolve) => {
+        execFile('node', [GEN_SCRIPT], { timeout: 120000 }, (err, stdout, stderr) => {
+          if (err) console.error('Regen de item mappings falhou (servindo snapshot):', err.message, stderr);
+          else console.log('Item mappings regenerados:', stdout.trim().split('\n').pop());
+          regenInFlight = null;
+          resolve();
+        });
+      });
+      await regenInFlight;
+    }
+    const [mappings, noted] = await Promise.all([
+      fs.readFile(MAPPINGS_FILE, 'utf-8').then(JSON.parse),
+      fs.readFile(NOTED_FILE, 'utf-8').then(JSON.parse),
+    ]);
+    res.status(200).json({ itemMappings: mappings, notedItems: noted });
+  } catch (err) {
+    console.error('Erro no /api/item-mappings:', err);
+    res.status(500).json({ error: 'Failed to read item mappings' });
   }
 });
 

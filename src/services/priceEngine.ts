@@ -15,9 +15,37 @@ import itemMappingsJson from '@/data/itemMappings.json';
 import notedItemsJson from '@/data/notedItems.json';
 
 // id untradeable -> [[id tradeable, qty], ...] (multimapa, valores somam)
-const ITEM_MAPPINGS: Record<string, [number, number][]> = itemMappingsJson as Record<string, [number, number][]>;
-// id noted (Cert) -> id base (unnoted)
-const NOTED_TO_BASE: Record<string, number> = notedItemsJson as Record<string, number>;
+// Os JSONs bundled são o snapshot de fallback; o server (/api/item-mappings)
+// serve a versão viva e se auto-regenera quando envelhece (>7d) — itens novos
+// do jogo passam a valer sem rebuild do app.
+let ITEM_MAPPINGS: Record<string, [number, number][]> = itemMappingsJson as Record<string, [number, number][]>;
+let NOTED_TO_BASE: Record<string, number> = notedItemsJson as Record<string, number>;
+
+const LIVE_MAPPINGS_KEY = 'osrs-live-mappings-v1';
+const LIVE_MAPPINGS_TTL = 1000 * 60 * 60 * 24; // 24h (o server já segura os 7d de regen)
+let liveMappingsLoaded = false;
+
+async function refreshMappingsFromServer(): Promise<void> {
+  if (liveMappingsLoaded) return;
+  liveMappingsLoaded = true;
+  try {
+    interface LiveMappings { itemMappings: typeof ITEM_MAPPINGS; notedItems: typeof NOTED_TO_BASE; }
+    const cached = readCache<LiveMappings>(LIVE_MAPPINGS_KEY, LIVE_MAPPINGS_TTL);
+    if (cached?.itemMappings && cached?.notedItems) {
+      ITEM_MAPPINGS = cached.itemMappings;
+      NOTED_TO_BASE = cached.notedItems;
+      return;
+    }
+    const res = await fetch('/api/item-mappings');
+    if (!res.ok) return; // fica no bundled
+    const j: LiveMappings = await res.json();
+    if (j.itemMappings && j.notedItems && Object.keys(j.itemMappings).length > 0) {
+      ITEM_MAPPINGS = j.itemMappings;
+      NOTED_TO_BASE = j.notedItems;
+      writeCache(LIVE_MAPPINGS_KEY, j);
+    }
+  } catch { /* offline/sem server -> bundled continua valendo */ }
+}
 
 const BASE = 'https://prices.runescape.wiki/api/v1/osrs';
 
@@ -72,6 +100,8 @@ function unitPrice(id: number, latest: LatestData): number {
 
 // Garante mapas id->preço e id->nome carregados (com cache). force = ignora cache de preço.
 export async function ensurePrices(force = false): Promise<{ priceById: Map<number, number>; nameById: Map<number, string> }> {
+  await refreshMappingsFromServer(); // mappings de untradeable/noted frescos (1x por sessão, cache 24h)
+
   let mapping = readCache<MappingArr>(MAPPING_KEY, MAPPING_TTL);
   if (!mapping) {
     mapping = await getJson(`${BASE}/mapping`);

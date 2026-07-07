@@ -6,12 +6,10 @@ import { Switch } from "@/components/ui/switch";
 import { TrendingUp, Target, Filter, Coins } from "lucide-react";
 import { useAppState } from "@/components/AppStateProvider";
 import { useToast } from "@/hooks/use-toast";
-import { osrsApi } from "@/services/osrsApi";
 import { ensurePrices, priceOf, idByName, itemImageUrl } from "@/services/priceEngine";
 import { GoalForm } from "./goals/GoalForm";
 import { GoalFilters } from "./goals/GoalFilters";
 import { GoalCard } from "./goals/GoalCard";
-import { useItemsRefresh } from "@/hooks/useItemsRefresh";
 
 interface PurchaseGoal {
   id: string;
@@ -43,7 +41,6 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const [filterBuyable, setFilterBuyable] = useState<'all' | 'buyable' | 'unbuyable'>('all');
 
   const { toast } = useToast();
-  const { metadata } = useItemsRefresh();
   const [isPricing, setIsPricing] = useState(false);
   const repricedRef = useRef(false);
 
@@ -234,38 +231,25 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   ];
 
   const addDefaultGoals = async () => {
-    const newGoals = [];
-    
-    for (const goal of defaultGoals) {
-      try {
-        const priceData = await osrsApi.fetchSingleItemPrice(goal.itemId);
-        const currentPrice = typeof priceData === 'number' ? priceData : goal.currentPrice;
-        
-        newGoals.push({
-          id: Date.now().toString() + Math.random(),
-          ...goal,
-          currentPrice: currentPrice,
-          targetPrice: currentPrice,
-          quantity: 1,
-          priority: goal.priority as PurchaseGoal['priority'],
-          category: goal.category as PurchaseGoal['category'],
-          notes: '',
-          imageUrl: await osrsApi.getItemIcon(goal.itemId)
-        });
-      } catch (error) {
-        newGoals.push({
-          id: Date.now().toString() + Math.random(),
-          ...goal,
-          targetPrice: goal.currentPrice,
-          quantity: 1,
-          priority: goal.priority as PurchaseGoal['priority'],
-          category: goal.category as PurchaseGoal['category'],
-          notes: '',
-          imageUrl: await osrsApi.getItemIcon(goal.itemId)
-        });
-      }
-    }
-    
+    // Preço + ícone pelo priceEngine (vivo, por id). O currentPrice chumbado do seed só
+    // é usado como último recurso, se a Wiki não tiver preço pro id.
+    await ensurePrices();
+    const newGoals = defaultGoals.map((goal) => {
+      const live = priceOf(goal.itemId);
+      const currentPrice = live > 0 ? live : goal.currentPrice;
+      return {
+        id: Date.now().toString() + Math.random(),
+        ...goal,
+        currentPrice,
+        targetPrice: currentPrice,
+        quantity: 1,
+        priority: goal.priority as PurchaseGoal['priority'],
+        category: goal.category as PurchaseGoal['category'],
+        notes: '',
+        imageUrl: itemImageUrl(goal.itemId),
+      };
+    });
+
     setGoals([...goals, ...newGoals]);
     toast({
       title: "Success",
@@ -399,25 +383,6 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const goldPct = buyableGoalValue > 0 ? Math.min(100, (availableGold / buyableGoalValue) * 100) : 100;
 
   // Format the timestamp nicely
-  const formatLastUpdate = (timestamp: string | null) => {
-    if (!timestamp) return 'Unknown';
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    
-    // If less than 24 hours ago, show relative time
-    if (diff < 24 * 60 * 60 * 1000) {
-      const hours = Math.floor(diff / (60 * 60 * 1000));
-      if (hours === 0) {
-        const minutes = Math.floor(diff / (60 * 1000));
-        return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-      }
-      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-    }
-    
-    // Otherwise show the date
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-  };
 
   return (
     <div className="space-y-4">
@@ -426,7 +391,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           <div className="flex items-center space-x-2">
             <h2 className="osrs-title text-2xl">Purchase Goals</h2>
             <Badge variant="outline" className="text-xs">
-              Prices updated: {formatLastUpdate(metadata?.last_updated || null)}
+              Preços: GE ao vivo (Wiki)
             </Badge>
           </div>
           <div className="flex items-center space-x-2">

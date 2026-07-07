@@ -145,19 +145,34 @@ export function useAppData() {
     setWealthHistory((prev) => upsertSnapshot(prev, characters, bankData));
   };
 
+  // Rehydrate de preço NA CARGA: o estimatedPrice salvo é só cache — a verdade é o
+  // preço GE ao vivo resolvido pelo osrsId. Roda 1x depois do load confirmado (canSave),
+  // usa o cache de 10min (force=false) e falha silenciosa se estiver offline (mantém o cache).
+  const [pricedOnLoad, setPricedOnLoad] = useState(false);
+  useEffect(() => {
+    if (!loaded || !canSave || pricedOnLoad) return;
+    setPricedOnLoad(true);
+    refreshAllPrices(false).catch((e) =>
+      console.warn('Rehydrate de preço na carga falhou (mantendo cache do save):', e)
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded, canSave, pricedOnLoad]);
+
   // Atualização GLOBAL de preços: reprecifica TODOS os itens de TODOS os bancos
   // (com fallback variante->base) + TODOS os goals, com o preço GE ao vivo. Depois
   // re-carimba o snapshot de hoje com os valores novos. Devolve o que mudou.
-  const refreshAllPrices = async (): Promise<{ bankChanged: number; goalsChanged: number }> => {
-    await ensurePrices(true); // force = /latest fresco (ignora cache de 10min)
+  const refreshAllPrices = async (force = true): Promise<{ bankChanged: number; goalsChanged: number }> => {
+    await ensurePrices(force); // force = /latest fresco (ignora cache de 10min)
 
     let bankChanged = 0;
     const nextBank: Record<string, BankItem[]> = {};
     for (const [char, items] of Object.entries(bankData)) {
       nextBank[char] = items.map((item) => {
         if (!item.osrsId) return item; // sem id (manual/CSV) -> mantém preço manual
+        // COM osrsId: o preço vivo é a verdade — inclusive 0 (untradeable/sem preço na Wiki).
+        // Não segura preço velho: é isso que causava as divergências (bond untradeable = 12m fossilizado).
         const unit = priceOfVariant(item.osrsId, item.name).unit;
-        if (unit > 0 && unit !== item.estimatedPrice) { bankChanged++; return { ...item, estimatedPrice: unit }; }
+        if (unit !== item.estimatedPrice) { bankChanged++; return { ...item, estimatedPrice: unit }; }
         return item;
       });
     }

@@ -115,8 +115,11 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Fundo de couro com textura leve (só gradientes) */
-  body:not(.dark) {
+  /* Fundo de couro com textura leve (só gradientes).
+     A classe de tema fica no <html> (documentElement) — por isso os seletores
+     são `:root:not(.dark) body` / `.dark body` (body.dark NUNCA casava e o
+     dark mode herdava o couro claro por engano). */
+  :root:not(.dark) body {
     background-color: #a5945f;
     background-image:
       radial-gradient(hsla(44, 40%, 100%, 0.16) 1px, transparent 1px),
@@ -126,11 +129,11 @@
     background-position: 0 0, 2px 2px, 0 0;
     background-attachment: fixed;
   }
-  body.dark {
-    background-color: #1a1712;
+  .dark body {
+    background-color: #16130e;
     background-image:
       radial-gradient(hsla(44, 30%, 60%, 0.05) 1px, transparent 1px),
-      linear-gradient(135deg, #221e17 0%, #14110c 100%);
+      linear-gradient(135deg, #1e1a13 0%, #100d09 100%);
     background-size: 5px 5px, 100% 100%;
     background-attachment: fixed;
   }
@@ -258,6 +261,40 @@
     text-shadow: 1px 1px 0 hsla(40, 60%, 8%, 0.55);
   }
   .osrs-button-secondary { background: hsl(var(--card)); }
+
+  /* ---- Vocabulário de texto OSRS (as cores que o jogo usa) ----
+     Label laranja, valor amarelo, gp verde — em vez de tailwind aleatório. */
+  .osrs-label {
+    color: hsl(var(--osrs-orange));
+    font-family: 'RuneScape Bold', monospace;
+    text-shadow: 1px 1px 0 hsla(40, 60%, 8%, 0.45);
+  }
+  .osrs-value {
+    color: hsl(var(--foreground));
+    font-family: 'RuneScape Bold', monospace;
+  }
+  .dark .osrs-value {
+    color: hsl(56 100% 66%); /* amarelo de contagem do jogo */
+    text-shadow: 1px 1px 0 hsla(40, 60%, 6%, 0.8);
+  }
+  .osrs-gp {
+    color: hsl(140 55% 28%); /* verde gp */
+    font-family: 'RuneScape Bold', monospace;
+  }
+  .dark .osrs-gp {
+    color: hsl(120 90% 55%);
+    text-shadow: 1px 1px 0 hsla(40, 60%, 6%, 0.8);
+  }
+  .osrs-muted { color: hsl(var(--muted-foreground)); font-family: 'RuneScape', monospace; }
+
+  /* Linha/célula afundada (recuo estilo slot de inventário) */
+  .osrs-inset {
+    background: hsla(40, 30%, 10%, 0.06);
+    border: 2px solid;
+    border-color: hsl(var(--bevel-dark)) hsl(var(--bevel-light)) hsl(var(--bevel-light)) hsl(var(--bevel-dark));
+    border-radius: 0;
+  }
+  .dark .osrs-inset { background: hsla(40, 30%, 4%, 0.35); }
 
   /* ---- Navbar ---- */
   .navbar-blur {

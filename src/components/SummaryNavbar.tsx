@@ -163,8 +163,8 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   title="Ver métodos de dinheiro"
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
-                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                  <span className="text-sm sm:text-base font-bold text-green-700 dark:text-green-400">
+                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-[hsl(var(--gold))]" />
+                  <span className="text-sm sm:text-base font-bold osrs-gp">
                     {formatGP(currentGPHour)}/hr
                   </span>
                   <span className="text-sm text-muted-foreground hidden sm:inline">
@@ -178,15 +178,15 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   title="Ver personagens"
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
-                  <span className="text-sm sm:text-base font-bold text-blue-700 dark:text-blue-400">
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4 text-[hsl(var(--gold))]" />
+                  <span className="text-sm sm:text-base font-bold osrs-value">
                     {activeCharacters.length} chars
                   </span>
                 </button>
                 
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
-                  <span className="text-sm sm:text-base font-bold text-amber-800 dark:text-amber-300 cursor-help" title={`${totalGoldValue.toLocaleString()} gp`}>
+                  <Coins className="h-3 w-3 sm:h-4 sm:w-4 text-[hsl(var(--gold))]" />
+                  <span className="text-sm sm:text-base font-bold osrs-value cursor-help" title={`${totalGoldValue.toLocaleString()} gp`}>
                     {formatGP(totalGoldValue)} GP
                   </span>
                 </div>
@@ -209,8 +209,8 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                   title={`${totalGoalsValue.toLocaleString()} gp — ver objetivos`}
                   className="flex items-center gap-1 sm:gap-2 hover:opacity-70 transition-opacity cursor-pointer"
                 >
-                  <Target className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
-                  <span className="text-sm sm:text-base font-bold text-purple-700 dark:text-purple-400">
+                  <Target className="h-3 w-3 sm:h-4 sm:w-4 text-[hsl(var(--gold))]" />
+                  <span className="text-sm sm:text-base font-bold osrs-value">
                     {formatGP(totalGoalsValue)} goals
                   </span>
                 </button>
@@ -246,19 +246,19 @@ export function SummaryNavbar({ onTabChange }: { onTabChange?: (tab: string) => 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-gray-600 dark:text-muted-foreground">Daily Earnings</p>
-                    <p className="font-medium text-green-700 dark:text-green-400">
+                    <p className="font-medium osrs-gp">
                       {formatGP(currentGPHour * hoursPerDay)} GP
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-600 dark:text-muted-foreground">Total Bank</p>
-                    <p className="font-medium text-blue-700 dark:text-blue-400 cursor-help" title={`${totalBankValue.toLocaleString()} gp`}>
+                    <p className="font-medium osrs-value cursor-help" title={`${totalBankValue.toLocaleString()} gp`}>
                       {formatGP(totalBankValue)} GP
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-600 dark:text-muted-foreground">Progress</p>
-                    <p className="font-medium text-purple-700 dark:text-purple-400">
+                    <p className="font-medium osrs-value">
                       {totalGoalsValue > 0 ? Math.min(100, (totalGoldValue / totalGoalsValue) * 100).toFixed(1) : 100}%
                     </p>
                   </div>

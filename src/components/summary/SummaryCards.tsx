@@ -1,4 +1,3 @@
-
 import { Users, Coins, DollarSign, Target, Clock, Wallet } from "lucide-react";
 
 interface SummaryCardsProps {
@@ -12,6 +11,8 @@ interface SummaryCardsProps {
   formatDays: (days: number) => string;
 }
 
+// Tiles de status no vocabulário visual do jogo:
+// label laranja (osrs-label), valor amarelo/tinta (osrs-value), gp em verde (osrs-gp).
 export function SummaryCards({
   charactersCount,
   totalBankValue,
@@ -22,77 +23,26 @@ export function SummaryCards({
   formatGP,
   formatDays
 }: SummaryCardsProps) {
+  const tiles = [
+    { label: "Characters", value: String(charactersCount), icon: Users, gp: false },
+    { label: "Bank Sum", value: `${formatGP(totalBankValue)} gp`, icon: Coins, gp: true },
+    { label: "Gold Sum", value: `${formatGP(totalGoldValue)} gp`, icon: Wallet, gp: true },
+    { label: "GP/Hr", value: `${formatGP(currentGPHour)}/hr`, icon: DollarSign, gp: true },
+    { label: "Goals Value", value: `${formatGP(totalGoalsValue)} gp`, icon: Target, gp: true },
+    { label: "Time to Goals", value: formatDays(daysToComplete), icon: Clock, gp: false },
+  ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-      <div className="osrs-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-blue-800 dark:text-blue-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>👥 Characters</p>
-            <p className="text-4xl font-bold text-blue-900 dark:text-blue-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>{charactersCount}</p>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      {tiles.map((t) => (
+        <div key={t.label} className="osrs-card p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <t.icon className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+            <p className="osrs-label text-sm truncate">{t.label}</p>
           </div>
-          <Users className="h-10 w-10 text-blue-700 dark:text-blue-300" />
+          <p className={`${t.gp ? "osrs-gp" : "osrs-value"} text-2xl leading-tight`}>{t.value}</p>
         </div>
-      </div>
-
-      <div className="osrs-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-green-800 dark:text-green-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>💰 Bank Sum</p>
-            <p className="text-3xl font-bold text-green-900 dark:text-green-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              {formatGP(totalBankValue)} GP
-            </p>
-          </div>
-          <Coins className="h-10 w-10 text-green-700 dark:text-green-300" />
-        </div>
-      </div>
-
-      <div className="osrs-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-yellow-800 dark:text-yellow-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>🪙 Gold Sum</p>
-            <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              {formatGP(totalGoldValue)} GP
-            </p>
-          </div>
-          <Wallet className="h-10 w-10 text-yellow-700 dark:text-yellow-300" />
-        </div>
-      </div>
-
-      <div className="osrs-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-indigo-800 dark:text-indigo-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>💸 Current GP/Hr</p>
-            <p className="text-3xl font-bold text-indigo-900 dark:text-indigo-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              {formatGP(currentGPHour)}/hr
-            </p>
-          </div>
-          <DollarSign className="h-10 w-10 text-indigo-700 dark:text-indigo-300" />
-        </div>
-      </div>
-
-      <div className="osrs-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-purple-800 dark:text-purple-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>🎯 Goals Value</p>
-            <p className="text-3xl font-bold text-purple-900 dark:text-purple-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              {formatGP(totalGoalsValue)} GP
-            </p>
-          </div>
-          <Target className="h-10 w-10 text-purple-700 dark:text-purple-300" />
-        </div>
-      </div>
-
-      <div className="osrs-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-orange-800 dark:text-orange-200 text-sm font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>⏰ Time to Goals</p>
-            <p className="text-2xl font-bold text-orange-900 dark:text-orange-100" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              {formatDays(daysToComplete)}
-            </p>
-          </div>
-          <Clock className="h-10 w-10 text-orange-700 dark:text-orange-300" />
-        </div>
-      </div>
+      ))}
     </div>
   );
 }

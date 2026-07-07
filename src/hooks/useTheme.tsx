@@ -11,9 +11,9 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Light é o padrão (visual OSRS parchment). O usuário pode trocar; a escolha fica salva.
-  const [theme, setTheme] = useState<Theme>('light');
-  const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
+  // Dark é o padrão (stone escuro, 'sinistra'). O usuário pode trocar; a escolha fica salva.
+  const [theme, setTheme] = useState<Theme>('dark');
+  const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
     const stored = localStorage.getItem('ascendosrs-theme') as Theme;

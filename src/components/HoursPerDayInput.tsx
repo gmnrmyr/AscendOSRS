@@ -1,35 +1,26 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Clock } from "lucide-react";
 import { useAppState } from "@/components/AppStateProvider";
 
+// Linha compacta (não merece um card inteiro): "Hours played per day: [ 9 ]"
 export function HoursPerDayInput() {
   const { hoursPerDay, setHoursPerDay } = useAppState();
 
   return (
-    <Card className="osrs-card">
-      <CardHeader>
-        <CardTitle className="osrs-title flex items-center gap-2">
-          <Clock className="h-5 w-5" />
-          Hours Per Day
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="max-w-xs">
-          <Label htmlFor="hours" className="text-muted-foreground">How many hours per day do you play?</Label>
-          <Input
-            id="hours"
-            type="number"
-            min="1"
-            max="24"
-            value={hoursPerDay}
-            onChange={(e) => setHoursPerDay(Number(e.target.value))}
-            className="pixel-input w-full"
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="osrs-card flex items-center gap-3 px-4 py-2 w-fit">
+      <Clock className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--gold))" }} />
+      <label htmlFor="hours" className="osrs-label text-sm whitespace-nowrap">
+        Hours played per day
+      </label>
+      <Input
+        id="hours"
+        type="number"
+        min="1"
+        max="24"
+        value={hoursPerDay}
+        onChange={(e) => setHoursPerDay(Number(e.target.value))}
+        className="pixel-input w-20 text-center"
+      />
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 import { SummaryCards } from "./summary/SummaryCards";
 import { ProgressCard } from "./summary/ProgressCard";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Users, Target, Star, Brain, TrendingUp } from "lucide-react";
+import { DollarSign, Users, Target, Star, Scroll, Swords, Trophy } from "lucide-react";
 
 interface SummaryDashboardProps {
   characters: any[];
@@ -11,248 +11,140 @@ interface SummaryDashboardProps {
   hoursPerDay: number;
 }
 
-export function SummaryDashboard({ 
-  characters, 
-  moneyMethods, 
-  purchaseGoals, 
-  bankData, 
-  hoursPerDay 
+const GOLD = { color: "hsl(var(--gold))" };
+
+export function SummaryDashboard({
+  characters,
+  moneyMethods,
+  purchaseGoals,
+  bankData,
+  hoursPerDay
 }: SummaryDashboardProps) {
-  
-  // Calculate total bank value across all characters (including coins and plat tokens as raw GP)
-  const getTotalBankValue = () => {
-    let total = 0;
-    for (const items of Object.values(bankData)) {
-      for (const item of items) {
-        if (item.name && item.name.toLowerCase().includes('coin')) {
-          console.log('[BankSum] Coins:', item.name, item.quantity);
-          total += item.quantity || 0;
-        } else if (item.name && item.name.toLowerCase().includes('platinum')) {
-          console.log('[BankSum] Plat:', item.name, item.quantity, '->', (item.quantity || 0) * 1000);
-          total += (item.quantity || 0) * 1000;
-        } else {
-          console.log('[BankSum] Item:', item.name, item.quantity, item.estimatedPrice, '->', (item.quantity || 0) * (item.estimatedPrice || 0));
-          total += (item.quantity || 0) * (item.estimatedPrice || 0);
-        }
-      }
-    }
-    console.log('[BankSum] Total:', total);
-    return total;
+
+  // Valor de um item do save: coins/plat viram gp cru, resto quantity × preço vivo cacheado.
+  const itemValue = (item: any) => {
+    const name = (item.name || '').toLowerCase();
+    if (name.includes('coin')) return item.quantity || 0;
+    if (name.includes('platinum')) return (item.quantity || 0) * 1000;
+    return (item.quantity || 0) * (item.estimatedPrice || 0);
   };
 
-  // Calculate total gold value (coins + plat tokens) across all characters
-  const getTotalGoldValue = () => {
-    let total = 0;
-    for (const items of Object.values(bankData)) {
-      for (const item of items) {
-        if (item.name && item.name.toLowerCase().includes('coin')) {
-          console.log('[GoldSum] Coins:', item.name, item.quantity);
-          total += item.quantity || 0;
-        } else if (item.name && item.name.toLowerCase().includes('platinum')) {
-          console.log('[GoldSum] Plat:', item.name, item.quantity, '->', (item.quantity || 0) * 1000);
-          total += (item.quantity || 0) * 1000;
-        }
-      }
-    }
-    console.log('[GoldSum] Total:', total);
-    return total;
-  };
+  const getTotalBankValue = () =>
+    Object.values(bankData).reduce((t, items) => t + items.reduce((s, it) => s + itemValue(it), 0), 0);
 
-  // Calculate total goals value
-  const getTotalGoalsValue = () => {
-    return purchaseGoals.reduce((total, goal) => {
+  // Só coins + plat tokens (gold líquido pra comprar goals)
+  const getTotalGoldValue = () =>
+    Object.values(bankData).reduce((t, items) => t + items.reduce((s, it) => {
+      const name = (it.name || '').toLowerCase();
+      if (name.includes('coin')) return s + (it.quantity || 0);
+      if (name.includes('platinum')) return s + (it.quantity || 0) * 1000;
+      return s;
+    }, 0), 0);
+
+  const getTotalGoalsValue = () =>
+    purchaseGoals.reduce((total, goal) => {
       const targetPrice = goal?.targetPrice || goal?.currentPrice || 0;
-      const quantity = goal?.quantity || 0;
-      return total + (targetPrice * quantity);
+      return total + targetPrice * (goal?.quantity || 0);
     }, 0);
-  };
 
-  // Calculate total current GP/hour from all active methods (use isActive instead of character assignment)
-  const getCurrentGPPerHour = () => {
-    if (!moneyMethods || moneyMethods.length === 0) return 0;
-    
-    return moneyMethods.reduce((total, method) => {
-      // Use isActive flag instead of character assignment for more accurate calculations
-      if (method?.isActive === true) {
-        return total + (method?.gpHour || 0);
-      }
-      return total;
-    }, 0);
-  };
+  const getCurrentGPPerHour = () =>
+    (moneyMethods || []).reduce((t, m) => (m?.isActive === true ? t + (m?.gpHour || 0) : t), 0);
 
-  // Get methods breakdown by character - only show active methods
   const getMethodsByCharacter = () => {
-    if (!moneyMethods || moneyMethods.length === 0) return {};
-    
-    const methodsByChar: Record<string, any[]> = {};
-    
-    moneyMethods.forEach(method => {
-      if (method?.isActive === true && method?.character && method?.character !== 'none' && method?.character !== '') {
-        if (!methodsByChar[method.character]) {
-          methodsByChar[method.character] = [];
-        }
-        methodsByChar[method.character].push(method);
+    const byChar: Record<string, any[]> = {};
+    for (const m of moneyMethods || []) {
+      if (m?.isActive === true && m?.character && m.character !== 'none' && m.character !== '') {
+        (byChar[m.character] ??= []).push(m);
       }
-    });
-    
-    return methodsByChar;
+    }
+    return byChar;
   };
 
-  // Calculate best money making method from active methods
   const getBestMethod = () => {
-    if (!moneyMethods || moneyMethods.length === 0) return null;
-    const activeMethods = moneyMethods.filter(method => method?.isActive === true);
-    if (activeMethods.length === 0) return null;
-    
-    return activeMethods.reduce((best, current) => {
-      const currentGpHour = current?.gpHour || 0;
-      const bestGpHour = best?.gpHour || 0;
-      return currentGpHour > bestGpHour ? current : best;
-    });
+    const active = (moneyMethods || []).filter((m) => m?.isActive === true);
+    if (active.length === 0) return null;
+    return active.reduce((best, cur) => ((cur?.gpHour || 0) > (best?.gpHour || 0) ? cur : best));
   };
 
-  // Calculate time to complete all goals using GOLD VALUE
   const getTimeToCompleteGoals = () => {
     const totalNeeded = getTotalGoalsValue() - getTotalGoldValue();
     if (totalNeeded <= 0) return 0;
-    
-    const currentGPHour = getCurrentGPPerHour();
-    if (!currentGPHour) return Infinity;
-    
-    const dailyEarnings = currentGPHour * hoursPerDay;
-    return Math.ceil(totalNeeded / dailyEarnings);
+    const gpHour = getCurrentGPPerHour();
+    if (!gpHour) return Infinity;
+    return Math.ceil(totalNeeded / (gpHour * hoursPerDay));
   };
 
-  // Calculate completion percentage using GOLD VALUE
   const getCompletionPercentage = () => {
     const totalGoals = getTotalGoalsValue();
-    const totalGold = getTotalGoldValue();
     if (totalGoals === 0) return 100;
-    return Math.min(100, (totalGold / totalGoals) * 100);
+    return Math.min(100, (getTotalGoldValue() / totalGoals) * 100);
   };
 
-  // AI Insights for purchase recommendations
-  const getAIInsights = () => {
+  // Conselhos do "Wise Old Man" — recomendações baseadas em riqueza/métodos/goals.
+  const getAdvisorNotes = () => {
     const totalGold = getTotalGoldValue();
-    const totalBank = getTotalBankValue();
     const currentGPHour = getCurrentGPPerHour();
     const sortedGoals = [...purchaseGoals].sort((a, b) => (a.currentPrice || 0) - (b.currentPrice || 0));
-    
-    // Get character gear analysis from bank data
-    const hasHighEndGear = () => {
-      const gearKeywords = ['twisted bow', 'scythe', 'shadow', 'armadyl', 'bandos', 'primordial', 'pegasian'];
-      for (const items of Object.values(bankData)) {
-        for (const item of items) {
-          if (gearKeywords.some(keyword => item.name?.toLowerCase().includes(keyword))) {
-            return true;
-          }
-        }
-      }
-      return false;
-    };
 
-    const hasRangedGear = () => {
-      const rangedKeywords = ['crossbow', 'blowpipe', 'armadyl', 'pegasian', 'anguish'];
-      for (const items of Object.values(bankData)) {
-        for (const item of items) {
-          if (rangedKeywords.some(keyword => item.name?.toLowerCase().includes(keyword))) {
-            return true;
-          }
-        }
-      }
-      return false;
-    };
+    const bankHas = (keywords: string[]) =>
+      Object.values(bankData).some((items) =>
+        items.some((it) => keywords.some((k) => it.name?.toLowerCase().includes(k))));
 
-    const hasMeleeGear = () => {
-      const meleeKeywords = ['whip', 'dagger', 'claws', 'bandos', 'primordial', 'torture'];
-      for (const items of Object.values(bankData)) {
-        for (const item of items) {
-          if (meleeKeywords.some(keyword => item.name?.toLowerCase().includes(keyword))) {
-            return true;
-          }
-        }
-      }
-      return false;
-    };
+    const hasHighEndGear = () => bankHas(['twisted bow', 'scythe', 'shadow', 'armadyl', 'bandos', 'primordial', 'pegasian']);
+    const hasRangedGear = () => bankHas(['crossbow', 'blowpipe', 'armadyl', 'pegasian', 'anguish']);
+    const hasMeleeGear = () => bankHas(['whip', 'dagger', 'claws', 'bandos', 'primordial', 'torture']);
 
-    const insights = [];
+    const notes: string[] = [];
 
-    // Wealth-based recommendations
-    if (totalGold < 10000000) {
-      insights.push("💡 Focus on basic gear upgrades like Abyssal Whip or Dragon Boots to improve your money-making efficiency.");
-    } else if (totalGold < 50000000) {
-      if (hasRangedGear()) {
-        insights.push("🎯 Consider upgrading to Armadyl Crossbow or Blowpipe - your ranged setup could benefit from better weapons.");
-      } else if (hasMeleeGear()) {
-        insights.push("⚔️ Bandos gear would be a great next step to maximize your melee damage output.");
-      } else {
-        insights.push("🔧 Start building a combat specialty - choose between ranged or melee gear for better money-making methods.");
-      }
-    } else if (totalGold < 200000000) {
-      if (hasRangedGear() && !hasHighEndGear()) {
-        insights.push("🏹 You have solid ranged gear - Dragon Hunter Crossbow would unlock high-tier dragon killing methods.");
-      } else if (hasMeleeGear() && !hasHighEndGear()) {
-        insights.push("💪 Your melee setup is developing well - consider Prayer Scrolls (Rigour/Augury) for significant DPS boosts.");
-      } else {
-        insights.push("📈 You're in the mid-game tier - focus on specialized gear for your preferred combat style.");
-      }
+    if (totalGold < 10_000_000) {
+      notes.push("Focus on basic gear upgrades like Abyssal Whip or Dragon Boots to improve your money-making efficiency.");
+    } else if (totalGold < 50_000_000) {
+      if (hasRangedGear()) notes.push("Consider upgrading to Armadyl Crossbow or Blowpipe - your ranged setup could benefit from better weapons.");
+      else if (hasMeleeGear()) notes.push("Bandos gear would be a great next step to maximize your melee damage output.");
+      else notes.push("Start building a combat specialty - choose between ranged or melee gear for better money-making methods.");
+    } else if (totalGold < 200_000_000) {
+      if (hasRangedGear() && !hasHighEndGear()) notes.push("You have solid ranged gear - Dragon Hunter Crossbow would unlock high-tier dragon killing methods.");
+      else if (hasMeleeGear() && !hasHighEndGear()) notes.push("Your melee setup is developing well - consider Prayer Scrolls (Rigour/Augury) for significant DPS boosts.");
+      else notes.push("You're in the mid-game tier - focus on specialized gear for your preferred combat style.");
     } else {
-      insights.push("🌟 You're ready for end-game content! Consider ultimate goals like Twisted Bow or Scythe of Vitur for the highest-tier PvM.");
+      notes.push("You're ready for end-game content. Ultimate goals like Twisted Bow or Scythe of Vitur await.");
     }
 
-    // Method-based recommendations
-    const activeMethods = moneyMethods.filter(m => m?.isActive === true);
-    if (activeMethods.length === 0) {
-      insights.push("⚠️ No active money-making methods detected. Add some methods to improve your GP/hour calculations!");
-    } else if (currentGPHour < 1000000) {
-      insights.push("📊 Your current methods are generating under 1M GP/hour. Consider upgrading to mid-tier methods like Zulrah or Vorkath.");
-    } else if (currentGPHour > 5000000) {
-      insights.push("🔥 Excellent GP/hour! You're running high-tier methods - keep this up for rapid goal completion.");
-    }
+    const active = (moneyMethods || []).filter((m) => m?.isActive === true);
+    if (active.length === 0) notes.push("No active money-making methods. Assign methods to your characters to project GP/hour.");
+    else if (currentGPHour < 1_000_000) notes.push("Current methods are under 1M GP/hour. Zulrah or Vorkath would raise the ceiling.");
+    else if (currentGPHour > 5_000_000) notes.push("Excellent GP/hour - high-tier methods running. Keep it up for rapid goal completion.");
 
-    // Goal-specific recommendations
     if (sortedGoals.length > 0) {
-      const affordableGoals = sortedGoals.filter(goal => (goal.currentPrice || 0) <= totalGold);
-      if (affordableGoals.length > 0) {
-        const nextGoal = affordableGoals[0];
-        insights.push(`✅ You can afford ${nextGoal.name} right now! This could be a good immediate purchase.`);
-      }
-      
-      const nearbyGoals = sortedGoals.filter(goal => {
-        const price = goal.currentPrice || 0;
+      const affordable = sortedGoals.filter((g) => (g.currentPrice || 0) <= totalGold);
+      if (affordable.length > 0) notes.push(`You can afford ${affordable[0].name} right now.`);
+      const nearby = sortedGoals.filter((g) => {
+        const price = g.currentPrice || 0;
         return price > totalGold && price <= totalGold * 1.5;
       });
-      
-      if (nearbyGoals.length > 0) {
-        const nextGoal = nearbyGoals[0];
-        const daysNeeded = Math.ceil(((nextGoal.currentPrice || 0) - totalGold) / (currentGPHour * hoursPerDay));
-        insights.push(`🎯 ${nextGoal.name} is within reach - only ${daysNeeded} days of current methods needed!`);
+      if (nearby.length > 0 && currentGPHour > 0) {
+        const days = Math.ceil(((nearby[0].currentPrice || 0) - totalGold) / (currentGPHour * hoursPerDay));
+        notes.push(`${nearby[0].name} is within reach - about ${days} day${days === 1 ? '' : 's'} of grinding.`);
       }
     }
 
-    return insights;
+    return notes;
   };
 
   const formatGP = (amount: number | undefined | null) => {
-    if (amount == null || isNaN(amount) || typeof amount !== 'number') {
-      return '0';
-    }
-    
-    if (amount >= 1000000000) {
-      return `${(amount / 1000000000).toFixed(1)}B`;
-    } else if (amount >= 1000000) {
-      return `${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `${(amount / 1000).toFixed(0)}K`;
-    }
+    if (amount == null || isNaN(amount) || typeof amount !== 'number') return '0';
+    if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}B`;
+    if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}M`;
+    if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;
     return amount.toLocaleString();
   };
 
   const formatDays = (days: number) => {
     if (days === Infinity || days === 0) return "Complete";
-    if (days < 30) return `${days} days`;
-    if (days < 365) return `${Math.round(days / 30)} months`;
-    return `${Math.round(days / 365)} years`;
+    if (days < 30) return `${days} day${days === 1 ? '' : 's'}`;
+    if (days < 365) { const m = Math.round(days / 30); return `${m} month${m === 1 ? '' : 's'}`; }
+    const y = Math.round(days / 365);
+    return `${y} year${y === 1 ? '' : 's'}`;
   };
 
   const totalBankValue = getTotalBankValue();
@@ -263,11 +155,11 @@ export function SummaryDashboard({
   const methodsByCharacter = getMethodsByCharacter();
   const daysToComplete = getTimeToCompleteGoals();
   const completionPercentage = getCompletionPercentage();
-  const aiInsights = getAIInsights();
+  const advisorNotes = getAdvisorNotes();
 
   return (
     <div className="space-y-6">
-      {/* Overview Cards */}
+      {/* Tiles de status */}
       <SummaryCards
         charactersCount={characters?.length || 0}
         totalBankValue={totalBankValue}
@@ -279,81 +171,61 @@ export function SummaryDashboard({
         formatDays={formatDays}
       />
 
-      {/* AI Insights */}
-      {aiInsights.length > 0 && (
+      {/* Conselheiro */}
+      {advisorNotes.length > 0 && (
         <div className="osrs-card p-6">
-          <div className="mb-4">
-            <h3 className="text-2xl font-bold text-purple-800 dark:text-purple-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              <Brain className="h-6 w-6" />
-              🧠 AI Insights & Recommendations
-            </h3>
-          </div>
-          
-          <div className="space-y-3">
-            {aiInsights.map((insight, index) => (
-              <div key={index} className="p-3 bg-card/60 border border-border rounded-lg">
-                <p className="text-purple-800 dark:text-purple-200 font-medium" style={{ fontFamily: 'RuneScape, monospace' }}>
-                  {insight}
-                </p>
+          <h3 className="osrs-title text-xl flex items-center gap-2 mb-4">
+            <Scroll className="h-5 w-5" style={GOLD} />
+            Advisor
+          </h3>
+          <div className="space-y-2">
+            {advisorNotes.map((note, i) => (
+              <div key={i} className="osrs-inset p-3">
+                <p className="osrs-muted text-base leading-snug">{note}</p>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Current Earnings Breakdown */}
+      {/* Ganhos atuais */}
       {currentGPHour > 0 && (
         <div className="osrs-card p-6">
-          <div className="mb-4">
-            <h3 className="text-2xl font-bold text-green-800 dark:text-green-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              <DollarSign className="h-6 w-6" />
-              💸 Current Earnings Breakdown
-            </h3>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
-              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-                {formatGP(currentGPHour)}/hr
-              </p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>Hourly Rate</p>
-            </div>
-            <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
-              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-                {formatGP(currentGPHour * hoursPerDay)} GP
-              </p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>Daily ({hoursPerDay}h)</p>
-            </div>
-            <div className="text-center p-4 bg-card/60 border-2 border-border rounded">
-              <p className="text-3xl font-bold text-green-700 dark:text-green-300" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-                {formatGP(currentGPHour * hoursPerDay * 30)} GP
-              </p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-bold" style={{ fontFamily: 'RuneScape, monospace' }}>Monthly</p>
-            </div>
+          <h3 className="osrs-title text-xl flex items-center gap-2 mb-4">
+            <DollarSign className="h-5 w-5" style={GOLD} />
+            Current Earnings
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+            {[
+              { v: `${formatGP(currentGPHour)}/hr`, l: "Hourly Rate" },
+              { v: `${formatGP(currentGPHour * hoursPerDay)} gp`, l: `Daily (${hoursPerDay}h)` },
+              { v: `${formatGP(currentGPHour * hoursPerDay * 30)} gp`, l: "Monthly" },
+            ].map((c) => (
+              <div key={c.l} className="osrs-inset text-center p-4">
+                <p className="osrs-gp text-2xl">{c.v}</p>
+                <p className="osrs-label text-sm mt-1">{c.l}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Methods by Character */}
           <div className="space-y-3">
-            <h4 className="text-lg font-bold text-green-800 dark:text-green-200" style={{ fontFamily: 'RuneScape, monospace' }}>
-              Methods by Character:
-            </h4>
             {Object.entries(methodsByCharacter).map(([character, methods]) => {
-              const characterTotal = methods.reduce((sum, method) => sum + (method?.gpHour || 0), 0);
+              const characterTotal = methods.reduce((sum, m) => sum + (m?.gpHour || 0), 0);
               return (
-                <div key={character} className="p-3 bg-card/60 border border-border rounded">
+                <div key={character} className="osrs-inset p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-green-800 dark:text-green-200" style={{ fontFamily: 'RuneScape, monospace' }}>
-                      ⚔️ {character}
+                    <span className="osrs-value text-base flex items-center gap-2">
+                      <Swords className="h-4 w-4" style={GOLD} />
+                      {character}
                     </span>
-                    <span className="osrs-badge">
-                      {formatGP(characterTotal)}/hr
-                    </span>
+                    <span className="osrs-badge">{formatGP(characterTotal)}/hr</span>
                   </div>
                   <div className="space-y-1">
-                    {methods.map((method, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm">
-                        <span className="text-green-700 dark:text-green-300">{method.name}</span>
-                        <span className="text-green-600 dark:text-green-400 font-medium">{formatGP(method.gpHour)}/hr</span>
+                    {methods.map((m, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <span className="osrs-muted">{m.name}</span>
+                        <span className="osrs-gp">{formatGP(m.gpHour)}/hr</span>
                       </div>
                     ))}
                   </div>
@@ -364,7 +236,7 @@ export function SummaryDashboard({
         </div>
       )}
 
-      {/* Progress Card */}
+      {/* Progresso geral */}
       <ProgressCard
         totalGoldValue={totalGoldValue}
         totalGoalsValue={totalGoalsValue}
@@ -372,183 +244,128 @@ export function SummaryDashboard({
         formatGP={formatGP}
       />
 
-      {/* Best Method & Character Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Best Money Method */}
+        {/* Melhor método */}
         <div className="osrs-card p-6">
-          <div className="mb-4">
-            <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              <Star className="h-5 w-5" />
-              ⭐ Best Money Method
-            </h3>
-          </div>
+          <h3 className="osrs-title text-xl flex items-center gap-2 mb-4">
+            <Star className="h-5 w-5" style={GOLD} />
+            Best Money Method
+          </h3>
           {bestMethod ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-lg text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape, monospace' }}>
-                  {bestMethod.name || 'Unknown Method'}
-                </h4>
-                <span className="osrs-badge">
-                  {formatGP(bestMethod.gpHour)}/hr
-                </span>
+                <h4 className="osrs-value text-lg">{bestMethod.name || 'Unknown Method'}</h4>
+                <span className="osrs-badge">{formatGP(bestMethod.gpHour)}/hr</span>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="p-3 bg-card/60 border border-border rounded">
-                  <p className="text-amber-600 dark:text-amber-400 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>Daily ({hoursPerDay}h)</p>
-                  <p className="font-bold text-green-700 dark:text-green-300 text-lg" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-                    {formatGP((bestMethod.gpHour || 0) * hoursPerDay)} GP
-                  </p>
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="osrs-inset p-3">
+                  <p className="osrs-label text-sm">Daily ({hoursPerDay}h)</p>
+                  <p className="osrs-gp text-lg">{formatGP((bestMethod.gpHour || 0) * hoursPerDay)} gp</p>
                 </div>
-                <div className="p-3 bg-card/60 border border-border rounded">
-                  <p className="text-amber-600 dark:text-amber-400 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>Monthly</p>
-                  <p className="font-bold text-green-700 dark:text-green-300 text-lg" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-                    {formatGP((bestMethod.gpHour || 0) * hoursPerDay * 30)} GP
-                  </p>
+                <div className="osrs-inset p-3">
+                  <p className="osrs-label text-sm">Monthly</p>
+                  <p className="osrs-gp text-lg">{formatGP((bestMethod.gpHour || 0) * hoursPerDay * 30)} gp</p>
                 </div>
               </div>
 
               {bestMethod.requirements && (
-                <div className="p-3 bg-card/60 border border-border rounded">
-                  <p className="text-amber-600 dark:text-amber-400 text-sm font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>Requirements:</p>
-                  <p className="text-sm text-amber-800 dark:text-amber-200">{bestMethod.requirements}</p>
+                <div className="osrs-inset p-3">
+                  <p className="osrs-label text-sm">Requirements</p>
+                  <p className="osrs-muted text-sm">{bestMethod.requirements}</p>
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-amber-600 dark:text-amber-400 text-center py-6 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>
-              🔍 No money-making methods added yet
-            </p>
+            <p className="osrs-muted text-center py-6">No money-making methods added yet</p>
           )}
         </div>
 
-        {/* Character Summary */}
+        {/* Personagens */}
         <div className="osrs-card p-6">
-          <div className="mb-4">
-            <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-              <Users className="h-5 w-5" />
-              ⚔️ Character Overview
-            </h3>
-          </div>
+          <h3 className="osrs-title text-xl flex items-center gap-2 mb-4">
+            <Users className="h-5 w-5" style={GOLD} />
+            Character Overview
+          </h3>
           {characters && characters.length > 0 ? (
             <div className="space-y-3">
               {characters.slice(0, 3).map((char, index) => {
-                // Get real bank value for this character from bankData
-                const characterBankValue = bankData[char?.name] ? 
-                  bankData[char?.name].reduce((total, item) => {
-                    if (item.name && item.name.toLowerCase().includes('coin')) {
-                      return total + (item.quantity || 0);
-                    } else if (item.name && item.name.toLowerCase().includes('platinum')) {
-                      return total + ((item.quantity || 0) * 1000);
-                    } else {
-                      return total + ((item.quantity || 0) * (item.estimatedPrice || 0));
-                    }
-                  }, 0) : (char?.bank || 0);
-                
+                const characterBankValue = bankData[char?.name]
+                  ? bankData[char.name].reduce((t, it) => t + itemValue(it), 0)
+                  : (char?.bank || 0);
                 return (
-                  <div key={char?.id || index} className="flex items-center justify-between p-3 bg-card/60 border border-amber-400 dark:border-amber-700 rounded">
+                  <div key={char?.id || index} className="osrs-inset flex items-center justify-between p-3">
                     <div>
-                      <p className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape, monospace' }}>⚔️ {char?.name || 'Unknown'}</p>
-                      <p className="text-sm text-amber-600 dark:text-amber-400" style={{ fontFamily: 'RuneScape, monospace' }}>
-                        CB: {char?.combatLevel || 3} | Total: {char?.totalLevel || 32}
-                      </p>
+                      <p className="osrs-value text-base">{char?.name || 'Unknown'}</p>
+                      <p className="osrs-muted text-sm">CB {char?.combatLevel || 3} · Total {char?.totalLevel || 32}</p>
                     </div>
-                    <span className="osrs-badge">
-                      {formatGP(characterBankValue)} GP
-                    </span>
+                    <span className="osrs-badge">{formatGP(characterBankValue)} gp</span>
                   </div>
                 );
               })}
-              
               {characters.length > 3 && (
-                <p className="text-sm text-amber-600 dark:text-amber-400 text-center pt-2 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>
-                  +{characters.length - 3} more characters
-                </p>
+                <p className="osrs-muted text-sm text-center pt-2">+{characters.length - 3} more characters</p>
               )}
             </div>
           ) : (
-            <p className="text-amber-600 dark:text-amber-400 text-center py-6 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>
-              👤 No characters added yet
-            </p>
+            <p className="osrs-muted text-center py-6">No characters added yet</p>
           )}
         </div>
       </div>
 
-      {/* Top Goals */}
+      {/* Top goals */}
       <div className="osrs-card p-6">
-        <div className="mb-4">
-          <h3 className="text-xl font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2" style={{ fontFamily: 'RuneScape Bold, monospace' }}>
-            <Target className="h-5 w-5" />
-            🎯 Purchase Goals Progress
-          </h3>
-        </div>
+        <h3 className="osrs-title text-xl flex items-center gap-2 mb-4">
+          <Target className="h-5 w-5" style={GOLD} />
+          Purchase Goals Progress
+        </h3>
         {purchaseGoals && purchaseGoals.length > 0 ? (
-          <div className="space-y-4">
-            {/* Sort goals by highest price first, then take top 5 */}
+          <div className="space-y-3">
             {[...purchaseGoals]
-              .sort((a, b) => {
-                const aPrice = a?.targetPrice || a?.currentPrice || 0;
-                const bPrice = b?.targetPrice || b?.currentPrice || 0;
-                return bPrice - aPrice; // Descending order (highest first)
-              })
+              .sort((a, b) => (b?.targetPrice || b?.currentPrice || 0) - (a?.targetPrice || a?.currentPrice || 0))
               .slice(0, 5)
               .map((goal, index) => {
                 const targetValue = goal?.targetPrice || goal?.currentPrice || 0;
-                const currentValue = totalGoldValue; // Use gold value for progress
-                const progress = targetValue > 0 ? Math.min(100, (currentValue / targetValue) * 100) : 0;
-                
+                const progress = targetValue > 0 ? Math.min(100, (totalGoldValue / targetValue) * 100) : 0;
                 return (
-                  <div key={goal?.id || index} className="space-y-2 p-3 bg-card/60 border border-border rounded">
+                  <div key={goal?.id || index} className="osrs-inset space-y-2 p-3">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-amber-800 dark:text-amber-200" style={{ fontFamily: 'RuneScape, monospace' }}>
-                        🏆 {goal?.name || 'Unknown Goal'}
+                      <span className="osrs-value text-base flex items-center gap-2">
+                        <Trophy className="h-4 w-4" style={GOLD} />
+                        {goal?.name || 'Unknown Goal'}
                       </span>
-                      <span className="osrs-badge">
-                        {formatGP(targetValue)} GP
-                      </span>
+                      <span className="osrs-badge">{formatGP(targetValue)} gp</span>
                     </div>
                     <div className="osrs-progress h-3">
-                      <div 
-                        className="osrs-progress-fill" 
-                        style={{ width: `${progress}%` }}
-                      />
+                      <div className="osrs-progress-fill" style={{ width: `${progress}%` }} />
                     </div>
-                    <div className="flex justify-between text-sm text-amber-600" style={{ fontFamily: 'RuneScape, monospace' }}>
-                      <span>{formatGP(currentValue)} / {formatGP(targetValue)} GP</span>
-                      <span className="font-bold">{progress.toFixed(1)}%</span>
+                    <div className="flex justify-between text-sm">
+                      <span className="osrs-muted">{formatGP(totalGoldValue)} / {formatGP(targetValue)} gp</span>
+                      <span className={progress >= 100 ? "osrs-gp" : "osrs-label"}>{progress.toFixed(1)}%</span>
                     </div>
                   </div>
                 );
               })}
-            
+
             {purchaseGoals.length > 5 && (
-              <div className="text-center pt-4">
+              <div className="text-center pt-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    // This would typically call a parent function to switch to goals tab
-                    // For now, we'll use a generic click handler that parents can override
-                    if (window.onShowMoreGoals) {
-                      window.onShowMoreGoals();
-                    } else {
-                      // Fallback: scroll to top and hope parent handles tab switching
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
+                    if ((window as any).onShowMoreGoals) (window as any).onShowMoreGoals();
+                    else window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="border-amber-600 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 font-semibold"
-                  style={{ fontFamily: 'RuneScape, monospace' }}
+                  className="osrs-button-secondary"
                 >
                   <Target className="h-4 w-4 mr-2" />
-                  View All {purchaseGoals.length} Goals ({purchaseGoals.length - 5} more)
+                  View all {purchaseGoals.length} goals
                 </Button>
               </div>
             )}
           </div>
         ) : (
-          <p className="text-amber-600 text-center py-6 font-semibold" style={{ fontFamily: 'RuneScape, monospace' }}>
-            🎯 No purchase goals added yet
-          </p>
+          <p className="osrs-muted text-center py-6">No purchase goals added yet</p>
         )}
       </div>
     </div>

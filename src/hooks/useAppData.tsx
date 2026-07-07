@@ -5,6 +5,7 @@ import { loadServerData, saveServerData } from '@/services/localStore';
 import { upsertSnapshot, type WealthSnapshot } from '@/services/wealthHistory';
 import { ensurePrices, priceOf, priceOfVariant, idByName, itemImageUrl } from '@/services/priceEngine';
 import { fetchWikiMethods, matchWikiMethod } from '@/services/mmgLive';
+import { emptyFlippingData, type FlippingData } from '@/services/flipping';
 import { 
   getDefaultCharacters, 
   getDefaultMoneyMethods, 
@@ -67,6 +68,7 @@ export function useAppData() {
   const [bankData, setBankData] = useState<Record<string, BankItem[]>>(getDefaultBankData());
   const [hoursPerDay, setHoursPerDay] = useState(10);
   const [wealthHistory, setWealthHistory] = useState<WealthSnapshot[]>([]);
+  const [flipping, setFlipping] = useState<FlippingData>(emptyFlippingData());
   // Gate de salvamento: só persiste DEPOIS do load inicial, pra não gravar
   // defaults vazios por cima do save do disco.
   const [loaded, setLoaded] = useState(false);
@@ -89,6 +91,9 @@ export function useAppData() {
       setBankData(clean);
     }
     if (typeof d.hoursPerDay === 'number') setHoursPerDay(d.hoursPerDay);
+    if (d.flipping && Array.isArray(d.flipping.favorites) && Array.isArray(d.flipping.journal)) {
+      setFlipping(d.flipping);
+    }
   };
 
   // Load inicial (local-first): o disco do Mac (server) é a fonte de verdade.
@@ -230,6 +235,7 @@ export function useAppData() {
     bankData,
     hoursPerDay,
     wealthHistory,
+    flipping,
     enabled: canSave
   });
 
@@ -255,6 +261,8 @@ export function useAppData() {
     bankData,
     hoursPerDay,
     wealthHistory,
+    flipping,
+    setFlipping,
     setCharacters,
     setMoneyMethods,
     setPurchaseGoals,

@@ -5,6 +5,7 @@ import { MoneyMakingMethods } from "@/components/MoneyMakingMethods";
 import { PurchaseGoals } from "@/components/PurchaseGoals";
 import { BankTracker } from "@/components/BankTracker";
 import { DataManager } from "@/components/DataManager";
+import { FlippingDashboard } from "@/components/flipping/FlippingDashboard";
 import { SummaryDashboard } from "@/components/SummaryDashboard";
 import { useAppState } from "@/components/AppStateProvider";
 
@@ -84,6 +85,12 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
             wealthHistory={wealthHistory}
             recordWealthSnapshot={recordWealthSnapshot}
           />
+        </div>
+      </TabsContent>
+
+      <TabsContent value="flipping">
+        <div className="pixel-card p-6">
+          <FlippingDashboard />
         </div>
       </TabsContent>
 

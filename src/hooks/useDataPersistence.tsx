@@ -8,6 +8,7 @@ interface AppData {
   bankData: Record<string, any[]>;
   hoursPerDay: number;
   wealthHistory?: any[]; // série histórica da riqueza (persiste junto)
+  flipping?: { favorites: any[]; journal: any[] }; // favoritos + journal de flips
   enabled?: boolean; // só salva depois do load inicial (evita gravar defaults por cima do disco)
 }
 
@@ -21,13 +22,14 @@ export function useDataPersistence(data: AppData) {
     bankData: data.bankData,
     hoursPerDay: data.hoursPerDay,
     wealthHistory: data.wealthHistory ?? [],
+    flipping: data.flipping ?? { favorites: [], journal: [] },
   };
 
   // Cache rápido no localStorage (fallback se o server estiver offline)
   useEffect(() => {
     if (!enabled) return;
     localStorage.setItem('osrs-dashboard-data', JSON.stringify(snapshot));
-  }, [enabled, data.characters, data.moneyMethods, data.purchaseGoals, data.bankData, data.hoursPerDay, data.wealthHistory]);
+  }, [enabled, data.characters, data.moneyMethods, data.purchaseGoals, data.bankData, data.hoursPerDay, data.wealthHistory, data.flipping]);
 
   // Fonte de verdade: salva em disco no Mac (debounced). Funciona de qualquer origin.
   useEffect(() => {
@@ -40,5 +42,5 @@ export function useDataPersistence(data: AppData) {
       }
     }, 1000); // 1s debounce
     return () => clearTimeout(timeoutId);
-  }, [enabled, data.characters, data.moneyMethods, data.purchaseGoals, data.bankData, data.hoursPerDay, data.wealthHistory]);
+  }, [enabled, data.characters, data.moneyMethods, data.purchaseGoals, data.bankData, data.hoursPerDay, data.wealthHistory, data.flipping]);
 }

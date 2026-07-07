@@ -2,6 +2,7 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useAppData, type Character, type MoneyMethod, type PurchaseGoal, type BankItem } from '@/hooks/useAppData';
 import type { WealthSnapshot } from '@/services/wealthHistory';
+import type { FlippingData } from '@/services/flipping';
 
 interface AppState {
   characters: Character[];
@@ -10,6 +11,8 @@ interface AppState {
   bankData: Record<string, BankItem[]>;
   hoursPerDay: number;
   wealthHistory: WealthSnapshot[];
+  flipping: FlippingData;
+  setFlipping: (data: FlippingData) => void;
   setCharacters: (characters: Character[]) => void;
   setMoneyMethods: (methods: MoneyMethod[]) => void;
   setPurchaseGoals: (goals: PurchaseGoal[]) => void;

@@ -6,7 +6,7 @@ import { AppStateProvider } from "@/components/AppStateProvider";
 import { HoursPerDayInput } from "@/components/HoursPerDayInput";
 import { MainDashboard } from "@/components/MainDashboard";
 
-const TABS = ["summary", "characters", "methods", "goals", "bank", "data"];
+const TABS = ["summary", "characters", "methods", "goals", "bank", "flipping", "data"];
 
 const IndexContent = () => {
   // Aba inicial via hash (#bank, #data...) — deep-link pros cards do homelab.

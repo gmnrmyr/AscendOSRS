@@ -5,16 +5,17 @@ a gente entrega local-first de graça. Fonte de dados de TUDO isso é pública:
 `prices.runescape.wiki/api/v1/osrs` (/latest, /5m, /1h, /timeseries — com volume)
 + mapping (buy limits) + GE tax 2%. Eles vendem UI, não dados.
 
-## F1 — Flipping core (o que o GE Tracker cobra)
-- [ ] Tela **Flipping**: margem (high-low), ROI %, lucro pós-tax (2%), buy limit
+## F1 — Flipping core (o que o GE Tracker cobra) — FEITO 07/jul (c2f1404)
+- [x] Tela **Flipping**: margem (high-low), ROI %, lucro pós-tax (2%), buy limit
       (vem no /mapping), volume 5m/1h → filtro "flipa de verdade"
-- [ ] **Sugestões de flip**: rank por lucro/limite/velocidade (volume), filtros
-      por budget (usa o gold líquido que o app já sabe) e por membership
-- [ ] **Gráfico de preço** por item (/timeseries 6h/24h/7d/30d) — candlestick ou
-      linha high/low + volume; hover com valores exatos
-- [ ] **Favoritos** + notas por item
-- [ ] **Journal de flips**: registrar compra/venda manual, P&L realizado por dia
-      (o wealth history já tem a infra de snapshot)
+- [x] **Sugestões de flip**: rank por lucro realista = margem × min(limite,
+      budget, vol/h); budget padrão = Coins+plat das contas ativas; filtro F2P
+- [x] **Gráfico de preço** por item — linha high/low + volume em painéis
+      separados; 6h/24h/7d/30d/1y (/timeseries) e **all-time desde 2015**
+      (api.weirdgloop.org/exchange/history, CORS aberto, série única)
+- [x] **Favoritos** + notas por item
+- [x] **Journal de flips**: compra/venda manual, P&L realizado por dia
+      (persistido no dashboard.json em `flipping: {favorites, journal}`)
 
 ## F2 — Alertas (diferencial deles = infra; nossa = ntfy-hub já existe!)
 - [ ] Alerta de preço (acima/abaixo de X) e de margem — server.js checa a cada

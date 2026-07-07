@@ -6,8 +6,18 @@ import { AppStateProvider } from "@/components/AppStateProvider";
 import { HoursPerDayInput } from "@/components/HoursPerDayInput";
 import { MainDashboard } from "@/components/MainDashboard";
 
+const TABS = ["summary", "characters", "methods", "goals", "bank", "data"];
+
 const IndexContent = () => {
-  const [activeTab, setActiveTab] = useState("summary");
+  // Aba inicial via hash (#bank, #data...) — deep-link pros cards do homelab.
+  const [activeTab, setActiveTabState] = useState(() => {
+    const h = window.location.hash.replace('#', '');
+    return TABS.includes(h) ? h : "summary";
+  });
+  const setActiveTab = (t: string) => {
+    setActiveTabState(t);
+    window.history.replaceState(null, '', `#${t}`);
+  };
 
   return (
     <AppStateProvider>

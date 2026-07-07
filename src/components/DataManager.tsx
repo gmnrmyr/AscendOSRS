@@ -40,8 +40,8 @@ export function DataManager({
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-amber-800 mb-2">Data Management</h2>
-        <p className="text-amber-600">Export, import, and manage your OSRS dashboard data</p>
+        <h2 className="osrs-title text-2xl mb-1">Data Management</h2>
+        <p className="osrs-muted">Export, import, and manage your OSRS dashboard data</p>
       </div>
 
       {/* Cloud Operations desativado no modo local-first (sem login) */}

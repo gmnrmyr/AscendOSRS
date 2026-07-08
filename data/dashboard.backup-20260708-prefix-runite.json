@@ -39,7 +39,7 @@
       "type": "main",
       "combatLevel": 60,
       "totalLevel": 32,
-      "bank": 304613245,
+      "bank": 40460308,
       "notes": "Alt",
       "isActive": true,
       "platTokens": 0
@@ -11543,7 +11543,7 @@
         "id": "17834999009450.9592814266071853",
         "osrsId": 2363,
         "name": "Runite bar",
-        "quantity": 21500,
+        "quantity": 1,
         "estimatedPrice": 12262,
         "category": "stackable",
         "character": "Lazy Jr"

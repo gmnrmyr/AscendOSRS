@@ -17,6 +17,37 @@ import { valueExport, ensurePrices, priceOfVariant, type ExportItem } from '@/se
 
 const VALUABLE_ITEMS_THRESHOLD = 10; // Show top 10 most valuable items when collapsed
 
+// Um stack "colapsou" quando quase todo ele sumiu do export (≤10% da qtd anterior)
+// e a diferença vale pelo menos 1M. Assinatura de item fora do banco, não de venda.
+const COLLAPSE_MIN_LOST_VALUE = 1_000_000;
+const COLLAPSE_QTY_RATIO = 0.1;
+
+interface CollapsedStack {
+  name: string;
+  osrsId?: number;
+  oldQty: number;
+  newQty: number;
+  unitPrice: number;
+  lostValue: number;
+}
+
+// Compara o banco salvo com o export novo e lista os stacks que colapsaram.
+function findCollapsedStacks(existing: BankItem[], incoming: BankItem[]): CollapsedStack[] {
+  const keyOf = (it: BankItem) => (it.osrsId ? `id:${it.osrsId}` : `nm:${it.name.toLowerCase()}`);
+  const incomingByKey = new Map(incoming.map((it) => [keyOf(it), it]));
+  const collapsed: CollapsedStack[] = [];
+  for (const old of existing) {
+    const nu = incomingByKey.get(keyOf(old));
+    const newQty = nu ? nu.quantity : 0;
+    const unitPrice = nu?.estimatedPrice || old.estimatedPrice || 0;
+    const lostValue = (old.quantity - newQty) * unitPrice;
+    if (newQty <= old.quantity * COLLAPSE_QTY_RATIO && lostValue >= COLLAPSE_MIN_LOST_VALUE) {
+      collapsed.push({ name: old.name, osrsId: old.osrsId, oldQty: old.quantity, newQty, unitPrice, lostValue });
+    }
+  }
+  return collapsed.sort((a, b) => b.lostValue - a.lostValue);
+}
+
 interface IntegratedBankManagerProps {
   characters: Character[];
   bankData: Record<string, BankItem[]>;
@@ -41,6 +72,10 @@ export function IntegratedBankManager({
   const [isExpanded, setIsExpanded] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [pendingImportData, setPendingImportData] = useState<BankItem[]>([]);
+  // Stacks que despencaram vs. o banco salvo (item saiu do banco: GE/inventário/placeholder).
+  // O Data Exporter só exporta o BANCO — barras numa oferta da GE ou noted no invent somem do export.
+  const [collapsedStacks, setCollapsedStacks] = useState<CollapsedStack[]>([]);
+  const [keepCollapsed, setKeepCollapsed] = useState(true);
   
   const { refreshCharacter, isRefreshing } = useCharacterRefresh();
 
@@ -249,6 +284,8 @@ export function IntegratedBankManager({
 
       // Check if character already has bank items
       if (characterBankItems.length > 0) {
+        setCollapsedStacks(findCollapsedStacks(characterBankItems, newItems));
+        setKeepCollapsed(true);
         setPendingImportData(newItems);
         setShowImportDialog(true);
       } else {
@@ -264,18 +301,42 @@ export function IntegratedBankManager({
   };
 
   const performImport = (newItems: BankItem[], replaceExisting: boolean) => {
+    let finalItems = replaceExisting ? newItems : [...characterBankItems, ...newItems];
+
+    // No Replace, restaura a quantidade anterior dos stacks colapsados (item fora do banco).
+    let restored = 0;
+    if (replaceExisting && keepCollapsed && collapsedStacks.length > 0) {
+      const byKey = new Map(collapsedStacks.map((c) => [c.osrsId ? `id:${c.osrsId}` : `nm:${c.name.toLowerCase()}`, c]));
+      finalItems = finalItems.map((it) => {
+        const c = byKey.get(it.osrsId ? `id:${it.osrsId}` : `nm:${it.name.toLowerCase()}`);
+        if (!c) return it;
+        byKey.delete(it.osrsId ? `id:${it.osrsId}` : `nm:${it.name.toLowerCase()}`);
+        restored++;
+        return { ...it, quantity: c.oldQty };
+      });
+      // Stacks que sumiram por completo do export (placeholder qty 0) voltam como estavam.
+      for (const c of byKey.values()) {
+        const old = characterBankItems.find((it) => (it.osrsId ? `id:${it.osrsId}` : `nm:${it.name.toLowerCase()}`) === (c.osrsId ? `id:${c.osrsId}` : `nm:${c.name.toLowerCase()}`));
+        if (old) { finalItems.push({ ...old }); restored++; }
+      }
+    }
+
     const updatedBankData = {
       ...bankData,
-      [selectedCharacter]: replaceExisting ? newItems : [...characterBankItems, ...newItems]
+      [selectedCharacter]: finalItems
     };
-    
+
     setBankData(updatedBankData);
     setCsvData('');
     setShowImportDialog(false);
     setPendingImportData([]);
-    
+    setCollapsedStacks([]);
+
     const action = replaceExisting ? 'replaced' : 'imported';
-    alert(`Successfully ${action} ${newItems.length} items!`);
+    alert(
+      `Successfully ${action} ${newItems.length} items!` +
+      (restored > 0 ? `\n${restored} stack(s) mantidos com a quantidade anterior (fora do banco: GE/inventário).` : '')
+    );
   };
 
   const handleImportReplace = () => {
@@ -590,6 +651,36 @@ export function IntegratedBankManager({
                       <p><strong>Replace:</strong> Remove all existing items and import new ones</p>
                       <p><strong>Add:</strong> Keep existing items and add new ones</p>
                     </div>
+                    {collapsedStacks.length > 0 && (
+                      <div className="border border-orange-400 bg-orange-50 dark:bg-orange-950/30 p-3 rounded-md text-sm space-y-2">
+                        <p className="font-semibold flex items-center gap-1">
+                          <AlertTriangle className="h-4 w-4 text-orange-500" />
+                          Stacks grandes sumiram do export:
+                        </p>
+                        <ul className="space-y-1">
+                          {collapsedStacks.map((c) => (
+                            <li key={`${c.osrsId ?? c.name}`}>
+                              <strong>{c.name}</strong>: {c.oldQty.toLocaleString()} → {c.newQty.toLocaleString()}{' '}
+                              <span className="text-red-600">(−{formatGoldValue(c.lostValue)})</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="text-muted-foreground">
+                          O Data Exporter só vê o banco — itens noted no inventário ou numa oferta da GE somem do export.
+                        </p>
+                        <label className="flex items-center gap-2 cursor-pointer font-medium">
+                          <input
+                            type="checkbox"
+                            checked={keepCollapsed}
+                            onChange={(e) => setKeepCollapsed(e.target.checked)}
+                          />
+                          Manter a quantidade anterior desses stacks no Replace
+                        </label>
+                        <p className="text-muted-foreground text-xs">
+                          Desmarque se você realmente vendeu (o GP da venda já entra como Coins no export novo).
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>

@@ -198,52 +198,43 @@ export function itemImageUrl(id: number): string {
 export interface ExportItem { id: number; quantity: number; name: string; }
 export interface ValuedItem extends ExportItem { unit: number; value: number; }
 
-// Prepara os itens do "export all" pra bater o Bank Value do RuneLite (só o bank).
+// Prepara os itens do "export all" pra RIQUEZA TOTAL (banco + inventário + equip + seed vault).
 //
-// O bank NUNCA guarda item noted. Então, se um item aparece em forma NOTED no dump
-// (id fora do mapping da Wiki, mas o nome casa com um item-base tradeável), ele está
-// FORA do bank — inventário ou ordem no GE. Como o export all mistura tudo e não traz
-// campo de origem, usamos a forma noted como carimbo de "fora do bank" e DESCARTAMOS o
-// item inteiro (todas as formas). Foi exatamente o caso do "+83m de Runite bar" (você
-// smithando/tradando as barras no GE): 2363 unnoted + 2364 noted, mesma stack, fora do bank.
+// Modelo: cada stack física conta uma vez, pelo valor da forma UNNOTED (base).
+//   - noted (id da classe Cert) -> normaliza pro id base via notedItems.json e SOMA na
+//     mesma stack. Ex: 2363 unnoted no banco (x1) + 2364 noted no inventário (x19000)
+//     -> runite bar base x19001. Isso é o que faz bater o Bank Value do RuneLite quando
+//     você está smithando/tradando barras (elas ficam notadas no inventário/GE).
+//   - untradeable com equivalente (Sangui staff, anéis (i)...) NÃO é normalizado aqui;
+//     mantém o id próprio e é precificado pelo ITEM_MAPPINGS no priceRuneLite.
+//   - id fora da wiki e sem mapping: último recurso resolve o id base pelo NOME.
 //
-// Itens de bank/seed vault/STASH são unnoted -> não são afetados. E entradas homônimas
-// que sobrarem são deduplicadas (conta 1x pela maior stack, nunca soma).
-//
-// A detecção de noted agora é EXATA: notedItems.json (classe Cert do gameval
-// ItemID.java do RuneLite) diz precisamente quais ids são a forma noted.
-// Nada de heurística por nome — untradeables (Sangui staff, anéis (i)...) nunca
-// mais caem no falso positivo de "id desconhecido + nome conhecido = noted".
-function consolidateByName(items: ExportItem[]): ExportItem[] {
-  const outsideBank = new Set<string>(); // nomes que aparecem em forma noted = fora do bank
+// Nada é descartado (versão antiga jogava fora a stack inteira quando via a forma noted,
+// comendo até as barras que estavam de verdade no banco). Agrupa por id base e SOMA —
+// stacks distintas (banco + inventário) são riqueza distinta e contam ambas.
+function consolidateForTotal(items: ExportItem[]): ExportItem[] {
+  const byId = new Map<number, ExportItem>();
   for (const it of items) {
-    if (NOTED_TO_BASE[String(it.id)] != null) outsideBank.add(normName(it.name));
-  }
-
-  const byKey = new Map<string, ExportItem>();
-  for (const it of items) {
-    const key = normName(it.name);
-    if (outsideBank.has(key)) continue; // fora do bank (inventário/GE) -> não conta
-    // O id do export só é trocado pelo id-base achado por nome como ÚLTIMO recurso:
-    // se o id já é precificável (wiki, mapping de untradeable ou noted), ele manda.
-    const idIsKnown =
-      priceMapMem?.has(it.id) || ITEM_MAPPINGS[String(it.id)] != null || NOTED_TO_BASE[String(it.id)] != null;
-    const resolvedId = idIsKnown ? it.id : nameToIdMem?.get(key) ?? it.id;
-    const existing = byKey.get(key);
+    // noted -> base (mesma riqueza, forma unnoted). Untradeables ficam no próprio id.
+    const baseId = NOTED_TO_BASE[String(it.id)] ?? it.id;
+    // se o id base já é precificável (wiki ou mapping de untradeable), ele manda;
+    // senão tenta resolver pelo nome como último recurso.
+    const idIsKnown = priceMapMem?.has(baseId) || ITEM_MAPPINGS[String(baseId)] != null;
+    const finalId = idIsKnown ? baseId : nameToIdMem?.get(normName(it.name)) ?? baseId;
+    const existing = byId.get(finalId);
     if (existing) {
-      existing.quantity = Math.max(existing.quantity, it.quantity); // homônimos: conta 1x
-      if (idIsKnown) existing.id = resolvedId; // prefere o id precificável
+      existing.quantity += it.quantity; // banco + inventário da mesma coisa -> soma
     } else {
-      byKey.set(key, { id: resolvedId, name: it.name, quantity: it.quantity });
+      byId.set(finalId, { id: finalId, name: it.name, quantity: it.quantity });
     }
   }
-  return [...byKey.values()];
+  return [...byId.values()];
 }
 
 // Valoriza uma lista do Data Exporter ([{id,quantity,name}]) com preços ao vivo.
 export async function valueExport(rawItems: ExportItem[], force = false): Promise<{ valued: ValuedItem[]; total: number; unpricedCount: number }> {
   await ensurePrices(force);
-  const items = consolidateByName(rawItems); // noted+unnoted -> uma linha no id-base
+  const items = consolidateForTotal(rawItems); // noted -> id base, soma stacks (riqueza total)
   let total = 0;
   let unpricedCount = 0;
   const valued = items.map((it) => {

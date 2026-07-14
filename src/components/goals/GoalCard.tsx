@@ -8,6 +8,8 @@ const PRIORITIES = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'] as const;
 
 interface GoalCardProps {
   goal: any;
+  // radar de mercado do item: % nas últimas 24h + alvo de compra sugerido
+  market?: { changePct: number | null; smartTarget: number | null };
   onDelete?: (id: string) => void;
   onRemove?: (id: string) => void;
   onUpdate?: (id: string, field: string, value: any) => void;
@@ -18,9 +20,10 @@ interface GoalCardProps {
   getCategoryColor?: (category: string) => string;
 }
 
-export function GoalCard({ 
-  goal, 
-  onDelete, 
+export function GoalCard({
+  goal,
+  market,
+  onDelete,
   onRemove,
   onUpdate,
   formatGP,
@@ -89,6 +92,19 @@ export function GoalCard({
               </a>
             ) : (
               goal.name
+            )}
+            {market?.changePct != null && (
+              <span
+                className={`text-xs font-semibold tabular-nums ${
+                  market.changePct > 0.05 ? 'text-green-600 dark:text-green-400'
+                  : market.changePct < -0.05 ? 'text-red-600 dark:text-red-400'
+                  : 'text-muted-foreground'
+                }`}
+                title="Variação do preço nas últimas 24h (GE)"
+              >
+                {market.changePct > 0.05 ? '▲' : market.changePct < -0.05 ? '▼' : '＝'}
+                {' '}{Math.abs(market.changePct).toFixed(1)}%
+              </span>
             )}
           </CardTitle>
           {handleDelete && (
@@ -171,8 +187,18 @@ export function GoalCard({
         {targetTotal && (
           <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
             <Target className="h-4 w-4" />
-            <span className="cursor-help" title={`${targetTotal.toLocaleString()} gp`}>
+            <span
+              className="cursor-help"
+              title={goal.targetCustom
+                ? `${targetTotal.toLocaleString()} gp (editado à mão)`
+                : `${targetTotal.toLocaleString()} gp — alvo de compra que o item visita de verdade (p25 dos lows dos últimos 7 dias)`}
+            >
               Target: {formatGP ? formatGP(targetTotal) : formatGPDefault(targetTotal)} GP
+              {!goal.targetCustom && goal.currentPrice > 0 && goal.targetPrice > 0 && goal.targetPrice < goal.currentPrice && (
+                <span className="ml-1 text-xs text-muted-foreground">
+                  ({(((goal.targetPrice - goal.currentPrice) / goal.currentPrice) * 100).toFixed(1)}% do atual)
+                </span>
+              )}
             </span>
           </div>
         )}

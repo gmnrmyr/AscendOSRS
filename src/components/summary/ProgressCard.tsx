@@ -5,13 +5,15 @@ interface ProgressCardProps {
   totalGoalsValue: number;
   completionPercentage: number;
   formatGP: (amount: number) => string;
+  subtitle?: string; // descreve o que conta como gold (muda com os toggles)
 }
 
 export function ProgressCard({
   totalGoldValue,
   totalGoalsValue,
   completionPercentage,
-  formatGP
+  formatGP,
+  subtitle
 }: ProgressCardProps) {
   return (
     <div className="osrs-card p-6">
@@ -20,7 +22,7 @@ export function ProgressCard({
           <TrendingUp className="h-5 w-5" style={{ color: "hsl(var(--gold))" }} />
           Overall Progress
         </h3>
-        <p className="osrs-muted text-sm mt-1">Coins + platinum tokens vs. total goals value</p>
+        <p className="osrs-muted text-sm mt-1">{subtitle || 'Coins + platinum tokens vs. total goals value'}</p>
       </div>
       <div className="space-y-4">
         <div className="flex items-center justify-between">

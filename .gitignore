@@ -31,3 +31,6 @@ prototype/fixtures/
 # data/dashboard.json viaja no push pra sincronizar Mac <-> desk.
 # (o .runlog/ de logs continua ignorado)
 .runlog/
+
+# backups diários rotativos do server (recuperação local; o git já versiona o dashboard.json)
+data/backups/

@@ -2,6 +2,8 @@ import { SummaryCards } from "./summary/SummaryCards";
 import { ProgressCard } from "./summary/ProgressCard";
 import { Button } from "@/components/ui/button";
 import { DollarSign, Users, Target, Star, Scroll, Swords, Trophy } from "lucide-react";
+import { availableGold, mainAccount } from "@/services/gold";
+import type { AppSettings } from "@/hooks/useAppData";
 
 interface SummaryDashboardProps {
   characters: any[];
@@ -9,6 +11,7 @@ interface SummaryDashboardProps {
   purchaseGoals: any[];
   bankData: Record<string, any[]>;
   hoursPerDay: number;
+  settings: AppSettings;
 }
 
 const GOLD = { color: "hsl(var(--gold))" };
@@ -18,7 +21,8 @@ export function SummaryDashboard({
   moneyMethods,
   purchaseGoals,
   bankData,
-  hoursPerDay
+  hoursPerDay,
+  settings
 }: SummaryDashboardProps) {
 
   // Valor de um item do save: coins/plat viram gp cru, resto quantity × preço vivo cacheado.
@@ -32,14 +36,9 @@ export function SummaryDashboard({
   const getTotalBankValue = () =>
     Object.values(bankData).reduce((t, items) => t + items.reduce((s, it) => s + itemValue(it), 0), 0);
 
-  // Só coins + plat tokens (gold líquido pra comprar goals)
-  const getTotalGoldValue = () =>
-    Object.values(bankData).reduce((t, items) => t + items.reduce((s, it) => {
-      const name = (it.name || '').toLowerCase();
-      if (name.includes('coin')) return s + (it.quantity || 0);
-      if (name.includes('platinum')) return s + (it.quantity || 0) * 1000;
-      return s;
-    }, 0), 0);
+  // Gold líquido pra comprar goals — MESMA regra da aba Goals (respeita os
+  // toggles salvos: Runite bars como gold e "só a conta principal").
+  const getTotalGoldValue = () => availableGold(bankData, settings);
 
   const getTotalGoalsValue = () =>
     purchaseGoals.reduce((total, goal) => {
@@ -242,6 +241,7 @@ export function SummaryDashboard({
         totalGoalsValue={totalGoalsValue}
         completionPercentage={completionPercentage}
         formatGP={formatGP}
+        subtitle={`Coins + plat tokens${settings.runiteAsGold ? ' + Runite bars' : ''}${settings.goldMainOnly ? ` (só ${mainAccount(bankData) || 'conta principal'})` : ''} vs. total goals value`}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -331,7 +331,17 @@ export function SummaryDashboard({
                   <div key={goal?.id || index} className="osrs-inset space-y-2 p-3">
                     <div className="flex items-center justify-between">
                       <span className="osrs-value text-base flex items-center gap-2">
-                        <Trophy className="h-4 w-4" style={GOLD} />
+                        {goal?.imageUrl ? (
+                          <img
+                            src={goal.imageUrl}
+                            alt=""
+                            className="h-6 w-6 object-contain"
+                            loading="lazy"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <Trophy className="h-4 w-4" style={GOLD} />
+                        )}
                         {goal?.name || 'Unknown Goal'}
                       </span>
                       <span className="osrs-badge">{formatGP(targetValue)} gp</span>

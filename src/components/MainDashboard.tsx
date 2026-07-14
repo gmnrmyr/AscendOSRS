@@ -27,7 +27,8 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
     setHoursPerDay,
     setAllData,
     wealthHistory,
-    recordWealthSnapshot
+    recordWealthSnapshot,
+    settings
   } = useAppState();
 
   // Filter active characters for calculations
@@ -37,12 +38,13 @@ export const MainDashboard = ({ activeTab }: MainDashboardProps) => {
     <Tabs value={activeTab} className="space-y-8">
       <TabsContent value="summary">
         <div className="pixel-card p-6">
-          <SummaryDashboard 
+          <SummaryDashboard
             characters={characters}
             moneyMethods={moneyMethods}
             purchaseGoals={purchaseGoals}
             bankData={bankData}
             hoursPerDay={hoursPerDay}
+            settings={settings}
           />
         </div>
       </TabsContent>

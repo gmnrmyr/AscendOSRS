@@ -129,9 +129,76 @@ app.get('/api/data', async (req, res) => {
   }
 });
 
+// ---- Defesas contra perda de dados (incidentes 06/jul e ~13/jul: goals
+// curados sobrescritos pelo seed default do React quando o load falha) ----
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+const BACKUP_KEEP_DAYS = 30;
+
+// Assinatura EXATA do seed do useDefaultData: 16 goals com ids "1".."16".
+// Nenhuma ação legítima do usuário produz esse conjunto — se chegar aqui,
+// é o estado default de uma sessão que carregou errado tentando se gravar.
+function isSeedGoals(goals) {
+  if (!Array.isArray(goals) || goals.length !== 16) return false;
+  const ids = new Set(goals.map((g) => String(g?.id)));
+  for (let i = 1; i <= 16; i++) if (!ids.has(String(i))) return false;
+  return true;
+}
+
+async function writeBackup(name, data) {
+  await fs.mkdir(BACKUP_DIR, { recursive: true });
+  await fs.writeFile(path.join(BACKUP_DIR, name), JSON.stringify(data, null, 2));
+}
+
+async function pruneDailyBackups() {
+  try {
+    const files = (await fs.readdir(BACKUP_DIR)).filter((f) => /^dashboard-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort();
+    for (const f of files.slice(0, Math.max(0, files.length - BACKUP_KEEP_DAYS))) {
+      await fs.unlink(path.join(BACKUP_DIR, f));
+    }
+  } catch { /* backups são best-effort */ }
+}
+
 app.post('/api/data', async (req, res) => {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
+
+    let existing = null;
+    try { existing = JSON.parse(await fs.readFile(SAVE_FILE, 'utf-8')); } catch { /* sem save anterior */ }
+
+    if (existing) {
+      const exGoals = Array.isArray(existing.purchaseGoals) ? existing.purchaseGoals : [];
+      const inGoals = Array.isArray(req.body?.purchaseGoals) ? req.body.purchaseGoals : [];
+
+      // GUARDA anti-wipe: disco tem goals reais e o cliente quer gravar o seed
+      // default por cima -> recusa e preserva. O cliente segue rodando, mas o
+      // disco (fonte de verdade) fica intacto.
+      if (exGoals.length >= 5 && !isSeedGoals(exGoals) && isSeedGoals(inGoals)) {
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        await writeBackup(`dashboard.pre-goalwipe-${ts}.json`, existing);
+        console.error('BLOQUEADO: tentativa de gravar goals default por cima de goals reais. Backup em backups/.');
+        return res.status(409).json({ error: 'goal-wipe blocked: save do disco tem goals reais; recarregue o app.' });
+      }
+
+      // Troca TOTAL de goals (nenhum id em comum) é suspeita — permite, mas
+      // guarda o estado anterior antes de sobrescrever.
+      if (exGoals.length >= 5 && inGoals.length > 0) {
+        const exIds = new Set(exGoals.map((g) => String(g?.id)));
+        if (!inGoals.some((g) => exIds.has(String(g?.id)))) {
+          const ts = new Date().toISOString().replace(/[:.]/g, '-');
+          await writeBackup(`dashboard.pre-goalswap-${ts}.json`, existing);
+        }
+      }
+
+      // Backup diário rotativo: no primeiro save do dia, congela o último
+      // estado do dia anterior (recuperação de qualquer coisa em até 30 dias).
+      const exDay = String(existing.savedAt || '').slice(0, 10);
+      const today = new Date().toISOString().slice(0, 10);
+      if (exDay && exDay !== today) {
+        await writeBackup(`dashboard-${exDay}.json`, existing);
+        await pruneDailyBackups();
+      }
+    }
+
     const payload = { ...req.body, savedAt: new Date().toISOString() };
     // escreve atômico: tmp + rename, pra não corromper se cair no meio
     const tmp = SAVE_FILE + '.tmp';

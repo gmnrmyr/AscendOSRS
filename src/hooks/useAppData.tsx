@@ -6,6 +6,7 @@ import { upsertSnapshot, type WealthSnapshot } from '@/services/wealthHistory';
 import { ensurePrices, priceOf, priceOfVariant, idByName, itemImageUrl } from '@/services/priceEngine';
 import { fetchWikiMethods, matchWikiMethod } from '@/services/mmgLive';
 import { emptyFlippingData, type FlippingData } from '@/services/flipping';
+import { fetchGoalMarket } from '@/services/goalMarket';
 import { 
   getDefaultCharacters, 
   getDefaultMoneyMethods, 
@@ -47,9 +48,18 @@ interface PurchaseGoal {
   category: 'gear' | 'consumables' | 'materials' | 'other';
   notes: string;
   imageUrl?: string;
+  itemId?: number; // id real do OSRS — resolve preço/ícone/mercado no priceEngine
   buyable?: boolean; // false = conquista/skill (não compra no GE). undefined => comprável
   targetCustom?: boolean;
 }
+
+// Decisões do usuário que valem no APP INTEIRO (Goals, Summary...) e persistem no save.
+interface AppSettings {
+  runiteAsGold: boolean; // contar stacks grandes de Runite bar como gold líquido
+  goldMainOnly: boolean; // gold disponível = só a conta principal
+}
+
+const defaultSettings = (): AppSettings => ({ runiteAsGold: false, goldMainOnly: false });
 
 interface BankItem {
   id: string;
@@ -69,6 +79,7 @@ export function useAppData() {
   const [hoursPerDay, setHoursPerDay] = useState(10);
   const [wealthHistory, setWealthHistory] = useState<WealthSnapshot[]>([]);
   const [flipping, setFlipping] = useState<FlippingData>(emptyFlippingData());
+  const [settings, setSettings] = useState<AppSettings>(defaultSettings());
   // Gate de salvamento: só persiste DEPOIS do load inicial, pra não gravar
   // defaults vazios por cima do save do disco.
   const [loaded, setLoaded] = useState(false);
@@ -94,6 +105,9 @@ export function useAppData() {
     if (d.flipping && Array.isArray(d.flipping.favorites) && Array.isArray(d.flipping.journal)) {
       setFlipping(d.flipping);
     }
+    if (d.settings && typeof d.settings === 'object') {
+      setSettings({ ...defaultSettings(), ...d.settings });
+    }
   };
 
   // Load inicial (local-first): o disco do Mac (server) é a fonte de verdade.
@@ -115,7 +129,16 @@ export function useAppData() {
         if (cancelled) return;
         if (server) {
           applyData(server); // disco ganha (compartilhado entre origins, sobrevive a limpar cache)
-          if (!cancelled) setCanSave(true);
+          // Load SUSPEITO: o disco tem chars mas não tem goals válidos — se gravar
+          // agora, o seed default do React vai por cima dos goals reais (incidente
+          // ~13/jul). Sessão fica read-only até um reload com dado íntegro.
+          const suspicious = Array.isArray(server.characters) && server.characters.length > 0
+            && !Array.isArray(server.purchaseGoals);
+          if (suspicious) {
+            console.warn('Save do disco sem purchaseGoals válidos — gravação DESABILITADA nesta sessão.');
+          } else if (!cancelled) {
+            setCanSave(true);
+          }
         } else if (local) {
           applyData(local);            // primeira vez: migra o que já existia no browser
           try { await saveServerData(local); } catch (e) { console.error('Migração pro disco falhou:', e); }
@@ -185,6 +208,14 @@ export function useAppData() {
     }
     setBankData(nextBank);
 
+    // Alvo de compra "esperto" (percentil 25 dos lows de 7d) — cache 1h, falha vira mapa vazio.
+    let market = new Map<number, { changePct: number | null; smartTarget: number | null }>();
+    try {
+      market = await fetchGoalMarket(purchaseGoals.map((g) => g.itemId || 0));
+    } catch (e) {
+      console.warn('Mercado dos goals indisponível (target segue o preço vivo):', e);
+    }
+
     let goalsChanged = 0;
     const nextGoals = purchaseGoals.map((goal) => {
       let id = goal.itemId && goal.itemId > 0 ? goal.itemId : 0;
@@ -195,7 +226,8 @@ export function useAppData() {
       if (price) {
         if (price !== goal.currentPrice) goalsChanged++;
         next.currentPrice = price;
-        if (!(goal as any).targetCustom) next.targetPrice = price; // target segue o mercado (salvo editado à mão)
+        // target = alvo de compra baseado em dados; sem dados, segue o mercado (salvo editado à mão)
+        if (!(goal as any).targetCustom) next.targetPrice = market.get(id)?.smartTarget || price;
       }
       return next;
     });
@@ -236,6 +268,7 @@ export function useAppData() {
     hoursPerDay,
     wealthHistory,
     flipping,
+    settings,
     enabled: canSave
   });
 
@@ -263,6 +296,8 @@ export function useAppData() {
     wealthHistory,
     flipping,
     setFlipping,
+    settings,
+    setSettings,
     setCharacters,
     setMoneyMethods,
     setPurchaseGoals,
@@ -274,4 +309,4 @@ export function useAppData() {
   };
 }
 
-export type { Character, MoneyMethod, PurchaseGoal, BankItem };
+export type { Character, MoneyMethod, PurchaseGoal, BankItem, AppSettings };

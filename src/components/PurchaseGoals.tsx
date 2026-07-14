@@ -7,6 +7,8 @@ import { TrendingUp, Target, Filter, Coins } from "lucide-react";
 import { useAppState } from "@/components/AppStateProvider";
 import { useToast } from "@/hooks/use-toast";
 import { ensurePrices, priceOf, idByName, itemImageUrl } from "@/services/priceEngine";
+import { goldOfItems, mainAccount, bigRuniteStacks } from "@/services/gold";
+import { fetchGoalMarket, type GoalMarket } from "@/services/goalMarket";
 import { GoalForm } from "./goals/GoalForm";
 import { GoalFilters } from "./goals/GoalFilters";
 import { GoalCard } from "./goals/GoalCard";
@@ -43,6 +45,8 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const { toast } = useToast();
   const [isPricing, setIsPricing] = useState(false);
   const repricedRef = useRef(false);
+  // % do dia + alvo de compra por itemId (busca junto com o reprice, cache 1h)
+  const [market, setMarket] = useState<Map<number, GoalMarket>>(new Map());
 
   // NOTE: removido o localStorage paralelo ('purchaseGoals') — os goals são geridos
   // pelo estado global (useAppData -> disco no Mac). Aquele storage causava preço velho.
@@ -54,6 +58,17 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     setIsPricing(true);
     try {
       await ensurePrices(force);
+
+      // Radar de mercado (variação 24h + alvo de compra). Falha não bloqueia o reprice.
+      let mkt = new Map<number, GoalMarket>();
+      try {
+        const ids = goals.map((g) => g.itemId || idByName(g.name) || 0);
+        mkt = await fetchGoalMarket(ids);
+        setMarket(mkt);
+      } catch (e) {
+        console.warn('Mercado dos goals indisponível:', e);
+      }
+
       let changed = 0;
       const updated = goals.map((goal) => {
         let id = goal.itemId && goal.itemId > 0 ? goal.itemId : 0;
@@ -67,8 +82,9 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
         if (price) {
           if (price !== goal.currentPrice) changed++;
           next.currentPrice = price;
-          // target acompanha o mercado, a menos que tenha sido editado à mão (targetCustom)
-          if (!goal.targetCustom) next.targetPrice = price;
+          // target = alvo de compra baseado em dados (p25 dos lows de 7d);
+          // sem dados, acompanha o mercado. Editado à mão (targetCustom) fica quieto.
+          if (!goal.targetCustom) next.targetPrice = mkt.get(id)?.smartTarget || price;
         }
         return next;
       });
@@ -356,31 +372,26 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const unbuyableCount = goals.length - buyableGoals.length;
 
   // ---- Ouro disponível vs goals ----
-  // Toggle "só a conta principal" (OFF por padrão): compara os goals com o ouro
-  // de TODAS as contas, ou só o da principal (detectada = maior valor de banco).
-  const { bankData } = useAppState();
-  const [mainOnly, setMainOnly] = useState(false);
+  // Dois toggles SALVOS no save (valem no app inteiro, Summary incluso):
+  // - goldMainOnly: compara os goals só com o ouro da conta principal (maior banco)
+  // - runiteAsGold: stacks grandes de Runite bar (>200) contam como gold líquido
+  const { bankData, settings, setSettings } = useAppState();
+  const mainOnly = settings.goldMainOnly;
+  const runiteAsGold = settings.runiteAsGold;
 
-  const goldOf = (items: any[]) => (items || []).reduce((s, it) => {
-    const n = (it.name || '').toLowerCase();
-    if (n.includes('coin')) return s + (it.quantity || 0);
-    if (n.includes('platinum')) return s + (it.quantity || 0) * 1000;
-    return s;
-  }, 0);
+  const { totalGold, mainName, mainGold, runiteStacks } = useMemo(() => {
+    const mainName = mainAccount(bankData || {});
+    let totalGold = 0;
+    for (const items of Object.values(bankData || {})) totalGold += goldOfItems(items as any[], runiteAsGold);
+    const mainGold = goldOfItems((bankData || {})[mainName] as any[], runiteAsGold);
+    const runiteStacks = bigRuniteStacks(bankData || {});
+    return { totalGold, mainName, mainGold, runiteStacks };
+  }, [bankData, runiteAsGold]);
 
-  const { totalGold, mainName, mainGold } = useMemo(() => {
-    let totalGold = 0, mainName = '', mainVal = -1, mainGold = 0;
-    for (const [name, items] of Object.entries(bankData || {})) {
-      const g = goldOf(items as any[]);
-      totalGold += g;
-      const bv = (items as any[]).reduce((s, it) => s + Math.floor(it.quantity || 0) * (it.estimatedPrice || 0), 0);
-      if (bv > mainVal) { mainVal = bv; mainName = name; mainGold = g; }
-    }
-    return { totalGold, mainName, mainGold };
-  }, [bankData]);
-
-  const availableGold = mainOnly ? mainGold : totalGold;
-  const goldPct = buyableGoalValue > 0 ? Math.min(100, (availableGold / buyableGoalValue) * 100) : 100;
+  const goldAvailable = mainOnly ? mainGold : totalGold;
+  const goldPct = buyableGoalValue > 0 ? Math.min(100, (goldAvailable / buyableGoalValue) * 100) : 100;
+  const runiteTotalQty = runiteStacks.reduce((s, r) => s + r.qty, 0);
+  const runiteTotalValue = runiteStacks.reduce((s, r) => s + r.value, 0);
 
   // Format the timestamp nicely
 
@@ -433,21 +444,34 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                 <Coins className="h-5 w-5 text-yellow-600" />
                 <span className="osrs-title text-lg">Ouro vs Objetivos</span>
               </div>
-              <label className="flex items-center gap-2 cursor-pointer select-none" title={mainName ? `Considera só o ouro de ${mainName}` : 'Considera só a conta principal'}>
-                <span className="text-sm font-medium text-muted-foreground">
-                  Só {mainName || 'conta principal'}
-                </span>
-                <Switch checked={mainOnly} onCheckedChange={setMainOnly} />
-              </label>
+              <div className="flex flex-col items-end gap-1.5">
+                <label className="flex items-center gap-2 cursor-pointer select-none" title={mainName ? `Considera só o ouro de ${mainName}` : 'Considera só a conta principal'}>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Só {mainName || 'conta principal'}
+                  </span>
+                  <Switch checked={mainOnly} onCheckedChange={(v) => setSettings({ ...settings, goldMainOnly: v })} />
+                </label>
+                {runiteStacks.length > 0 && (
+                  <label
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                    title={`Stacks grandes (>200 barras) viram gold líquido: ${runiteStacks.map((r) => `${r.char} ${r.qty.toLocaleString()}`).join(' · ')} ≈ ${formatGP(runiteTotalValue)} GP`}
+                  >
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Runite bars como gold ({formatGP(runiteTotalQty)} ≈ {formatGP(runiteTotalValue)} GP)
+                    </span>
+                    <Switch checked={runiteAsGold} onCheckedChange={(v) => setSettings({ ...settings, runiteAsGold: v })} />
+                  </label>
+                )}
+              </div>
             </div>
 
             <div className="flex items-end justify-between gap-3 mb-2">
               <span
                 className="text-2xl font-bold text-yellow-700 dark:text-yellow-400 cursor-help"
-                title={`${availableGold.toLocaleString()} gp disponível`}
+                title={`${goldAvailable.toLocaleString()} gp disponível${runiteAsGold && runiteTotalValue > 0 ? ' (Runite bars inclusas)' : ''}`}
                 style={{ fontFamily: 'RuneScape Bold, monospace' }}
               >
-                {formatGP(availableGold)} GP
+                {formatGP(goldAvailable)} GP
               </span>
               <span className="text-sm text-muted-foreground">
                 de <span className="font-semibold text-foreground cursor-help" title={`${buyableGoalValue.toLocaleString()} gp em compráveis`}>{formatGP(buyableGoalValue)} GP</span> em compráveis
@@ -460,9 +484,9 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
               <span>{goldPct.toFixed(1)}% coberto{unbuyableCount > 0 ? ` · ${unbuyableCount} conquista${unbuyableCount > 1 ? 's' : ''} fora` : ''}</span>
               <span>
-                {availableGold >= buyableGoalValue
+                {goldAvailable >= buyableGoalValue
                   ? 'Dá pra bancar os compráveis ✔'
-                  : `Faltam ${formatGP(buyableGoalValue - availableGold)} GP`}
+                  : `Faltam ${formatGP(buyableGoalValue - goldAvailable)} GP`}
               </span>
             </div>
 
@@ -515,6 +539,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             <GoalCard
               key={goal.id}
               goal={goal}
+              market={goal.itemId ? market.get(goal.itemId) : undefined}
               onRemove={removeGoal}
               onUpdate={updateGoal}
               formatGP={formatGP}

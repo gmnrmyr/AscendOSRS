@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Star, LineChart, ShoppingCart, X } from 'lucide-react';
+import { RefreshCw, Star, LineChart, ShoppingCart, Target, X } from 'lucide-react';
 import { useAppState } from '@/components/AppStateProvider';
 import { itemImageUrl, COINS_ID, PLAT_TOKEN_ID } from '@/services/priceEngine';
 import {
@@ -17,7 +17,7 @@ const gp = (n: number) => n.toLocaleString('pt-BR');
 interface BuyDraft { itemId: number; name: string; price: number; qty: number; }
 
 export function FlippingDashboard() {
-  const { characters, bankData, flipping, setFlipping } = useAppState();
+  const { characters, bankData, flipping, setFlipping, purchaseGoals } = useAppState();
 
   // Gold líquido do save: Coins + plat tokens dos bancos das contas ativas.
   const liquidGold = useMemo(() => {
@@ -79,6 +79,23 @@ export function FlippingDashboard() {
         favorites: [...flipping.favorites, { itemId: id, name, addedAt: new Date().toISOString() }],
       });
     }
+  };
+
+  // Goals compráveis (com itemId) que ainda não estão nos favoritos — dá pra
+  // puxar todos de uma vez e acompanhar o mercado deles aqui no flipping.
+  const goalCandidates = useMemo(
+    () => purchaseGoals.filter((g) => g.buyable !== false && g.itemId && g.itemId > 0 && !favIds.has(g.itemId)),
+    [purchaseGoals, favIds],
+  );
+
+  const addGoalsToFavs = () => {
+    if (goalCandidates.length === 0) return;
+    const now = new Date().toISOString();
+    const seen = new Set<number>();
+    const news = goalCandidates
+      .filter((g) => (seen.has(g.itemId!) ? false : (seen.add(g.itemId!), true)))
+      .map((g) => ({ itemId: g.itemId!, name: g.name, note: '🎯 goal', addedAt: now }));
+    setFlipping({ ...flipping, favorites: [...flipping.favorites, ...news] });
   };
 
   const setFavNote = (id: number, note: string) => {
@@ -158,6 +175,17 @@ export function FlippingDashboard() {
           <button className="pixel-button flex items-center gap-1.5 px-3 py-1.5 text-sm" onClick={() => load(true)} disabled={loading}>
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             Atualizar
+          </button>
+          <button
+            className="pixel-button flex items-center gap-1.5 px-3 py-1.5 text-sm"
+            onClick={addGoalsToFavs}
+            disabled={goalCandidates.length === 0}
+            title={goalCandidates.length === 0
+              ? 'Todos os goals compráveis já estão nos favoritos'
+              : `Adicionar aos favoritos: ${goalCandidates.map((g) => g.name).join(', ')}`}
+          >
+            <Target className="h-3.5 w-3.5" />
+            + goals ({goalCandidates.length})
           </button>
           {agoMin != null && <span className="osrs-muted text-xs">há {agoMin}min</span>}
         </div>

@@ -36,6 +36,8 @@ interface MoneyMethod {
   notes: string;
   category: 'combat' | 'skilling' | 'bossing' | 'other';
   isActive?: boolean;
+  wikiName?: string; // nome da guia da Wiki que abastece o gp/hr (carimbado no match)
+  wikiPin?: boolean; // true = usa a guia do wikiName direto, sem matcher (desambigua "Smithing rune items" GE vs P2P)
 }
 
 interface PurchaseGoal {
@@ -242,7 +244,10 @@ export function useAppData() {
       const wiki = await fetchWikiMethods();
       if (wiki.length > 0) {
         const nextMethods = moneyMethods.map((m) => {
-          const hit = matchWikiMethod(m.name, wiki);
+          // Pinado: a guia é escolha do usuário (nome exato), o matcher não opina.
+          const hit = m.wikiPin && m.wikiName
+            ? wiki.find((w) => w.name === m.wikiName) ?? null
+            : matchWikiMethod(m.name, wiki);
           if (!hit || hit.profit <= 0) return m;
           if (hit.profit === m.gpHour) return m;
           methodsChanged++;

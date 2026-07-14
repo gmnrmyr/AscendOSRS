@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, DollarSign, Target, Hash, Star, ExternalLink } from "lucide-react";
+import { Trash2, DollarSign, Target, Hash, Star, ExternalLink, FlaskConical } from "lucide-react";
+import { itemImageUrlByName } from "@/services/priceEngine";
 
 const PRIORITIES = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'] as const;
 
@@ -71,12 +73,22 @@ export function GoalCard({
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg text-foreground flex items-center gap-2">
-            {goal.imageUrl && (
+            {(goal.imageUrl || goal.name) && (
               <img
-                src={goal.imageUrl}
+                src={goal.imageUrl || itemImageUrlByName(goal.name)}
                 alt={goal.name}
                 className="w-8 h-8 object-cover rounded"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                onError={(e) => {
+                  // URL salva quebrada (ex: case errado) — tenta a canônica da Wiki antes de esconder
+                  const img = e.currentTarget;
+                  const wikiImg = itemImageUrlByName(goal.name);
+                  if (wikiImg && img.src !== wikiImg && !img.dataset.wikiFallback) {
+                    img.dataset.wikiFallback = '1';
+                    img.src = wikiImg;
+                  } else {
+                    img.style.display = 'none';
+                  }
+                }}
               />
             )}
             {goal.itemId ? (
@@ -179,10 +191,29 @@ export function GoalCard({
         
         <div className="flex items-center gap-2 text-lg font-semibold text-green-600 dark:text-green-400">
           <DollarSign className="h-5 w-5" />
-          <span className="cursor-help" title={`${totalCost.toLocaleString()} gp`}>
+          <span className="cursor-help" title={goal.buyable === false ? `${totalCost.toLocaleString()} gp em supplies` : `${totalCost.toLocaleString()} gp`}>
             {formatGP ? formatGP(totalCost) : formatGPDefault(totalCost)} GP
           </span>
         </div>
+
+        {/* Conquista não tem preço de GE — o custo é o de supplies, digitado em M */}
+        {goal.buyable === false && onUpdate && (
+          <div className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
+            <FlaskConical className="h-4 w-4" />
+            <span>Custo supplies:</span>
+            <Input
+              type="number"
+              min="0"
+              step="0.5"
+              value={goal.suppliesCost ? goal.suppliesCost / 1_000_000 : ''}
+              onChange={(e) => onUpdate(goal.id, 'suppliesCost', Math.max(0, parseFloat(e.target.value) || 0) * 1_000_000)}
+              placeholder="0"
+              className="h-7 w-24 text-sm"
+              title="Estimativa em milhões de GP gastos em supplies pra tirar essa conquista"
+            />
+            <span className="text-muted-foreground">M GP</span>
+          </div>
+        )}
 
         {targetTotal && (
           <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">

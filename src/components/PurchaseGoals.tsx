@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { TrendingUp, Target, Filter, Coins } from "lucide-react";
 import { useAppState } from "@/components/AppStateProvider";
 import { useToast } from "@/hooks/use-toast";
-import { ensurePrices, priceOf, idByName, itemImageUrl } from "@/services/priceEngine";
+import { ensurePrices, priceOf, idByName, itemImageUrl, itemImageUrlByName } from "@/services/priceEngine";
 import { goldOfItems, mainAccount, bigRuniteStacks } from "@/services/gold";
 import { fetchGoalMarket, type GoalMarket } from "@/services/goalMarket";
 import { GoalForm } from "./goals/GoalForm";
@@ -25,6 +25,7 @@ interface PurchaseGoal {
   imageUrl?: string;
   itemId?: number;
   buyable?: boolean; // false = conquista/skill (não compra no GE). undefined => comprável
+  suppliesCost?: number; // GP — custo estimado em supplies pra tirar a conquista (Infernal, Torso...)
   targetCustom?: boolean;
 }
 
@@ -77,7 +78,14 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
           const byName = idByName(goal.name);
           if (byName) { id = byName; price = priceOf(byName); }
         }
-        if (!id) return goal;
+        if (!id) {
+          // Sem id no mapping de preços (untradeable/conquista) — garante o thumb pela Wiki por nome.
+          // Também conserta URL por nome salva com case errado (ex: "Fighter_Torso" -> 404).
+          const wikiImg = itemImageUrlByName(goal.name);
+          const staleWikiImg = goal.imageUrl?.includes('oldschool.runescape.wiki/images/') && goal.imageUrl !== wikiImg;
+          if (!goal.imageUrl || staleWikiImg) return { ...goal, imageUrl: wikiImg };
+          return goal;
+        }
         const next: any = { ...goal, itemId: id, imageUrl: itemImageUrl(id) };
         if (price) {
           if (price !== goal.currentPrice) changed++;
@@ -332,8 +340,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     return amount.toLocaleString();
   };
 
-  // Valor do goal = preço de mercado ao vivo × quantidade (o target é só a meta, mostrada à parte)
+  // Valor do goal = preço de mercado ao vivo × quantidade (o target é só a meta, mostrada à parte).
+  // Conquistas (buyable === false) não têm preço de GE — o custo delas é o de supplies, editado à mão.
   const getTotalCost = (goal: PurchaseGoal) => {
+    if (goal.buyable === false) return (goal.suppliesCost || 0) * goal.quantity;
     return (goal.currentPrice || goal.targetPrice || 0) * goal.quantity;
   };
 
@@ -366,10 +376,13 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
     });
 
   const totalGoalValue = goals.reduce((sum, goal) => sum + getTotalCost(goal), 0);
-  // Só compráveis contam no orçamento de ouro (conquistas/skills não se compram no GE).
+  // Compráveis contam pelo preço de GE; conquistas entram pelo custo de supplies
+  // (Infernal, Torso... o item não se compra, mas os supplies pra tirar custam GP).
   const buyableGoals = goals.filter(g => g.buyable !== false);
   const buyableGoalValue = buyableGoals.reduce((sum, goal) => sum + getTotalCost(goal), 0);
   const unbuyableCount = goals.length - buyableGoals.length;
+  const suppliesValue = goals.filter(g => g.buyable === false).reduce((sum, goal) => sum + getTotalCost(goal), 0);
+  const goldNeeded = buyableGoalValue + suppliesValue;
 
   // ---- Ouro disponível vs goals ----
   // Dois toggles SALVOS no save (valem no app inteiro, Summary incluso):
@@ -389,7 +402,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   }, [bankData, runiteAsGold]);
 
   const goldAvailable = mainOnly ? mainGold : totalGold;
-  const goldPct = buyableGoalValue > 0 ? Math.min(100, (goldAvailable / buyableGoalValue) * 100) : 100;
+  const goldPct = goldNeeded > 0 ? Math.min(100, (goldAvailable / goldNeeded) * 100) : 100;
   const runiteTotalQty = runiteStacks.reduce((s, r) => s + r.qty, 0);
   const runiteTotalValue = runiteStacks.reduce((s, r) => s + r.value, 0);
 
@@ -474,7 +487,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
                 {formatGP(goldAvailable)} GP
               </span>
               <span className="text-sm text-muted-foreground">
-                de <span className="font-semibold text-foreground cursor-help" title={`${buyableGoalValue.toLocaleString()} gp em compráveis`}>{formatGP(buyableGoalValue)} GP</span> em compráveis
+                de <span className="font-semibold text-foreground cursor-help" title={`${buyableGoalValue.toLocaleString()} gp em compráveis + ${suppliesValue.toLocaleString()} gp em supplies de conquistas`}>{formatGP(goldNeeded)} GP</span> {suppliesValue > 0 ? 'em compráveis + supplies' : 'em compráveis'}
               </span>
             </div>
 
@@ -482,11 +495,16 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
               <div className="osrs-progress-fill" style={{ width: `${goldPct}%` }} />
             </div>
             <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-              <span>{goldPct.toFixed(1)}% coberto{unbuyableCount > 0 ? ` · ${unbuyableCount} conquista${unbuyableCount > 1 ? 's' : ''} fora` : ''}</span>
               <span>
-                {goldAvailable >= buyableGoalValue
-                  ? 'Dá pra bancar os compráveis ✔'
-                  : `Faltam ${formatGP(buyableGoalValue - goldAvailable)} GP`}
+                {goldPct.toFixed(1)}% coberto
+                {unbuyableCount > 0 && (suppliesValue > 0
+                  ? ` · ${unbuyableCount} conquista${unbuyableCount > 1 ? 's' : ''} (${formatGP(suppliesValue)} GP em supplies)`
+                  : ` · ${unbuyableCount} conquista${unbuyableCount > 1 ? 's' : ''} sem custo de supplies`)}
+              </span>
+              <span>
+                {goldAvailable >= goldNeeded
+                  ? 'Dá pra bancar tudo ✔'
+                  : `Faltam ${formatGP(goldNeeded - goldAvailable)} GP`}
               </span>
             </div>
 

@@ -42,6 +42,8 @@ export function SummaryDashboard({
 
   const getTotalGoalsValue = () =>
     purchaseGoals.reduce((total, goal) => {
+      // Conquistas (buyable === false) não têm preço de GE — entram pelo custo de supplies
+      if (goal?.buyable === false) return total + (goal?.suppliesCost || 0) * (goal?.quantity || 0);
       const targetPrice = goal?.targetPrice || goal?.currentPrice || 0;
       return total + targetPrice * (goal?.quantity || 0);
     }, 0);

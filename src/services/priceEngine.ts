@@ -195,6 +195,17 @@ export function itemImageUrl(id: number): string {
   return `https://chisel.weirdgloop.org/static/img/osrs-sprite/${id}.png`;
 }
 
+// URL da imagem pela Wiki por NOME — fallback pra itens sem id resolvível
+// (untradeables/conquistas: Infernal cape, Fighter torso, Dizana's quiver...).
+// Padrão da Wiki: sentence case estrito (só a 1ª letra maiúscula, resto minúsculo,
+// vale até pra "Bow of faerdhinen"), espaços viram "_". Case errado = 404.
+export function itemImageUrlByName(name: string): string {
+  const n = name.trim().replace(/\s+/g, ' ');
+  if (!n) return '';
+  const file = (n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()).replace(/ /g, '_');
+  return `https://oldschool.runescape.wiki/images/${encodeURIComponent(file)}.png`;
+}
+
 export interface ExportItem { id: number; quantity: number; name: string; }
 export interface ValuedItem extends ExportItem { unit: number; value: number; }
 

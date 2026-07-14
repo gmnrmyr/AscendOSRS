@@ -50,6 +50,7 @@ interface PurchaseGoal {
   imageUrl?: string;
   itemId?: number; // id real do OSRS — resolve preço/ícone/mercado no priceEngine
   buyable?: boolean; // false = conquista/skill (não compra no GE). undefined => comprável
+  suppliesCost?: number; // GP — custo estimado em supplies pra tirar a conquista (Infernal, Torso...)
   targetCustom?: boolean;
 }
 

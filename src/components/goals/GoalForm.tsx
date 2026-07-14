@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
 import { uid } from "@/lib/utils";
+import { itemImageUrlByName } from "@/services/priceEngine";
 import { ItemSearchInput } from "./ItemSearchInput";
 
 interface GoalFormProps {
@@ -28,6 +30,9 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     imageUrl: '',
     itemId: null as number | null
   });
+  // Conquista (Infernal cape, Torso...): o item não se compra, mas os supplies custam GP (em M)
+  const [isAchievement, setIsAchievement] = useState(false);
+  const [suppliesM, setSuppliesM] = useState('');
 
   const handleItemSelect = (item: any) => {
     console.log('Selected OSRS item:', item);
@@ -45,9 +50,16 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
     if (newGoal.name) {
       const goal = {
         ...newGoal,
-        id: uid()
+        id: uid(),
+        // Sem imagem da busca (untradeable digitado à mão) — thumb pela Wiki por nome
+        imageUrl: newGoal.imageUrl || itemImageUrlByName(newGoal.name),
+        ...(isAchievement
+          ? { buyable: false, suppliesCost: Math.max(0, parseFloat(suppliesM) || 0) * 1_000_000 }
+          : {})
       };
       setGoals([...goals, goal]);
+      setIsAchievement(false);
+      setSuppliesM('');
       setNewGoal({
         name: '',
         currentPrice: 0,
@@ -175,6 +187,31 @@ export function GoalForm({ goals, setGoals, onAddDefaultGoals }: GoalFormProps) 
             <span className="text-sm text-gray-600">{newGoal.name}</span>
           </div>
         )}
+
+        {/* Conquista: item de preço zero (Infernal, Quiver, Torso...) — o custo vira o de supplies */}
+        <div className="flex flex-wrap items-center gap-4 rounded border border-border bg-muted/40 px-3 py-2">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <Switch checked={isAchievement} onCheckedChange={setIsAchievement} />
+            <span className="text-sm font-medium">🏆 Conquista (não se compra no GE)</span>
+          </label>
+          {isAchievement && (
+            <div className="flex items-center gap-2">
+              <Label htmlFor="supplies-cost" className="text-sm whitespace-nowrap">Custo supplies</Label>
+              <Input
+                id="supplies-cost"
+                type="number"
+                min="0"
+                step="0.5"
+                value={suppliesM}
+                onChange={(e) => setSuppliesM(e.target.value)}
+                placeholder="0"
+                className="h-8 w-24"
+                title="Estimativa em milhões de GP gastos em supplies pra tirar essa conquista"
+              />
+              <span className="text-sm text-muted-foreground">M GP</span>
+            </div>
+          )}
+        </div>
 
         <div>
           <Label htmlFor="goal-notes">Notes</Label>

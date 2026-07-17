@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Sword, TrendingUp, Coins, Crown, Clock } from "lucide-react";
+import { Trash2, Sword, TrendingUp, Coins, Crown, Clock, Ticket } from "lucide-react";
 import { CharacterRefreshButton } from "@/components/CharacterRefreshButton";
 import { useAppState } from "@/components/AppStateProvider";
 
@@ -113,6 +113,20 @@ export function CharacterCard({ character, onDelete, onUpdate }: CharacterCardPr
             />
             {character.hoursPerDay == null && (
               <span className="text-xs text-muted-foreground">(global)</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 text-sm" title="Fim do bond desta conta — alimenta a timeline e a projeção futura. Vazio = F2P / não precisa de bond.">
+            <Ticket className="h-4 w-4 text-amber-600" />
+            <span>Bond até:</span>
+            <input
+              type="date"
+              value={character.bondExpiresAt ?? ''}
+              onChange={(e) => onUpdate({ ...character, bondExpiresAt: e.target.value || undefined })}
+              className="rounded border border-border bg-transparent px-1.5 py-0.5 text-sm"
+            />
+            {!character.bondExpiresAt && (
+              <span className="text-xs text-muted-foreground">(F2P / sem bond)</span>
             )}
           </div>
         </div>

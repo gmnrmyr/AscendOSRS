@@ -25,6 +25,7 @@ interface Character {
   isActive: boolean;
   platTokens?: number;
   hoursPerDay?: number; // horas/dia planejadas DESTA conta; ausente = usa a global
+  bondExpiresAt?: string; // YYYY-MM-DD do fim do bond (conta members que renova); ausente = F2P/sem bond
 }
 
 interface MoneyMethod {

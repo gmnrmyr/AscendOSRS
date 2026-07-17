@@ -39,3 +39,45 @@ export function projectionRate(
 export function daysBetween(a: string, b: string): number {
   return (Date.parse(b) - Date.parse(a)) / 86_400_000;
 }
+
+// ---- Bonds: cronograma de renovação por conta ----
+
+export const BOND_ID = 13190;   // Old school bond (GE, tradeable)
+export const BOND_DAYS = 14;    // 1 bond = 14 dias de members
+
+// YYYY-MM-DD deslocado n dias (aritmética em UTC, coerente com daysBetween).
+export function addDays(iso: string, n: number): string {
+  const d = new Date(Date.parse(iso) + n * 86_400_000);
+  return d.toISOString().slice(0, 10);
+}
+
+// YYYY-MM-DD de hoje em horário LOCAL (mesma convenção do wealthHistory).
+export function todayKey(now: Date = new Date()): string {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export interface BondPurchase { date: string; char: string; }
+
+// Compras de bond necessárias no intervalo [from, until], por conta com
+// bondExpiresAt (= conta members que renova com bond). Bond já vencido
+// antes de `from` gera compra imediata em `from` (a conta está sem members).
+// Ordenado por data.
+export function bondSchedule(
+  characters: Character[],
+  from: string,
+  until: string,
+): BondPurchase[] {
+  const out: BondPurchase[] = [];
+  for (const c of characters) {
+    if (!c.bondExpiresAt) continue;
+    let next = c.bondExpiresAt < from ? from : c.bondExpiresAt;
+    while (next <= until) {
+      out.push({ date: next, char: c.name });
+      next = addDays(next, BOND_DAYS);
+    }
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date) || a.char.localeCompare(b.char));
+}

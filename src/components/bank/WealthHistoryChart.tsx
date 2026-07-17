@@ -5,7 +5,8 @@ import { LineChart } from 'lucide-react';
 import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { formatGoldValue } from '@/lib/utils';
 import { diffItems, diffItemsByChar, diffChars, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
-import { projectionRate, daysBetween } from '@/services/projection';
+import { projectionRate, daysBetween, addDays, todayKey, bondSchedule, BOND_ID } from '@/services/projection';
+import { priceOf } from '@/services/priceEngine';
 import { useAppState } from '@/components/AppStateProvider';
 
 interface WealthHistoryChartProps {
@@ -19,6 +20,18 @@ const RANGES: { key: Range; label: string; days: number | null }[] = [
   { key: '30d', label: '30 dias', days: 30 },
   { key: 'all', label: 'Tudo', days: null },
 ];
+
+// Horizonte da projeção futura (hoje -> +N meses). 0 = desligada.
+const FUTURES: { months: number; label: string }[] = [
+  { months: 0, label: 'off' },
+  { months: 1, label: '1m' },
+  { months: 3, label: '3m' },
+  { months: 6, label: '6m' },
+  { months: 12, label: '1a' },
+];
+
+// Paleta pras linhas por conta (ordem = riqueza; cores seguras pra CVD).
+const CHAR_COLORS = ['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#56B4E9', '#D55E00'];
 
 // DD/MM pro eixo/tooltip a partir de YYYY-MM-DD (sem timezone shift).
 function shortDate(iso: string): string {
@@ -62,9 +75,16 @@ function MoverRow({ m }: { m: ItemMover }) {
   );
 }
 
+// Ponto do gráfico: chaves fixas + uma chave "c:<conta>" por conta no modo por conta.
+type ChartPoint = {
+  date: string; full: string;
+  total: number | null; dayPct: number | null; expected: number | null;
+} & Record<`c:${string}`, number | null>;
+
 export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartProps) {
   const [range, setRange] = useState<Range>('30d');
-  const [showProjection, setShowProjection] = useState(false);
+  const [byCharMode, setByCharMode] = useState(false);
+  const [futureMonths, setFutureMonths] = useState(0);
   const { characters, moneyMethods, hoursPerDay } = useAppState();
 
   const sorted = useMemo(
@@ -78,41 +98,58 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
     [characters, moneyMethods, hoursPerDay],
   );
 
+  // Preço vivo do bond (priceEngine já carregado pelo app). 0 = indisponível.
+  const bondPrice = priceOf(BOND_ID) || 0;
+
+  // Contas presentes no histórico, da mais rica pra mais pobre (no último dia).
+  const charNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const s of sorted) for (const n of Object.keys(s.byChar || {})) names.add(n);
+    const last = sorted[sorted.length - 1];
+    return [...names].sort((a, b) => (last?.byChar?.[b] || 0) - (last?.byChar?.[a] || 0));
+  }, [sorted]);
+
+  // Projeção futura só na visão total (a linha esperada é do bolo inteiro).
+  const projectionOn = futureMonths > 0 && rate.gpDay > 0 && !byCharMode;
+
   const data = useMemo(() => {
     const cfg = RANGES.find((r) => r.key === range)!;
     // dayPct calculado sobre a série inteira ANTES do recorte, pro 1º ponto
     // do range ainda ter a variação vs o dia anterior (fora do range).
-    const withPct = sorted.map((s, i) => {
+    const withPct: ChartPoint[] = sorted.map((s, i) => {
       const prev = i > 0 ? sorted[i - 1] : null;
       const dayPct = prev && prev.total > 0 ? ((s.total - prev.total) / prev.total) * 100 : null;
-      return { date: shortDate(s.date), total: s.total, full: s.date, dayPct, expected: null as number | null };
+      const p = { date: shortDate(s.date), full: s.date, total: s.total, dayPct, expected: null } as ChartPoint;
+      for (const n of charNames) p[`c:${n}`] = s.byChar?.[n] ?? null;
+      return p;
     });
     const pick = cfg.days == null ? withPct : withPct.slice(-cfg.days);
-    // Linha esperada: âncora no 1º ponto visível, cresce rate.gpDay por dia.
-    if (showProjection && rate.gpDay > 0 && pick.length >= 2) {
-      const anchor = pick[0];
-      for (const p of pick) p.expected = anchor.total + rate.gpDay * daysBetween(anchor.full, p.full);
+
+    // Futuro: linha esperada emenda no ÚLTIMO ponto real e segue N meses,
+    // crescendo gpDay/dia e deduzindo o bond de cada conta no vencimento.
+    if (projectionOn && pick.length) {
+      const anchor = pick[pick.length - 1];
+      anchor.expected = anchor.total;
+      const horizon = futureMonths * 30;
+      const purchases = bondSchedule(characters, addDays(anchor.full, 1), addDays(anchor.full, horizon));
+      let bondCost = 0;
+      let pi = 0;
+      for (let i = 1; i <= horizon; i++) {
+        const full = addDays(anchor.full, i);
+        while (pi < purchases.length && purchases[pi].date <= full) { bondCost += bondPrice; pi++; }
+        pick.push({
+          date: shortDate(full), full, total: null, dayPct: null,
+          expected: (anchor.total || 0) + rate.gpDay * i - bondCost,
+        } as ChartPoint);
+      }
     }
     return pick;
-  }, [sorted, range, showProjection, rate]);
-
-  // Régua expected vs reality do range visível.
-  const projStats = useMemo(() => {
-    if (!showProjection || rate.gpDay <= 0 || data.length < 2) return null;
-    const first = data[0], last = data[data.length - 1];
-    const realGain = last.total - first.total;
-    const expectedGain = (last.expected ?? first.total) - first.total;
-    if (expectedGain <= 0) return null;
-    const efficiency = (realGain / expectedGain) * 100;
-    const farmedHours = rate.gpHour > 0 ? realGain / rate.gpHour : 0;
-    const plannedHours = rate.gpHour > 0 ? expectedGain / rate.gpHour : 0;
-    return { realGain, expectedGain, efficiency, farmedHours, plannedHours };
-  }, [showProjection, rate, data]);
+  }, [sorted, range, charNames, projectionOn, futureMonths, rate, characters, bondPrice]);
 
   const latest = sorted[sorted.length - 1];
-  const first = data[0];
-  const delta = latest && first ? latest.total - first.total : 0;
-  const deltaPct = first && first.total > 0 ? (delta / first.total) * 100 : 0;
+  const firstReal = data.find((p) => p.total != null);
+  const delta = latest && firstReal ? latest.total - (firstReal.total || 0) : 0;
+  const deltaPct = firstReal && (firstReal.total || 0) > 0 ? (delta / (firstReal.total || 1)) * 100 : 0;
   const deltaUp = delta >= 0;
 
   // Variação vs o último dia gravado (independente do range selecionado).
@@ -120,6 +157,35 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
   const dayDelta = latest && prevDay ? latest.total - prevDay.total : 0;
   const dayDeltaPct = prevDay && prevDay.total > 0 ? (dayDelta / prevDay.total) * 100 : 0;
   const dayUp = dayDelta >= 0;
+
+  // Régua expected vs reality do passado visível: o que o ritmo previa vs o que rolou.
+  const projStats = useMemo(() => {
+    if (futureMonths <= 0 || rate.gpDay <= 0 || byCharMode) return null;
+    const past = data.filter((p) => p.total != null);
+    if (past.length < 2) return null;
+    const first = past[0], last = past[past.length - 1];
+    const days = daysBetween(first.full, last.full);
+    const expectedGain = rate.gpDay * days;
+    if (expectedGain <= 0) return null;
+    const realGain = (last.total || 0) - (first.total || 0);
+    const efficiency = (realGain / expectedGain) * 100;
+    const farmedHours = rate.gpHour > 0 ? realGain / rate.gpHour : 0;
+    const plannedHours = rate.gpHour > 0 ? expectedGain / rate.gpHour : 0;
+    return { realGain, expectedGain, efficiency, farmedHours, plannedHours };
+  }, [futureMonths, rate, byCharMode, data]);
+
+  // Bonds: vencimentos e próximas compras (independe da projeção estar ligada).
+  const bonds = useMemo(() => {
+    const withBond = characters.filter((c) => c.bondExpiresAt);
+    if (!withBond.length) return null;
+    const today = todayKey();
+    const horizon = addDays(today, Math.max(futureMonths, 3) * 30);
+    const list = bondSchedule(characters, today, horizon).slice(0, 8);
+    const expiring = withBond
+      .map((c) => ({ char: c.name, days: Math.ceil(daysBetween(today, c.bondExpiresAt!)) }))
+      .sort((a, b) => a.days - b.days);
+    return { list, expiring };
+  }, [characters, futureMonths]);
 
   // "O que mudou": diff dos 2 últimos snapshots. Prefere item POR CONTA;
   // cai pra item agregado (snapshots antigos); por fim só o total por conta.
@@ -137,6 +203,11 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
     return chars.length ? { kind: 'char' as const, prev, curr, chars } : null;
   }, [sorted]);
 
+  const toggleCls = (on: boolean) =>
+    `rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+      on ? 'border-cyan-500 bg-cyan-500/15 text-cyan-600' : 'border-border bg-transparent text-muted-foreground hover:bg-accent'
+    }`;
+
   return (
     <Card>
       <CardHeader>
@@ -145,7 +216,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
             <LineChart className="h-5 w-5 text-cyan-500" />
             Histórico da riqueza
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex rounded-md border border-border overflow-hidden">
               {RANGES.map((r) => (
                 <button
@@ -161,18 +232,35 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                 </button>
               ))}
             </div>
-            {rate.gpDay > 0 && (
-              <button
-                onClick={() => setShowProjection((v) => !v)}
-                title={`Linha do ganho esperado: métodos ativos × horas planejadas (${formatGoldValue(rate.gpDay)}/dia)`}
-                className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
-                  showProjection
-                    ? 'border-amber-500 bg-amber-500/15 text-amber-600'
-                    : 'border-border bg-transparent text-muted-foreground hover:bg-accent'
-                }`}
+            <button
+              onClick={() => setByCharMode((v) => !v)}
+              title="Uma linha por conta em vez do total"
+              className={toggleCls(byCharMode)}
+            >
+              Por conta
+            </button>
+            {rate.gpDay > 0 && !byCharMode && (
+              <div
+                className="flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5"
+                title={`Projeção de hoje pro futuro: métodos ativos × horas planejadas (${formatGoldValue(rate.gpDay)}/dia), deduzindo bonds no vencimento`}
               >
-                Projeção
-              </button>
+                <span className="text-xs text-muted-foreground">Projeção</span>
+                <div className="flex overflow-hidden rounded">
+                  {FUTURES.map((f) => (
+                    <button
+                      key={f.months}
+                      onClick={() => setFutureMonths(f.months)}
+                      className={`px-1.5 py-0.5 text-xs font-medium transition-colors ${
+                        futureMonths === f.months
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-transparent text-muted-foreground hover:bg-accent'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
             <Button size="sm" variant="outline" onClick={onSnapshot} title="Grava um ponto no histórico com o valor atual">
               Salvar snapshot
@@ -206,6 +294,18 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                 </span>
               )}
             </div>
+
+            {byCharMode && (
+              <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                {charNames.map((n, i) => (
+                  <span key={n} className="flex items-center gap-1.5">
+                    <span className="inline-block h-2 w-2 rounded-full" style={{ background: CHAR_COLORS[i % CHAR_COLORS.length] }} />
+                    {n}
+                  </span>
+                ))}
+              </div>
+            )}
+
             <div style={{ width: '100%', height: 240 }}>
               <ResponsiveContainer>
                 <ComposedChart data={data} margin={{ left: 8, right: 12, top: 4, bottom: 4 }}>
@@ -229,6 +329,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                   <Tooltip
                     formatter={(v: number, name: string, entry: { payload?: { dayPct?: number | null } }) => {
                       if (name === 'expected') return [`${Math.round(v).toLocaleString()} gp`, 'Esperado'];
+                      if (name.startsWith('c:')) return [`${v.toLocaleString()} gp`, name.slice(2)];
                       const pct = entry?.payload?.dayPct;
                       const suffix = pct == null ? '' : `  (${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% vs dia anterior)`;
                       return [`${v.toLocaleString()} gp${suffix}`, 'Total'];
@@ -236,8 +337,23 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     labelFormatter={(l) => `Dia ${l}`}
                     contentStyle={{ fontSize: 12, borderRadius: 8 }}
                   />
-                  <Area type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} fill="url(#wealthFill)" dot={{ r: 3, fill: '#06b6d4', strokeWidth: 0 }} />
-                  {showProjection && (
+                  {byCharMode ? (
+                    charNames.map((n, i) => (
+                      <Line
+                        key={n}
+                        type="monotone"
+                        dataKey={`c:${n}`}
+                        stroke={CHAR_COLORS[i % CHAR_COLORS.length]}
+                        strokeWidth={2}
+                        dot={{ r: 2, fill: CHAR_COLORS[i % CHAR_COLORS.length], strokeWidth: 0 }}
+                        isAnimationActive={false}
+                        connectNulls
+                      />
+                    ))
+                  ) : (
+                    <Area type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} fill="url(#wealthFill)" dot={{ r: 3, fill: '#06b6d4', strokeWidth: 0 }} />
+                  )}
+                  {projectionOn && (
                     <Line type="monotone" dataKey="expected" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" dot={false} isAnimationActive={false} />
                   )}
                 </ComposedChart>
@@ -251,6 +367,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     {projStats.realGain >= 0 ? '+' : '−'}{formatGoldValue(Math.abs(projStats.realGain))}
                   </b>
                   {' '}vs esperado <b className="text-amber-600">+{formatGoldValue(projStats.expectedGain)}</b>
+                  <span className="ml-1">no período</span>
                 </span>
                 <span>
                   Eficiência <b className={projStats.efficiency >= 100 ? 'text-green-600' : projStats.efficiency >= 50 ? 'text-amber-600' : 'text-red-500'}>
@@ -260,6 +377,47 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                 <span title="Ganho real dividido pelos gp/h dos métodos ativos — quantas horas de farm o período rendeu de fato">
                   ≈ <b>{projStats.farmedHours.toFixed(1)}h</b> farmadas de {projStats.plannedHours.toFixed(0)}h planejadas
                 </span>
+              </div>
+            )}
+
+            {bonds && (
+              <div className="mt-5 border-t border-border pt-4">
+                <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                  <h4 className="text-sm font-semibold">Bonds</h4>
+                  <span className="text-xs text-muted-foreground">
+                    {bondPrice > 0 ? `bond hoje: ${formatGoldValue(bondPrice)}` : 'preço do bond indisponível'}
+                  </span>
+                </div>
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {bonds.expiring.map((e) => {
+                    const cls = e.days <= 3 ? 'bg-red-500/15 text-red-600' : e.days <= 7 ? 'bg-amber-500/15 text-amber-600' : 'bg-green-500/15 text-green-600';
+                    return (
+                      <span key={e.char} className={`rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+                        {e.char}: {e.days <= 0 ? 'bond VENCIDO' : `vence em ${e.days}d`}
+                      </span>
+                    );
+                  })}
+                </div>
+                <ul className="space-y-1">
+                  {(() => {
+                    let acc = 0;
+                    return bonds.list.map((p, i) => {
+                      acc += bondPrice;
+                      return (
+                        <li key={`${p.date}-${p.char}`} className="flex items-center gap-2 text-sm">
+                          <span className="w-12 shrink-0 tabular-nums text-xs text-muted-foreground">{shortDate(p.date)}</span>
+                          <span className="flex-1 truncate">{p.char}</span>
+                          <span className="shrink-0 tabular-nums font-medium text-red-500">
+                            −{bondPrice > 0 ? formatGoldValue(bondPrice) : '?'}
+                          </span>
+                          <span className="shrink-0 w-20 text-right tabular-nums text-xs text-muted-foreground" title="Custo acumulado de bonds até aqui">
+                            {bondPrice > 0 ? formatGoldValue(acc) : '—'}
+                          </span>
+                        </li>
+                      );
+                    });
+                  })()}
+                </ul>
               </div>
             )}
 

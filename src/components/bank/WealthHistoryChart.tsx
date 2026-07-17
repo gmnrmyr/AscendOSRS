@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { LineChart } from 'lucide-react';
 import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { formatGoldValue } from '@/lib/utils';
-import { diffItems, diffItemsByChar, diffChars, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
+import { moversAt, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
 import { projectionRate, daysBetween, addDays, todayKey, bondSchedule, BOND_ID } from '@/services/projection';
 import { priceOf } from '@/services/priceEngine';
 import { useAppState } from '@/components/AppStateProvider';
@@ -187,21 +187,21 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
     return { list, expiring };
   }, [characters, futureMonths]);
 
-  // "O que mudou": diff dos 2 últimos snapshots. Prefere item POR CONTA;
-  // cai pra item agregado (snapshots antigos); por fim só o total por conta.
+  // "O que mudou" NAVEGÁVEL: offset 0 = os 2 últimos dias; as setinhas andam
+  // dia a dia pro passado. O fallback de detalhe (itemsByChar -> items ->
+  // byChar) é por PAR, então dias antigos degradam sozinhos pro formato legado.
+  const [moverOffsetRaw, setMoverOffset] = useState(0);
+  const maxMoverOffset = Math.max(0, sorted.length - 2);
+  // Clampado aqui (e não só no moversAt) pra setinha não "andar no vazio"
+  // se o histórico encolher com um offset antigo guardado no estado.
+  const moverOffset = Math.min(moverOffsetRaw, maxMoverOffset);
   const movers = useMemo(() => {
-    if (sorted.length < 2) return null;
-    const prev = sorted[sorted.length - 2];
-    const curr = sorted[sorted.length - 1];
-    const byChar = diffItemsByChar(prev, curr);
-    if (byChar?.length) {
-      return { kind: 'byChar' as const, prev, curr, groups: byChar.map((g) => ({ ...g, movers: g.movers.slice(0, 4) })) };
-    }
-    const items = diffItems(prev, curr).slice(0, 6);
-    if (items.length) return { kind: 'item' as const, prev, curr, items };
-    const chars = diffChars(prev, curr).slice(0, 6);
-    return chars.length ? { kind: 'char' as const, prev, curr, chars } : null;
-  }, [sorted]);
+    const r = moversAt(sorted, moverOffset);
+    if (!r) return null;
+    if (r.kind === 'byChar') return { ...r, groups: r.groups.map((g) => ({ ...g, movers: g.movers.slice(0, 4) })) };
+    if (r.kind === 'item') return { ...r, items: r.items.slice(0, 6) };
+    return { ...r, chars: r.chars.slice(0, 6) };
+  }, [sorted, moverOffset]);
 
   const toggleCls = (on: boolean) =>
     `rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
@@ -423,12 +423,39 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
 
             {movers && (
               <div className="mt-5 border-t border-border pt-4">
-                <div className="mb-2 flex items-baseline justify-between gap-2">
+                <div className="mb-2 flex items-center justify-between gap-2">
                   <h4 className="text-sm font-semibold">O que mudou</h4>
-                  <span className="text-xs text-muted-foreground">
-                    {shortDate(movers.prev.date)} → {shortDate(movers.curr.date)}
-                    {movers.kind === 'char' && ' · por conta'}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setMoverOffset(Math.min(moverOffset + 1, maxMoverOffset))}
+                      disabled={moverOffset >= maxMoverOffset}
+                      title="Par de dias anterior"
+                      className="rounded border border-border px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      ←
+                    </button>
+                    <span className="min-w-[7.5rem] text-center text-xs tabular-nums text-muted-foreground">
+                      {shortDate(movers.prev.date)} → {shortDate(movers.curr.date)}
+                      {movers.kind === 'char' && ' · por conta'}
+                    </span>
+                    <button
+                      onClick={() => setMoverOffset(Math.max(moverOffset - 1, 0))}
+                      disabled={moverOffset === 0}
+                      title="Par de dias seguinte"
+                      className="rounded border border-border px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent disabled:opacity-30 disabled:hover:bg-transparent"
+                    >
+                      →
+                    </button>
+                    {moverOffset > 0 && (
+                      <button
+                        onClick={() => setMoverOffset(0)}
+                        title="Voltar pro par mais recente"
+                        className="rounded border border-border px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent"
+                      >
+                        hoje
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {movers.kind === 'byChar' ? (

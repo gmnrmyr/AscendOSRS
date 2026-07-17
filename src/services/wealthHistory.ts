@@ -183,6 +183,30 @@ export function diffItemsByChar(prev: WealthSnapshot, curr: WealthSnapshot): Cha
 
 export interface CharMover { name: string; prev: number; curr: number; delta: number; deltaPct: number; }
 
+// Resultado do "o que mudou" pra um par de dias: o melhor detalhe disponível.
+export type MoversResult =
+  | { kind: 'byChar'; prev: WealthSnapshot; curr: WealthSnapshot; groups: CharItemMovers[] }
+  | { kind: 'item'; prev: WealthSnapshot; curr: WealthSnapshot; items: ItemMover[] }
+  | { kind: 'char'; prev: WealthSnapshot; curr: WealthSnapshot; chars: CharMover[] }
+  | null;
+
+// Diff do par de snapshots `offset` passos atrás do fim (0 = os 2 últimos,
+// 1 = penúltimo vs antepenúltimo...). Offset fora do range é clampado.
+// Cadeia de fallback por par: item POR CONTA (só snapshots novos) -> item
+// agregado (cobre os legados com `items`) -> total por conta (sempre existe).
+export function moversAt(sorted: WealthSnapshot[], offset: number): MoversResult {
+  if (sorted.length < 2) return null;
+  const clamped = Math.min(Math.max(offset, 0), sorted.length - 2);
+  const i = sorted.length - 1 - clamped;
+  const prev = sorted[i - 1], curr = sorted[i];
+  const byChar = diffItemsByChar(prev, curr);
+  if (byChar?.length) return { kind: 'byChar', prev, curr, groups: byChar };
+  const items = diffItems(prev, curr);
+  if (items.length) return { kind: 'item', prev, curr, items };
+  const chars = diffChars(prev, curr);
+  return chars.length ? { kind: 'char', prev, curr, chars } : null;
+}
+
 // Fallback nível conta (sempre disponível: byChar existe em todo snapshot).
 export function diffChars(prev: WealthSnapshot, curr: WealthSnapshot): CharMover[] {
   const names = new Set([...Object.keys(prev.byChar || {}), ...Object.keys(curr.byChar || {})]);

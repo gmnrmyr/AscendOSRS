@@ -261,6 +261,32 @@ export function CharacterManager({ characters, setCharacters }: CharacterManager
               </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div title="Horas/dia planejadas nesta conta — usada na projeção do histórico. Vazio = usa a global.">
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">Horas/dia (proj.)</Label>
+                  <Input
+                    type="number"
+                    value={character.hoursPerDay ?? ''}
+                    placeholder="global"
+                    onChange={(e) => updateCharacter(character.id, 'hoursPerDay', e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)))}
+                    className="h-8 text-sm"
+                    min="0"
+                    max="24"
+                    step="0.5"
+                  />
+                </div>
+
+                <div title="Fim do bond desta conta — alimenta a timeline de bonds e a projeção futura. Vazio = F2P / não precisa de bond.">
+                  <Label className="text-xs text-muted-foreground dark:text-muted-foreground">Bond até</Label>
+                  <Input
+                    type="date"
+                    value={character.bondExpiresAt ?? ''}
+                    onChange={(e) => updateCharacter(character.id, 'bondExpiresAt', e.target.value || undefined)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+
               {character.notes && (
                 <div>
                   <Label className="text-xs text-muted-foreground dark:text-muted-foreground">Notes</Label>

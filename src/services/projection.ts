@@ -81,3 +81,36 @@ export function bondSchedule(
   }
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.char.localeCompare(b.char));
 }
+
+export interface ProjectedPoint {
+  full: string;        // YYYY-MM-DD do dia projetado
+  expected: number;    // riqueza esperada acumulada (já descontando bonds)
+  bondChars: string[]; // quem compra bond NESTE dia (vazio na maioria) — marcador do gráfico
+}
+
+// Série futura dia a dia a partir da âncora (último ponto real do gráfico):
+// cresce gpDay/dia e deduz bondPrice em cada compra do cronograma. `purchases`
+// deve vir do bondSchedule já ordenado e recortado pro horizonte.
+export function projectedSeries(
+  anchorDate: string,
+  anchorTotal: number,
+  horizonDays: number,
+  gpDay: number,
+  purchases: BondPurchase[],
+  bondPrice: number,
+): ProjectedPoint[] {
+  const out: ProjectedPoint[] = [];
+  let bondCost = 0;
+  let pi = 0;
+  for (let i = 1; i <= horizonDays; i++) {
+    const full = addDays(anchorDate, i);
+    const bondChars: string[] = [];
+    while (pi < purchases.length && purchases[pi].date <= full) {
+      bondCost += bondPrice;
+      bondChars.push(purchases[pi].char);
+      pi++;
+    }
+    out.push({ full, expected: anchorTotal + gpDay * i - bondCost, bondChars });
+  }
+  return out;
+}

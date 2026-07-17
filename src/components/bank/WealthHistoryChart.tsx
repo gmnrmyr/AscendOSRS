@@ -5,7 +5,7 @@ import { LineChart } from 'lucide-react';
 import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { formatGoldValue } from '@/lib/utils';
 import { moversAt, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
-import { projectionRate, daysBetween, addDays, todayKey, bondSchedule, BOND_ID } from '@/services/projection';
+import { projectionRate, projectedSeries, daysBetween, addDays, todayKey, bondSchedule, BOND_ID } from '@/services/projection';
 import { priceOf } from '@/services/priceEngine';
 import { useAppState } from '@/components/AppStateProvider';
 
@@ -76,9 +76,12 @@ function MoverRow({ m }: { m: ItemMover }) {
 }
 
 // Ponto do gráfico: chaves fixas + uma chave "c:<conta>" por conta no modo por conta.
+// `bond` só existe (não-null) nos dias FUTUROS com compra de bond: é o y da
+// linha esperada naquele dia, e vira o marcador vermelho; `bondChars` diz quem.
 type ChartPoint = {
   date: string; full: string;
   total: number | null; dayPct: number | null; expected: number | null;
+  bond: number | null; bondChars?: string[];
 } & Record<`c:${string}`, number | null>;
 
 export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartProps) {
@@ -119,7 +122,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
     const withPct: ChartPoint[] = sorted.map((s, i) => {
       const prev = i > 0 ? sorted[i - 1] : null;
       const dayPct = prev && prev.total > 0 ? ((s.total - prev.total) / prev.total) * 100 : null;
-      const p = { date: shortDate(s.date), full: s.date, total: s.total, dayPct, expected: null } as ChartPoint;
+      const p = { date: shortDate(s.date), full: s.date, total: s.total, dayPct, expected: null, bond: null } as ChartPoint;
       for (const n of charNames) p[`c:${n}`] = s.byChar?.[n] ?? null;
       return p;
     });
@@ -132,14 +135,12 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
       anchor.expected = anchor.total;
       const horizon = futureMonths * 30;
       const purchases = bondSchedule(characters, addDays(anchor.full, 1), addDays(anchor.full, horizon));
-      let bondCost = 0;
-      let pi = 0;
-      for (let i = 1; i <= horizon; i++) {
-        const full = addDays(anchor.full, i);
-        while (pi < purchases.length && purchases[pi].date <= full) { bondCost += bondPrice; pi++; }
+      for (const fp of projectedSeries(anchor.full, anchor.total || 0, horizon, rate.gpDay, purchases, bondPrice)) {
         pick.push({
-          date: shortDate(full), full, total: null, dayPct: null,
-          expected: (anchor.total || 0) + rate.gpDay * i - bondCost,
+          date: shortDate(fp.full), full: fp.full, total: null, dayPct: null,
+          expected: fp.expected,
+          bond: fp.bondChars.length ? fp.expected : null,
+          bondChars: fp.bondChars,
         } as ChartPoint);
       }
     }
@@ -327,8 +328,13 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     domain={['dataMin', 'dataMax']}
                   />
                   <Tooltip
-                    formatter={(v: number, name: string, entry: { payload?: { dayPct?: number | null } }) => {
+                    formatter={(v: number, name: string, entry: { payload?: { dayPct?: number | null; bondChars?: string[] } }) => {
                       if (name === 'expected') return [`${Math.round(v).toLocaleString()} gp`, 'Esperado'];
+                      if (name === 'bond') {
+                        const chars = entry?.payload?.bondChars || [];
+                        const cost = bondPrice > 0 ? formatGoldValue(bondPrice * Math.max(chars.length, 1)) : '?';
+                        return [`−${cost} (${chars.join(', ') || 'bond'})`, 'Bond'];
+                      }
                       if (name.startsWith('c:')) return [`${v.toLocaleString()} gp`, name.slice(2)];
                       const pct = entry?.payload?.dayPct;
                       const suffix = pct == null ? '' : `  (${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% vs dia anterior)`;
@@ -355,6 +361,20 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                   )}
                   {projectionOn && (
                     <Line type="monotone" dataKey="expected" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" dot={false} isAnimationActive={false} />
+                  )}
+                  {projectionOn && (
+                    // Marcadores de compra de bond: Line invisível só com dots em
+                    // cima da linha esperada (integra com o Tooltip; ReferenceDot
+                    // erraria o dia com DD/MM repetido no eixo categórico).
+                    <Line
+                      type="monotone"
+                      dataKey="bond"
+                      stroke="none"
+                      dot={{ r: 4.5, fill: '#ef4444', strokeWidth: 0 }}
+                      activeDot={{ r: 6, fill: '#ef4444', strokeWidth: 0 }}
+                      isAnimationActive={false}
+                      legendType="none"
+                    />
                   )}
                 </ComposedChart>
               </ResponsiveContainer>

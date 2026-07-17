@@ -24,6 +24,7 @@ interface Character {
   notes: string;
   isActive: boolean;
   platTokens?: number;
+  hoursPerDay?: number; // horas/dia planejadas DESTA conta; ausente = usa a global
 }
 
 interface MoneyMethod {

@@ -2,9 +2,11 @@ import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LineChart } from 'lucide-react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { formatGoldValue } from '@/lib/utils';
 import { diffItems, diffItemsByChar, diffChars, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
+import { projectionRate, daysBetween } from '@/services/projection';
+import { useAppState } from '@/components/AppStateProvider';
 
 interface WealthHistoryChartProps {
   history: WealthSnapshot[];
@@ -62,10 +64,18 @@ function MoverRow({ m }: { m: ItemMover }) {
 
 export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartProps) {
   const [range, setRange] = useState<Range>('30d');
+  const [showProjection, setShowProjection] = useState(false);
+  const { characters, moneyMethods, hoursPerDay } = useAppState();
 
   const sorted = useMemo(
     () => [...(history || [])].sort((a, b) => a.date.localeCompare(b.date)),
     [history],
+  );
+
+  // Ritmo esperado (gp/dia) dos métodos ativos nas horas planejadas.
+  const rate = useMemo(
+    () => projectionRate(characters, moneyMethods, hoursPerDay),
+    [characters, moneyMethods, hoursPerDay],
   );
 
   const data = useMemo(() => {
@@ -75,10 +85,29 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
     const withPct = sorted.map((s, i) => {
       const prev = i > 0 ? sorted[i - 1] : null;
       const dayPct = prev && prev.total > 0 ? ((s.total - prev.total) / prev.total) * 100 : null;
-      return { date: shortDate(s.date), total: s.total, full: s.date, dayPct };
+      return { date: shortDate(s.date), total: s.total, full: s.date, dayPct, expected: null as number | null };
     });
-    return cfg.days == null ? withPct : withPct.slice(-cfg.days);
-  }, [sorted, range]);
+    const pick = cfg.days == null ? withPct : withPct.slice(-cfg.days);
+    // Linha esperada: âncora no 1º ponto visível, cresce rate.gpDay por dia.
+    if (showProjection && rate.gpDay > 0 && pick.length >= 2) {
+      const anchor = pick[0];
+      for (const p of pick) p.expected = anchor.total + rate.gpDay * daysBetween(anchor.full, p.full);
+    }
+    return pick;
+  }, [sorted, range, showProjection, rate]);
+
+  // Régua expected vs reality do range visível.
+  const projStats = useMemo(() => {
+    if (!showProjection || rate.gpDay <= 0 || data.length < 2) return null;
+    const first = data[0], last = data[data.length - 1];
+    const realGain = last.total - first.total;
+    const expectedGain = (last.expected ?? first.total) - first.total;
+    if (expectedGain <= 0) return null;
+    const efficiency = (realGain / expectedGain) * 100;
+    const farmedHours = rate.gpHour > 0 ? realGain / rate.gpHour : 0;
+    const plannedHours = rate.gpHour > 0 ? expectedGain / rate.gpHour : 0;
+    return { realGain, expectedGain, efficiency, farmedHours, plannedHours };
+  }, [showProjection, rate, data]);
 
   const latest = sorted[sorted.length - 1];
   const first = data[0];
@@ -132,6 +161,19 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                 </button>
               ))}
             </div>
+            {rate.gpDay > 0 && (
+              <button
+                onClick={() => setShowProjection((v) => !v)}
+                title={`Linha do ganho esperado: métodos ativos × horas planejadas (${formatGoldValue(rate.gpDay)}/dia)`}
+                className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  showProjection
+                    ? 'border-amber-500 bg-amber-500/15 text-amber-600'
+                    : 'border-border bg-transparent text-muted-foreground hover:bg-accent'
+                }`}
+              >
+                Projeção
+              </button>
+            )}
             <Button size="sm" variant="outline" onClick={onSnapshot} title="Grava um ponto no histórico com o valor atual">
               Salvar snapshot
             </Button>
@@ -166,7 +208,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
             </div>
             <div style={{ width: '100%', height: 240 }}>
               <ResponsiveContainer>
-                <AreaChart data={data} margin={{ left: 8, right: 12, top: 4, bottom: 4 }}>
+                <ComposedChart data={data} margin={{ left: 8, right: 12, top: 4, bottom: 4 }}>
                   <defs>
                     <linearGradient id="wealthFill" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.35} />
@@ -185,7 +227,8 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     domain={['dataMin', 'dataMax']}
                   />
                   <Tooltip
-                    formatter={(v: number, _name, entry: { payload?: { dayPct?: number | null } }) => {
+                    formatter={(v: number, name: string, entry: { payload?: { dayPct?: number | null } }) => {
+                      if (name === 'expected') return [`${Math.round(v).toLocaleString()} gp`, 'Esperado'];
                       const pct = entry?.payload?.dayPct;
                       const suffix = pct == null ? '' : `  (${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% vs dia anterior)`;
                       return [`${v.toLocaleString()} gp${suffix}`, 'Total'];
@@ -194,10 +237,31 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     contentStyle={{ fontSize: 12, borderRadius: 8 }}
                   />
                   <Area type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} fill="url(#wealthFill)" dot={{ r: 3, fill: '#06b6d4', strokeWidth: 0 }} />
-
-                </AreaChart>
+                  {showProjection && (
+                    <Line type="monotone" dataKey="expected" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" dot={false} isAnimationActive={false} />
+                  )}
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
+
+            {projStats && (
+              <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span>
+                  Real <b className={projStats.realGain >= 0 ? 'text-green-600' : 'text-red-500'}>
+                    {projStats.realGain >= 0 ? '+' : '−'}{formatGoldValue(Math.abs(projStats.realGain))}
+                  </b>
+                  {' '}vs esperado <b className="text-amber-600">+{formatGoldValue(projStats.expectedGain)}</b>
+                </span>
+                <span>
+                  Eficiência <b className={projStats.efficiency >= 100 ? 'text-green-600' : projStats.efficiency >= 50 ? 'text-amber-600' : 'text-red-500'}>
+                    {projStats.efficiency.toFixed(0)}%
+                  </b>
+                </span>
+                <span title="Ganho real dividido pelos gp/h dos métodos ativos — quantas horas de farm o período rendeu de fato">
+                  ≈ <b>{projStats.farmedHours.toFixed(1)}h</b> farmadas de {projStats.plannedHours.toFixed(0)}h planejadas
+                </span>
+              </div>
+            )}
 
             {movers && (
               <div className="mt-5 border-t border-border pt-4">

@@ -2,8 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Sword, TrendingUp, Coins, Crown } from "lucide-react";
+import { Trash2, Sword, TrendingUp, Coins, Crown, Clock } from "lucide-react";
 import { CharacterRefreshButton } from "@/components/CharacterRefreshButton";
+import { useAppState } from "@/components/AppStateProvider";
 
 interface CharacterCardProps {
   character: any;
@@ -12,6 +13,15 @@ interface CharacterCardProps {
 }
 
 export function CharacterCard({ character, onDelete, onUpdate }: CharacterCardProps) {
+  const { hoursPerDay: globalHours } = useAppState();
+
+  // Horas/dia planejadas desta conta (alimenta a projeção do histórico).
+  // Vazio = usa a global; guarda só quando difere pra não poluir o save.
+  const setHours = (raw: string) => {
+    const v = raw === '' ? undefined : Math.max(0, parseFloat(raw) || 0);
+    onUpdate({ ...character, hoursPerDay: v });
+  };
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'main': return "bg-blue-100 text-blue-800";
@@ -86,6 +96,24 @@ export function CharacterCard({ character, onDelete, onUpdate }: CharacterCardPr
           
           <div className="text-sm font-semibold text-green-600">
             Total Wealth: {totalWealth.toLocaleString()} GP
+          </div>
+
+          <div className="flex items-center gap-2 text-sm" title="Horas/dia planejadas nesta conta — usada na projeção do histórico. Vazio = usa a global.">
+            <Clock className="h-4 w-4 text-cyan-600" />
+            <span>Horas/dia:</span>
+            <input
+              type="number"
+              min="0"
+              max="24"
+              step="0.5"
+              value={character.hoursPerDay ?? ''}
+              placeholder={String(globalHours)}
+              onChange={(e) => setHours(e.target.value)}
+              className="w-16 rounded border border-border bg-transparent px-1.5 py-0.5 text-sm"
+            />
+            {character.hoursPerDay == null && (
+              <span className="text-xs text-muted-foreground">(global)</span>
+            )}
           </div>
         </div>
 

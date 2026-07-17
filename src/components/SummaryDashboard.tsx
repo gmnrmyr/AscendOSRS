@@ -1,5 +1,6 @@
 import { SummaryCards } from "./summary/SummaryCards";
 import { ProgressCard } from "./summary/ProgressCard";
+import { GameUpdatesCard } from "./summary/GameUpdatesCard";
 import { Button } from "@/components/ui/button";
 import { DollarSign, Users, Target, Star, Scroll, Swords, Trophy } from "lucide-react";
 import { availableGold, mainAccount } from "@/services/gold";
@@ -380,6 +381,9 @@ export function SummaryDashboard({
           <p className="osrs-muted text-center py-6">No purchase goals added yet</p>
         )}
       </div>
+
+      {/* Game updates recentes (news oficial; some sozinho se offline) */}
+      <GameUpdatesCard />
     </div>
   );
 }

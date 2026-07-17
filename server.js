@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execFile } from 'child_process';
+import { parseNewsRss } from './newsRss.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -244,6 +245,32 @@ app.get('/api/mmg', async (req, res) => {
     // serve cache velho se tiver (melhor stale que nada)
     if (mmgCache.data) return res.status(200).json(mmgCache.data);
     res.status(500).json({ error: 'Failed to fetch money making guide' });
+  }
+});
+
+// ============================================================
+//  Game updates do OSRS (F3): news RSS oficial da Jagex -> data, título,
+//  resumo de 1 linha, categoria e link. Cache 10 min; se a fonte falhar,
+//  serve o cache velho (melhor stale que nada) — parse em newsRss.mjs.
+// ============================================================
+const NEWS_RSS_URL = 'https://secure.runescape.com/m=news/latest_news.rss?oldschool=true';
+let newsCache = { at: 0, data: null };
+app.get('/api/game-updates', async (req, res) => {
+  try {
+    if (newsCache.data && Date.now() - newsCache.at < 10 * 60 * 1000) {
+      return res.status(200).json(newsCache.data);
+    }
+    const r = await fetch(NEWS_RSS_URL, { headers: { 'User-Agent': `${APP_NAME} (${CONTACT})` } });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    // o feed declara ISO-8859-1: decodifica como latin1 pra não mutilar acento
+    const xml = (await r.buffer()).toString('latin1');
+    const updates = parseNewsRss(xml);
+    newsCache = { at: Date.now(), data: { updatedAt: new Date().toISOString(), updates } };
+    res.status(200).json(newsCache.data);
+  } catch (err) {
+    console.error('Erro no /api/game-updates:', err);
+    if (newsCache.data) return res.status(200).json(newsCache.data);
+    res.status(500).json({ error: 'Failed to fetch game updates' });
   }
 });
 

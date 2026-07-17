@@ -70,8 +70,14 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
 
   const data = useMemo(() => {
     const cfg = RANGES.find((r) => r.key === range)!;
-    const pick = cfg.days == null ? sorted : sorted.slice(-cfg.days);
-    return pick.map((s) => ({ date: shortDate(s.date), total: s.total, full: s.date }));
+    // dayPct calculado sobre a série inteira ANTES do recorte, pro 1º ponto
+    // do range ainda ter a variação vs o dia anterior (fora do range).
+    const withPct = sorted.map((s, i) => {
+      const prev = i > 0 ? sorted[i - 1] : null;
+      const dayPct = prev && prev.total > 0 ? ((s.total - prev.total) / prev.total) * 100 : null;
+      return { date: shortDate(s.date), total: s.total, full: s.date, dayPct };
+    });
+    return cfg.days == null ? withPct : withPct.slice(-cfg.days);
   }, [sorted, range]);
 
   const latest = sorted[sorted.length - 1];
@@ -79,6 +85,12 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
   const delta = latest && first ? latest.total - first.total : 0;
   const deltaPct = first && first.total > 0 ? (delta / first.total) * 100 : 0;
   const deltaUp = delta >= 0;
+
+  // Variação vs o último dia gravado (independente do range selecionado).
+  const prevDay = sorted[sorted.length - 2];
+  const dayDelta = latest && prevDay ? latest.total - prevDay.total : 0;
+  const dayDeltaPct = prevDay && prevDay.total > 0 ? (dayDelta / prevDay.total) * 100 : 0;
+  const dayUp = dayDelta >= 0;
 
   // "O que mudou": diff dos 2 últimos snapshots. Prefere item POR CONTA;
   // cai pra item agregado (snapshots antigos); por fim só o total por conta.
@@ -140,9 +152,15 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                   1º ponto gravado — a tendência aparece a partir do 2º dia.
                 </span>
               ) : (
-                <span className={`pb-0.5 text-sm font-semibold ${deltaUp ? 'text-green-600' : 'text-red-500'}`}>
-                  {deltaUp ? '▲' : '▼'} {formatGoldValue(Math.abs(delta))} ({deltaPct.toFixed(1)}%)
-                  <span className="ml-1 font-normal text-muted-foreground">no período</span>
+                <span className="flex flex-wrap items-baseline gap-x-3 pb-0.5 text-sm">
+                  <span className={`font-semibold ${deltaUp ? 'text-green-600' : 'text-red-500'}`}>
+                    {deltaUp ? '▲' : '▼'} {formatGoldValue(Math.abs(delta))} ({deltaPct.toFixed(1)}%)
+                    <span className="ml-1 font-normal text-muted-foreground">no período</span>
+                  </span>
+                  <span className={`font-semibold ${dayUp ? 'text-green-600' : 'text-red-500'}`}>
+                    {dayUp ? '▲' : '▼'} {formatGoldValue(Math.abs(dayDelta))} ({dayDeltaPct.toFixed(1)}%)
+                    <span className="ml-1 font-normal text-muted-foreground">vs último dia</span>
+                  </span>
                 </span>
               )}
             </div>
@@ -167,7 +185,11 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     domain={['dataMin', 'dataMax']}
                   />
                   <Tooltip
-                    formatter={(v: number) => [`${v.toLocaleString()} gp`, 'Total']}
+                    formatter={(v: number, _name, entry: { payload?: { dayPct?: number | null } }) => {
+                      const pct = entry?.payload?.dayPct;
+                      const suffix = pct == null ? '' : `  (${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% vs dia anterior)`;
+                      return [`${v.toLocaleString()} gp${suffix}`, 'Total'];
+                    }}
                     labelFormatter={(l) => `Dia ${l}`}
                     contentStyle={{ fontSize: 12, borderRadius: 8 }}
                   />

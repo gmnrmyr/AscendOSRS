@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { LineChart } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { formatGoldValue } from '@/lib/utils';
-import { diffItems, diffChars, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
+import { diffItems, diffItemsByChar, diffChars, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
 
 interface WealthHistoryChartProps {
   history: WealthSnapshot[];
@@ -41,6 +41,25 @@ function moverTitle(m: ItemMover): string {
   return money + qty + unit;
 }
 
+// Linha de um item que se moveu (compartilhada entre a visão agregada e a por conta).
+function MoverRow({ m }: { m: ItemMover }) {
+  const up = m.deltaValue >= 0;
+  return (
+    <li className="flex items-center gap-2 text-sm cursor-help" title={moverTitle(m)}>
+      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${REASON[m.reason].cls}`}>
+        {REASON[m.reason].label}
+      </span>
+      <span className="flex-1 truncate">{m.name}</span>
+      <span className={`shrink-0 tabular-nums font-medium ${up ? 'text-green-600' : 'text-red-500'}`}>
+        {up ? '+' : '−'}{formatGoldValue(Math.abs(m.deltaValue))}
+      </span>
+      <span className="shrink-0 w-14 text-right tabular-nums text-xs text-muted-foreground">
+        {up ? '+' : '−'}{Math.abs(m.deltaPct).toFixed(1)}%
+      </span>
+    </li>
+  );
+}
+
 export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartProps) {
   const [range, setRange] = useState<Range>('30d');
 
@@ -61,11 +80,16 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
   const deltaPct = first && first.total > 0 ? (delta / first.total) * 100 : 0;
   const deltaUp = delta >= 0;
 
-  // "O que mudou": diff dos 2 últimos snapshots. Prefere item; cai pra conta.
+  // "O que mudou": diff dos 2 últimos snapshots. Prefere item POR CONTA;
+  // cai pra item agregado (snapshots antigos); por fim só o total por conta.
   const movers = useMemo(() => {
     if (sorted.length < 2) return null;
     const prev = sorted[sorted.length - 2];
     const curr = sorted[sorted.length - 1];
+    const byChar = diffItemsByChar(prev, curr);
+    if (byChar?.length) {
+      return { kind: 'byChar' as const, prev, curr, groups: byChar.map((g) => ({ ...g, movers: g.movers.slice(0, 4) })) };
+    }
     const items = diffItems(prev, curr).slice(0, 6);
     if (items.length) return { kind: 'item' as const, prev, curr, items };
     const chars = diffChars(prev, curr).slice(0, 6);
@@ -163,25 +187,28 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                   </span>
                 </div>
 
-                {movers.kind === 'item' ? (
-                  <ul className="space-y-1">
-                    {movers.items.map((m) => {
-                      const up = m.deltaValue >= 0;
+                {movers.kind === 'byChar' ? (
+                  <div className="space-y-3">
+                    {movers.groups.map((g) => {
+                      const up = g.delta >= 0;
                       return (
-                        <li key={m.name} className="flex items-center gap-2 text-sm cursor-help" title={moverTitle(m)}>
-                          <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${REASON[m.reason].cls}`}>
-                            {REASON[m.reason].label}
-                          </span>
-                          <span className="flex-1 truncate">{m.name}</span>
-                          <span className={`shrink-0 tabular-nums font-medium ${up ? 'text-green-600' : 'text-red-500'}`}>
-                            {up ? '+' : '−'}{formatGoldValue(Math.abs(m.deltaValue))}
-                          </span>
-                          <span className="shrink-0 w-14 text-right tabular-nums text-xs text-muted-foreground">
-                            {up ? '+' : '−'}{Math.abs(m.deltaPct).toFixed(1)}%
-                          </span>
-                        </li>
+                        <div key={g.char}>
+                          <div className="mb-1 flex items-center gap-2">
+                            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.char}</span>
+                            <span className={`text-xs tabular-nums font-semibold ${up ? 'text-green-600' : 'text-red-500'}`}>
+                              {up ? '+' : '−'}{formatGoldValue(Math.abs(g.delta))}
+                            </span>
+                          </div>
+                          <ul className="space-y-1">
+                            {g.movers.map((m) => <MoverRow key={m.name} m={m} />)}
+                          </ul>
+                        </div>
                       );
                     })}
+                  </div>
+                ) : movers.kind === 'item' ? (
+                  <ul className="space-y-1">
+                    {movers.items.map((m) => <MoverRow key={m.name} m={m} />)}
                   </ul>
                 ) : (
                   <ul className="space-y-1">

@@ -83,7 +83,7 @@ type ChartPoint = {
   date: string; full: string;
   total: number | null; dayPct: number | null; expected: number | null;
   bond: number | null; bondChars?: string[];
-  goals: number | null; goalPct: number | null;
+  goals: number | null; goalPct: number | null; goalsScaled: number | null;
 } & Record<`c:${string}`, number | null>;
 
 export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartProps) {
@@ -168,6 +168,15 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
           goalPct: goals && goals > 0 ? (fp.expected / goals) * 100 : null,
         } as ChartPoint);
       }
+    }
+
+    // A linha dos goals é desenhada REBASEADA na escala do banco (ancorada no
+    // 1º ponto visível): mesma variação % = linhas paralelas, dá pra comparar
+    // o formato das curvas. O custo REAL fica no hover e no selo.
+    if (goalsOn) {
+      const anchor = pick.find((p) => p.total != null && p.goals != null && p.goals > 0);
+      const factor = anchor ? (anchor.total || 0) / anchor.goals! : 0;
+      for (const p of pick) p.goalsScaled = factor > 0 && p.goals != null ? p.goals * factor : null;
     }
     return pick;
   }, [sorted, range, charNames, projectionOn, futureMonths, rate, characters, bondPrice, goalsOn, goalHist]);
@@ -335,10 +344,14 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
               const cover = goalsToday > 0 ? (latest.total / goalsToday) * 100 : null;
               return (
                 <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs">
-                  <span className="flex items-center gap-1.5">
+                  <span
+                    className="flex items-center gap-1.5 cursor-help"
+                    title="A linha é desenhada em escala relativa (ancorada no banco no início do período) pra dar pra comparar o formato das curvas — o custo real é este aqui e o do hover"
+                  >
                     <span className="inline-block h-0.5 w-4 rounded" style={{ background: '#e11d48' }} />
                     <span className="text-muted-foreground">Custo dos goals:</span>
                     <b className="text-rose-600">{formatGoldValue(goalsToday)}</b>
+                    <span className="text-muted-foreground">(linha em escala relativa)</span>
                   </span>
                   {cover != null && (
                     <span className="text-muted-foreground">
@@ -384,12 +397,14 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     domain={['dataMin', 'dataMax']}
                   />
                   <Tooltip
-                    formatter={(v: number, name: string, entry: { payload?: { dayPct?: number | null; goalPct?: number | null; bondChars?: string[] } }) => {
+                    formatter={(v: number, name: string, entry: { payload?: { dayPct?: number | null; goals?: number | null; goalPct?: number | null; bondChars?: string[] } }) => {
                       if (name === 'expected') return [`${Math.round(v).toLocaleString()} gp`, 'Esperado'];
-                      if (name === 'goals') {
+                      if (name === 'goalsScaled') {
+                        // No hover vai o custo REAL dos goals (a linha é rebaseada só pro desenho).
+                        const real = entry?.payload?.goals ?? v;
                         const pct = entry?.payload?.goalPct;
                         const suffix = pct == null ? '' : `  (banco cobre ${pct.toFixed(1)}%)`;
-                        return [`${Math.round(v).toLocaleString()} gp${suffix}`, 'Goals'];
+                        return [`${Math.round(real).toLocaleString()} gp${suffix}`, 'Goals'];
                       }
                       if (name === 'bond') {
                         const chars = entry?.payload?.bondChars || [];
@@ -423,7 +438,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                   {goalsOn && (
                     <Line
                       type="monotone"
-                      dataKey="goals"
+                      dataKey="goalsScaled"
                       stroke="#e11d48"
                       strokeWidth={2}
                       strokeDasharray="4 3"

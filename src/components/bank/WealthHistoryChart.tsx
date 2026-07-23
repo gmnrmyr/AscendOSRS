@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LineChart } from 'lucide-react';
@@ -7,6 +7,7 @@ import { formatGoldValue } from '@/lib/utils';
 import { moversAt, type WealthSnapshot, type ItemMover } from '@/services/wealthHistory';
 import { projectionRate, projectedSeries, daysBetween, addDays, todayKey, bondSchedule, BOND_ID } from '@/services/projection';
 import { priceOf } from '@/services/priceEngine';
+import { fetchGoalHistory, type GoalCostHistory } from '@/services/goalHistory';
 import { useAppState } from '@/components/AppStateProvider';
 
 interface WealthHistoryChartProps {
@@ -82,13 +83,28 @@ type ChartPoint = {
   date: string; full: string;
   total: number | null; dayPct: number | null; expected: number | null;
   bond: number | null; bondChars?: string[];
+  goals: number | null; goalPct: number | null;
 } & Record<`c:${string}`, number | null>;
 
 export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartProps) {
   const [range, setRange] = useState<Range>('30d');
   const [byCharMode, setByCharMode] = useState(false);
   const [futureMonths, setFutureMonths] = useState(0);
-  const { characters, moneyMethods, hoursPerDay } = useAppState();
+  const { characters, moneyMethods, hoursPerDay, purchaseGoals } = useAppState();
+
+  // Linha do custo dos goals: liga sob demanda; a série vem do mercado da Wiki
+  // (cache 12h no goalHistory), nada é gravado no save.
+  const [showGoals, setShowGoals] = useState(false);
+  const [goalHist, setGoalHist] = useState<GoalCostHistory | null>(null);
+  const [goalsLoading, setGoalsLoading] = useState(false);
+  useEffect(() => {
+    if (!showGoals || goalHist || goalsLoading || purchaseGoals.length === 0) return;
+    setGoalsLoading(true);
+    fetchGoalHistory(purchaseGoals)
+      .then(setGoalHist)
+      .catch((e) => console.warn('Histórico dos goals indisponível:', e))
+      .finally(() => setGoalsLoading(false));
+  }, [showGoals, goalHist, goalsLoading, purchaseGoals]);
 
   const sorted = useMemo(
     () => [...(history || [])].sort((a, b) => a.date.localeCompare(b.date)),
@@ -115,6 +131,8 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
   // Projeção futura só na visão total (a linha esperada é do bolo inteiro).
   const projectionOn = futureMonths > 0 && rate.gpDay > 0 && !byCharMode;
 
+  const goalsOn = showGoals && goalHist != null;
+
   const data = useMemo(() => {
     const cfg = RANGES.find((r) => r.key === range)!;
     // dayPct calculado sobre a série inteira ANTES do recorte, pro 1º ponto
@@ -122,7 +140,9 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
     const withPct: ChartPoint[] = sorted.map((s, i) => {
       const prev = i > 0 ? sorted[i - 1] : null;
       const dayPct = prev && prev.total > 0 ? ((s.total - prev.total) / prev.total) * 100 : null;
-      const p = { date: shortDate(s.date), full: s.date, total: s.total, dayPct, expected: null, bond: null } as ChartPoint;
+      const goals = goalsOn ? goalHist!.costAt(s.date) : null;
+      const goalPct = goals && goals > 0 ? (s.total / goals) * 100 : null;
+      const p = { date: shortDate(s.date), full: s.date, total: s.total, dayPct, expected: null, bond: null, goals, goalPct } as ChartPoint;
       for (const n of charNames) p[`c:${n}`] = s.byChar?.[n] ?? null;
       return p;
     });
@@ -136,16 +156,21 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
       const horizon = futureMonths * 30;
       const purchases = bondSchedule(characters, addDays(anchor.full, 1), addDays(anchor.full, horizon));
       for (const fp of projectedSeries(anchor.full, anchor.total || 0, horizon, rate.gpDay, purchases, bondPrice)) {
+        // No futuro o custo dos goals congela no último preço conhecido; a
+        // cobertura (goalPct) segue a linha ESPERADA, não o real.
+        const goals = goalsOn ? goalHist!.costAt(fp.full) : null;
         pick.push({
           date: shortDate(fp.full), full: fp.full, total: null, dayPct: null,
           expected: fp.expected,
           bond: fp.bondChars.length ? fp.expected : null,
           bondChars: fp.bondChars,
+          goals,
+          goalPct: goals && goals > 0 ? (fp.expected / goals) * 100 : null,
         } as ChartPoint);
       }
     }
     return pick;
-  }, [sorted, range, charNames, projectionOn, futureMonths, rate, characters, bondPrice]);
+  }, [sorted, range, charNames, projectionOn, futureMonths, rate, characters, bondPrice, goalsOn, goalHist]);
 
   const latest = sorted[sorted.length - 1];
   const firstReal = data.find((p) => p.total != null);
@@ -240,6 +265,15 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
             >
               Por conta
             </button>
+            {purchaseGoals.length > 0 && (
+              <button
+                onClick={() => setShowGoals((v) => !v)}
+                title="Custo total dos goals ao longo do tempo (preço de mercado da Wiki) — no hover, quanto do custo o banco cobre"
+                className={toggleCls(showGoals)}
+              >
+                {goalsLoading ? 'Goals…' : 'vs Goals'}
+              </button>
+            )}
             {rate.gpDay > 0 && !byCharMode && (
               <div
                 className="flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5"
@@ -296,6 +330,28 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
               )}
             </div>
 
+            {goalsOn && (() => {
+              const goalsToday = goalHist!.costAt(latest.date);
+              const cover = goalsToday > 0 ? (latest.total / goalsToday) * 100 : null;
+              return (
+                <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs">
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block h-0.5 w-4 rounded" style={{ background: '#e11d48' }} />
+                    <span className="text-muted-foreground">Custo dos goals:</span>
+                    <b className="text-rose-600">{formatGoldValue(goalsToday)}</b>
+                  </span>
+                  {cover != null && (
+                    <span className="text-muted-foreground">
+                      banco cobre <b className={cover >= 100 ? 'text-green-600' : 'text-foreground'}>{cover.toFixed(1)}%</b>
+                    </span>
+                  )}
+                  <span className="text-muted-foreground" title="Goals sem histórico de mercado (conquistas, untradeables) entram pelo custo de hoje, constante">
+                    {goalHist!.itemsWithHistory}/{goalHist!.itemsTotal} goals com preço histórico
+                  </span>
+                </div>
+              );
+            })()}
+
             {byCharMode && (
               <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 {charNames.map((n, i) => (
@@ -328,8 +384,13 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     domain={['dataMin', 'dataMax']}
                   />
                   <Tooltip
-                    formatter={(v: number, name: string, entry: { payload?: { dayPct?: number | null; bondChars?: string[] } }) => {
+                    formatter={(v: number, name: string, entry: { payload?: { dayPct?: number | null; goalPct?: number | null; bondChars?: string[] } }) => {
                       if (name === 'expected') return [`${Math.round(v).toLocaleString()} gp`, 'Esperado'];
+                      if (name === 'goals') {
+                        const pct = entry?.payload?.goalPct;
+                        const suffix = pct == null ? '' : `  (banco cobre ${pct.toFixed(1)}%)`;
+                        return [`${Math.round(v).toLocaleString()} gp${suffix}`, 'Goals'];
+                      }
                       if (name === 'bond') {
                         const chars = entry?.payload?.bondChars || [];
                         const cost = bondPrice > 0 ? formatGoldValue(bondPrice * Math.max(chars.length, 1)) : '?';
@@ -358,6 +419,18 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                     ))
                   ) : (
                     <Area type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} fill="url(#wealthFill)" dot={{ r: 3, fill: '#06b6d4', strokeWidth: 0 }} />
+                  )}
+                  {goalsOn && (
+                    <Line
+                      type="monotone"
+                      dataKey="goals"
+                      stroke="#e11d48"
+                      strokeWidth={2}
+                      strokeDasharray="4 3"
+                      dot={false}
+                      isAnimationActive={false}
+                      connectNulls
+                    />
                   )}
                   {projectionOn && (
                     <Line type="monotone" dataKey="expected" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6 4" dot={false} isAnimationActive={false} />

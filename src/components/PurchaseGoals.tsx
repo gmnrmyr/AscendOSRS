@@ -10,6 +10,7 @@ import { ensurePrices, priceOf, idByName, itemImageUrl, itemImageUrlByName } fro
 import { goldOfItems, mainAccount, bigRuniteStacks } from "@/services/gold";
 import { fetchGoalMarket, type GoalMarket } from "@/services/goalMarket";
 import { GoalForm } from "./goals/GoalForm";
+import { GoalsTrendChart } from "./goals/GoalsTrendChart";
 import { GoalFilters } from "./goals/GoalFilters";
 import { GoalCard } from "./goals/GoalCard";
 
@@ -526,6 +527,9 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Custo dos goals ao longo do tempo (mercado da Wiki) */}
+        <GoalsTrendChart goals={goals} />
 
         {/* Filters */}
         <GoalFilters

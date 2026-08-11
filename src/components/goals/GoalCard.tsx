@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, DollarSign, Target, Hash, Star, ExternalLink, FlaskConical } from "lucide-react";
 import { itemImageUrlByName } from "@/services/priceEngine";
+import { GearAdvicePanel } from "@/components/gear/GearAdvicePanel";
+import type { GearSellAdvice } from "@/services/gearAdvisor";
 
 const PRIORITIES = ['S+', 'S', 'S-', 'A+', 'A', 'A-', 'B+', 'B', 'B-'] as const;
 
@@ -20,6 +22,7 @@ interface GoalCardProps {
   cyclePriority?: (priority: string) => string;
   getPriorityColor?: (priority: string) => string;
   getCategoryColor?: (category: string) => string;
+  sellAdvice?: GearSellAdvice[];
 }
 
 export function GoalCard({
@@ -32,7 +35,8 @@ export function GoalCard({
   getTotalCost,
   cyclePriority,
   getPriorityColor,
-  getCategoryColor
+  getCategoryColor,
+  sellAdvice = []
 }: GoalCardProps) {
   const handleDelete = onDelete || onRemove;
   
@@ -240,6 +244,8 @@ export function GoalCard({
             <p className="text-sm text-muted-foreground">{goal.notes}</p>
           </div>
         )}
+
+        <GearAdvicePanel advice={sellAdvice} goalCost={targetTotal || totalCost} />
       </CardContent>
     </Card>
   );

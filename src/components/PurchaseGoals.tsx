@@ -13,6 +13,7 @@ import { GoalForm } from "./goals/GoalForm";
 import { GoalsTrendChart } from "./goals/GoalsTrendChart";
 import { GoalFilters } from "./goals/GoalFilters";
 import { GoalCard } from "./goals/GoalCard";
+import { GEAR_KNOWLEDGE_REVIEWED_AT, goalSellAdvice } from "@/services/gearAdvisor";
 
 interface PurchaseGoal {
   id: string;
@@ -406,6 +407,10 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
   const goldPct = goldNeeded > 0 ? Math.min(100, (goldAvailable / goldNeeded) * 100) : 100;
   const runiteTotalQty = runiteStacks.reduce((s, r) => s + r.qty, 0);
   const runiteTotalValue = runiteStacks.reduce((s, r) => s + r.value, 0);
+  const sellAdviceByGoal = useMemo(
+    () => new Map(goals.map((goal) => [goal.id, goalSellAdvice(goal, bankData)])),
+    [goals, bankData],
+  );
 
   // Format the timestamp nicely
 
@@ -417,6 +422,13 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
             <h2 className="osrs-title text-2xl">Purchase Goals</h2>
             <Badge variant="outline" className="text-xs">
               Preços: GE ao vivo (Wiki)
+            </Badge>
+            <Badge
+              variant="outline"
+              className="text-xs"
+              title="Base local e versionada. Itens novos só recebem julgamento depois de revisão de stats, passivas e usos."
+            >
+              Radar BIS: {GEAR_KNOWLEDGE_REVIEWED_AT}
             </Badge>
           </div>
           <div className="flex items-center space-x-2">
@@ -569,6 +581,7 @@ export function PurchaseGoals({ goals, setGoals }: PurchaseGoalsProps) {
               cyclePriority={cyclePriority}
               getPriorityColor={getPriorityColor}
               getCategoryColor={getCategoryColor}
+              sellAdvice={sellAdviceByGoal.get(goal.id)}
             />
           ))}
         </div>

@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Landmark, TrendingUp } from 'lucide-react';
+import { AlertTriangle, BadgeDollarSign, Landmark, TrendingUp } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
 import { Character, BankItem } from '@/hooks/useAppData';
 import { itemImageUrl } from '@/services/priceEngine';
 import { formatGoldValue } from '@/lib/utils';
+import { bankSellAdvice, GEAR_KNOWLEDGE_REVIEWED_AT } from '@/services/gearAdvisor';
 
 interface BankOverviewProps {
   characters: Character[];
@@ -25,6 +26,7 @@ function rarityStyle(unit: number): string {
 }
 
 export function BankOverview({ characters, bankData }: BankOverviewProps) {
+  const [itemLimit, setItemLimit] = useState<30 | 60 | 'all'>(30);
   // Riqueza por conta (só as que têm valor), ordenado desc
   const perChar = useMemo(() => {
     return characters
@@ -42,8 +44,8 @@ export function BankOverview({ characters, bankData }: BankOverviewProps) {
     return Object.entries(bankData).filter(([name]) => names.has(name)).map(([, items]) => items);
   }, [characters, bankData]);
 
-  // Top 30 itens mais valiosos, agregados entre todas as contas
-  const topItems = useMemo(() => {
+  // Itens mais valiosos, agregados entre todas as contas. O corte é só visual.
+  const rankedItems = useMemo(() => {
     const agg = new Map<string, { name: string; osrsId?: number; qty: number; value: number; unit: number }>();
     for (const items of validBank) {
       for (const it of items) {
@@ -57,8 +59,18 @@ export function BankOverview({ characters, bankData }: BankOverviewProps) {
         agg.set(key, cur);
       }
     }
-    return [...agg.values()].sort((a, b) => b.value - a.value).slice(0, 30);
+    return [...agg.values()].sort((a, b) => b.value - a.value);
   }, [validBank]);
+
+  const displayedItems = itemLimit === 'all' ? rankedItems : rankedItems.slice(0, itemLimit);
+  const sellAdvice = useMemo(() => bankSellAdvice(bankData), [bankData]);
+  const adviceByItem = useMemo(() => {
+    const map = new Map<number, typeof sellAdvice[number]>();
+    for (const advice of sellAdvice) {
+      for (const item of advice.items) map.set(item.osrsId, advice);
+    }
+    return map;
+  }, [sellAdvice]);
 
   const grandTotal = perChar.reduce((s, c) => s + c.value, 0);
 
@@ -113,55 +125,100 @@ export function BankOverview({ characters, bankData }: BankOverviewProps) {
       {/* Itens mais valiosos */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-green-500" />
-            Itens mais valiosos
-            <span className="text-sm font-normal text-muted-foreground">top {topItems.length}</span>
-          </CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-500" />
+              Itens mais valiosos
+              <span className="text-sm font-normal text-muted-foreground">
+                {displayedItems.length} de {rankedItems.length}
+              </span>
+            </CardTitle>
+            <div className="flex items-center gap-1 rounded-md border border-border p-1 text-xs">
+              {([30, 60, 'all'] as const).map((limit) => (
+                <button
+                  key={limit}
+                  type="button"
+                  onClick={() => setItemLimit(limit)}
+                  className={`rounded px-2 py-1 transition-colors ${itemLimit === limit
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-accent'}`}
+                >
+                  {limit === 'all' ? 'Todos' : `Top ${limit}`}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Radar BIS revisado em {GEAR_KNOWLEDGE_REVIEWED_AT}: sugestões somente para gear de pelo menos 5M; itens novos exigem regra revisada.
+          </p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {topItems.map((it, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-3 rounded-lg border-2 bg-card p-2.5 hover:bg-accent/40 transition-colors ${rarityStyle(it.unit)}`}
-              >
-                <div className="flex h-7 w-6 shrink-0 items-center justify-center text-xs font-bold text-muted-foreground">
-                  {i + 1}
-                </div>
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted/50">
-                  {it.osrsId ? (
-                    <img
-                      src={itemImageUrl(it.osrsId)}
-                      alt={it.name}
-                      className="max-h-9 max-w-9 object-contain"
-                      loading="lazy"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  ) : (
-                    <Landmark className="h-4 w-4 text-muted-foreground" />
+            {displayedItems.map((it, i) => {
+              const advice = it.osrsId ? adviceByItem.get(it.osrsId) : undefined;
+              const direct = advice?.level === 'sell';
+              return (
+                <div
+                  key={it.osrsId || it.name}
+                  className={`rounded-lg border-2 bg-card p-2.5 hover:bg-accent/40 transition-colors ${rarityStyle(it.unit)} ${advice
+                    ? direct ? 'ring-1 ring-emerald-400/70' : 'ring-1 ring-amber-400/70'
+                    : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-7 w-6 shrink-0 items-center justify-center text-xs font-bold text-muted-foreground">
+                      {i + 1}
+                    </div>
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted/50">
+                      {it.osrsId ? (
+                        <img
+                          src={itemImageUrl(it.osrsId)}
+                          alt={it.name}
+                          className="max-h-9 max-w-9 object-contain"
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <Landmark className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <a
+                        href={it.osrsId ? `https://prices.runescape.wiki/osrs/item/${it.osrsId}` : undefined}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block truncate text-sm font-medium hover:underline"
+                        title={it.name}
+                      >
+                        {it.name}
+                      </a>
+                      <p className="text-xs text-muted-foreground">×{it.qty.toLocaleString()}</p>
+                    </div>
+                    <div
+                      className="shrink-0 cursor-help text-right font-mono text-sm font-semibold text-green-600"
+                      title={`${it.value.toLocaleString()} gp  (${it.unit.toLocaleString()} cada)`}
+                    >
+                      {formatGoldValue(it.value)}
+                    </div>
+                  </div>
+                  {advice && (
+                    <div className={`mt-2 rounded border px-2 py-1.5 text-xs ${direct
+                      ? 'border-emerald-300 bg-emerald-50/70 dark:border-emerald-800 dark:bg-emerald-950/25'
+                      : 'border-amber-300 bg-amber-50/70 dark:border-amber-800 dark:bg-amber-950/25'}`}
+                    >
+                      <p className={`flex items-center gap-1 font-bold ${direct
+                        ? 'text-emerald-700 dark:text-emerald-300'
+                        : 'text-amber-700 dark:text-amber-300'}`}
+                      >
+                        {direct ? <BadgeDollarSign className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+                        {direct ? 'Sell' : 'Review sale'} — você já tem {advice.betterName}
+                      </p>
+                      <p className="mt-1 text-muted-foreground">{advice.reason}</p>
+                      {advice.caveat && <p className="mt-1 text-muted-foreground">⚠ {advice.caveat}</p>}
+                    </div>
                   )}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <a
-                    href={it.osrsId ? `https://prices.runescape.wiki/osrs/item/${it.osrsId}` : undefined}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block truncate text-sm font-medium hover:underline"
-                    title={it.name}
-                  >
-                    {it.name}
-                  </a>
-                  <p className="text-xs text-muted-foreground">×{it.qty.toLocaleString()}</p>
-                </div>
-                <div
-                  className="shrink-0 cursor-help text-right font-mono text-sm font-semibold text-green-600"
-                  title={`${it.value.toLocaleString()} gp  (${it.unit.toLocaleString()} cada)`}
-                >
-                  {formatGoldValue(it.value)}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

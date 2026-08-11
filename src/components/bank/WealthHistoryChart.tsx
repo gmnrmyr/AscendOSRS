@@ -9,10 +9,12 @@ import { projectionRate, projectedSeries, daysBetween, addDays, todayKey, bondSc
 import { priceOf } from '@/services/priceEngine';
 import { fetchGoalHistory, type GoalCostHistory } from '@/services/goalHistory';
 import { useAppState } from '@/components/AppStateProvider';
+import { snapshotGold } from '@/services/wealthHistory';
+import { toast } from 'sonner';
 
 interface WealthHistoryChartProps {
   history: WealthSnapshot[];
-  onSnapshot: () => void;
+  onSnapshot: () => Promise<void>;
 }
 
 type Range = '7d' | '30d' | 'all';
@@ -89,8 +91,10 @@ type ChartPoint = {
 export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartProps) {
   const [range, setRange] = useState<Range>('30d');
   const [byCharMode, setByCharMode] = useState(false);
+  const [goldOnly, setGoldOnly] = useState(false);
+  const [snapshotSaving, setSnapshotSaving] = useState(false);
   const [futureMonths, setFutureMonths] = useState(0);
-  const { characters, moneyMethods, hoursPerDay, purchaseGoals } = useAppState();
+  const { characters, moneyMethods, hoursPerDay, purchaseGoals, settings, persistenceReady } = useAppState();
 
   // Linha do custo dos goals: liga sob demanda; a série vem do mercado da Wiki
   // (cache 12h no goalHistory), nada é gravado no save.
@@ -137,12 +141,16 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
     const cfg = RANGES.find((r) => r.key === range)!;
     // dayPct calculado sobre a série inteira ANTES do recorte, pro 1º ponto
     // do range ainda ter a variação vs o dia anterior (fora do range).
-    const withPct: ChartPoint[] = sorted.map((s, i) => {
-      const prev = i > 0 ? sorted[i - 1] : null;
-      const dayPct = prev && prev.total > 0 ? ((s.total - prev.total) / prev.total) * 100 : null;
+    let previousValue: number | null = null;
+    const withPct: ChartPoint[] = sorted.map((s) => {
+      const value = goldOnly ? snapshotGold(s, settings) : s.total;
+      const dayPct = value != null && previousValue != null && previousValue > 0
+        ? ((value - previousValue) / previousValue) * 100
+        : null;
+      if (value != null) previousValue = value;
       const goals = goalsOn ? goalHist!.costAt(s.date) : null;
-      const goalPct = goals && goals > 0 ? (s.total / goals) * 100 : null;
-      const p = { date: shortDate(s.date), full: s.date, total: s.total, dayPct, expected: null, bond: null, goals, goalPct } as ChartPoint;
+      const goalPct = value != null && goals && goals > 0 ? (value / goals) * 100 : null;
+      const p = { date: shortDate(s.date), full: s.date, total: value, dayPct, expected: null, bond: null, goals, goalPct } as ChartPoint;
       for (const n of charNames) p[`c:${n}`] = s.byChar?.[n] ?? null;
       return p;
     });
@@ -151,7 +159,8 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
     // Futuro: linha esperada emenda no ÚLTIMO ponto real e segue N meses,
     // crescendo gpDay/dia e deduzindo o bond de cada conta no vencimento.
     if (projectionOn && pick.length) {
-      const anchor = pick[pick.length - 1];
+      const anchor = [...pick].reverse().find((p) => p.total != null);
+      if (!anchor) return pick;
       anchor.expected = anchor.total;
       const horizon = futureMonths * 30;
       const purchases = bondSchedule(characters, addDays(anchor.full, 1), addDays(anchor.full, horizon));
@@ -179,18 +188,19 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
       for (const p of pick) p.goalsScaled = factor > 0 && p.goals != null ? p.goals * factor : null;
     }
     return pick;
-  }, [sorted, range, charNames, projectionOn, futureMonths, rate, characters, bondPrice, goalsOn, goalHist]);
+  }, [sorted, range, charNames, projectionOn, futureMonths, rate, characters, bondPrice, goalsOn, goalHist, goldOnly, settings]);
 
-  const latest = sorted[sorted.length - 1];
+  const realPoints = data.filter((p) => p.total != null);
+  const latest = realPoints[realPoints.length - 1];
   const firstReal = data.find((p) => p.total != null);
-  const delta = latest && firstReal ? latest.total - (firstReal.total || 0) : 0;
+  const delta = latest && firstReal ? (latest.total || 0) - (firstReal.total || 0) : 0;
   const deltaPct = firstReal && (firstReal.total || 0) > 0 ? (delta / (firstReal.total || 1)) * 100 : 0;
   const deltaUp = delta >= 0;
 
   // Variação vs o último dia gravado (independente do range selecionado).
-  const prevDay = sorted[sorted.length - 2];
-  const dayDelta = latest && prevDay ? latest.total - prevDay.total : 0;
-  const dayDeltaPct = prevDay && prevDay.total > 0 ? (dayDelta / prevDay.total) * 100 : 0;
+  const prevDay = realPoints[realPoints.length - 2];
+  const dayDelta = latest && prevDay ? (latest.total || 0) - (prevDay.total || 0) : 0;
+  const dayDeltaPct = prevDay && (prevDay.total || 0) > 0 ? (dayDelta / (prevDay.total || 1)) * 100 : 0;
   const dayUp = dayDelta >= 0;
 
   // Régua expected vs reality do passado visível: o que o ritmo previa vs o que rolou.
@@ -269,10 +279,18 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
             </div>
             <button
               onClick={() => setByCharMode((v) => !v)}
+              disabled={goldOnly}
               title="Uma linha por conta em vez do total"
-              className={toggleCls(byCharMode)}
+              className={`${toggleCls(byCharMode)} disabled:cursor-not-allowed disabled:opacity-40`}
             >
               Por conta
+            </button>
+            <button
+              onClick={() => { setGoldOnly((v) => !v); setByCharMode(false); }}
+              title={`Mostra só Coins + platinum tokens${settings.runiteAsGold ? ' + stacks grandes de Runite bars' : ''}${settings.goldMainOnly ? ' da conta principal' : ''}`}
+              className={toggleCls(goldOnly)}
+            >
+              Gold only
             </button>
             {purchaseGoals.length > 0 && (
               <button
@@ -306,22 +324,40 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                 </div>
               </div>
             )}
-            <Button size="sm" variant="outline" onClick={onSnapshot} title="Grava um ponto no histórico com o valor atual">
-              Salvar snapshot
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!persistenceReady || snapshotSaving}
+              onClick={async () => {
+                setSnapshotSaving(true);
+                try {
+                  await onSnapshot();
+                  toast.success('Snapshot salvo no disco');
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : 'Falha ao salvar snapshot');
+                } finally {
+                  setSnapshotSaving(false);
+                }
+              }}
+              title={persistenceReady ? 'Grava e confirma um ponto no histórico no disco' : 'Persistência indisponível: o botão fica bloqueado para não fingir que salvou'}
+            >
+              {snapshotSaving ? 'Salvando…' : 'Salvar snapshot'}
             </Button>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {sorted.length < 1 ? (
+        {sorted.length < 1 || realPoints.length < 1 ? (
           <div className="py-10 text-center text-sm text-muted-foreground">
-            Ainda sem histórico. Um ponto é gravado automático por dia — ou clique em <b>Salvar snapshot</b> agora.
+            {sorted.length < 1
+              ? <>Ainda sem histórico. Um ponto é gravado automático por dia — ou clique em <b>Salvar snapshot</b> agora.</>
+              : <>Esses snapshots antigos não têm detalhe suficiente para reconstruir o gold com os filtros atuais.</>}
           </div>
         ) : (
           <>
             <div className="mb-3 flex items-end gap-3">
-              <span className="text-2xl font-bold text-cyan-600">{formatGoldValue(latest.total)}</span>
-              {sorted.length < 2 ? (
+              <span className="text-2xl font-bold text-cyan-600">{formatGoldValue(latest?.total || 0)}</span>
+              {realPoints.length < 2 ? (
                 <span className="pb-0.5 text-sm font-normal text-muted-foreground">
                   1º ponto gravado — a tendência aparece a partir do 2º dia.
                 </span>
@@ -340,8 +376,8 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
             </div>
 
             {goalsOn && (() => {
-              const goalsToday = goalHist!.costAt(latest.date);
-              const cover = goalsToday > 0 ? (latest.total / goalsToday) * 100 : null;
+              const goalsToday = goalHist!.costAt(latest.full);
+              const cover = goalsToday > 0 ? ((latest.total || 0) / goalsToday) * 100 : null;
               return (
                 <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs">
                   <span
@@ -355,7 +391,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                   </span>
                   {cover != null && (
                     <span className="text-muted-foreground">
-                      banco cobre <b className={cover >= 100 ? 'text-green-600' : 'text-foreground'}>{cover.toFixed(1)}%</b>
+                      {goldOnly ? 'gold' : 'banco'} cobre <b className={cover >= 100 ? 'text-green-600' : 'text-foreground'}>{cover.toFixed(1)}%</b>
                     </span>
                   )}
                   <span className="text-muted-foreground" title="Goals sem histórico de mercado (conquistas, untradeables) entram pelo custo de hoje, constante">
@@ -403,7 +439,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                         // No hover vai o custo REAL dos goals (a linha é rebaseada só pro desenho).
                         const real = entry?.payload?.goals ?? v;
                         const pct = entry?.payload?.goalPct;
-                        const suffix = pct == null ? '' : `  (banco cobre ${pct.toFixed(1)}%)`;
+                        const suffix = pct == null ? '' : `  (${goldOnly ? 'gold' : 'banco'} cobre ${pct.toFixed(1)}%)`;
                         return [`${Math.round(real).toLocaleString()} gp${suffix}`, 'Goals'];
                       }
                       if (name === 'bond') {
@@ -414,7 +450,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                       if (name.startsWith('c:')) return [`${v.toLocaleString()} gp`, name.slice(2)];
                       const pct = entry?.payload?.dayPct;
                       const suffix = pct == null ? '' : `  (${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% vs dia anterior)`;
-                      return [`${v.toLocaleString()} gp${suffix}`, 'Total'];
+                      return [`${v.toLocaleString()} gp${suffix}`, goldOnly ? 'Gold' : 'Total'];
                     }}
                     labelFormatter={(l) => `Dia ${l}`}
                     contentStyle={{ fontSize: 12, borderRadius: 8 }}
@@ -433,7 +469,7 @@ export function WealthHistoryChart({ history, onSnapshot }: WealthHistoryChartPr
                       />
                     ))
                   ) : (
-                    <Area type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} fill="url(#wealthFill)" dot={{ r: 3, fill: '#06b6d4', strokeWidth: 0 }} />
+                    <Area type="monotone" dataKey="total" stroke="#06b6d4" strokeWidth={2} fill="url(#wealthFill)" dot={{ r: 3, fill: '#06b6d4', strokeWidth: 0 }} connectNulls />
                   )}
                   {goalsOn && (
                     <Line

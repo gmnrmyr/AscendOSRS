@@ -89,6 +89,43 @@ export function snapshotItems(s: WealthSnapshot): ItemSnap | undefined {
   return s.items;
 }
 
+// Gold líquido histórico derivado da foto item-a-item do snapshot.
+// Retorna null quando o snapshot antigo não tem detalhe suficiente, para o
+// gráfico mostrar um gap honesto em vez de inventar zero.
+function goldOfItemSnap(items: ItemSnap | undefined, runiteAsGold: boolean): number | null {
+  if (!items) return null;
+  let total = 0;
+  for (const [name, [qty, unit]] of Object.entries(items)) {
+    const normalized = name.toLowerCase();
+    if (normalized.includes('coin')) total += qty;
+    else if (normalized.includes('platinum')) total += qty * 1000;
+    else if (runiteAsGold && normalized === 'runite bar' && qty > 200) total += qty * unit;
+  }
+  return total;
+}
+
+export function snapshotGold(
+  snapshot: WealthSnapshot,
+  settings: { runiteAsGold: boolean; goldMainOnly: boolean },
+): number | null {
+  if (snapshot.itemsByChar) {
+    if (settings.goldMainOnly) {
+      const main = Object.entries(snapshot.byChar || {})
+        .sort((a, b) => b[1] - a[1])[0]?.[0];
+      return main ? goldOfItemSnap(snapshot.itemsByChar[main], settings.runiteAsGold) : null;
+    }
+    let total = 0;
+    for (const items of Object.values(snapshot.itemsByChar)) {
+      total += goldOfItemSnap(items, settings.runiteAsGold) || 0;
+    }
+    return total;
+  }
+  // O formato legado é agregado: serve para todas as contas, mas não permite
+  // reconstruir com honestidade a opção "só conta principal".
+  if (settings.goldMainOnly) return null;
+  return goldOfItemSnap(snapshot.items, settings.runiteAsGold);
+}
+
 // YYYY-MM-DD em horário local a partir de um Date.
 function dayKey(d: Date): string {
   const y = d.getFullYear();

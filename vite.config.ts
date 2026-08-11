@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => ({
     port: 8960, // homelab (8080 é do NumoraQ)
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        // Backend interno exclusivo do AscendOSRS (3001 é do Movie Tier).
+        target: 'http://localhost:28960',
         changeOrigin: true,
       }
     }

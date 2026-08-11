@@ -14,6 +14,7 @@ interface AppState {
   flipping: FlippingData;
   setFlipping: (data: FlippingData) => void;
   settings: AppSettings;
+  persistenceReady: boolean;
   setSettings: (settings: AppSettings) => void;
   setCharacters: (characters: Character[]) => void;
   setMoneyMethods: (methods: MoneyMethod[]) => void;
@@ -27,7 +28,7 @@ interface AppState {
     bankData: Record<string, BankItem[]>;
     hoursPerDay: number;
   }) => void;
-  recordWealthSnapshot: () => void;
+  recordWealthSnapshot: () => Promise<void>;
   refreshAllPrices: () => Promise<{ bankChanged: number; goalsChanged: number }>;
 }
 

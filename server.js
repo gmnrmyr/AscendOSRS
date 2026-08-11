@@ -10,7 +10,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3001; // Different port from Vite
+// Porta interna exclusiva do AscendOSRS. A 3001 pertence ao backend do
+// Movie Tier e fazia o frontend receber 404 em /api/data silenciosamente.
+const PORT = Number(process.env.ASCEND_API_PORT || 28960);
 
 app.use(express.json({ limit: '50mb' })); // bancos grandes (milhares de itens × vários chars)
 

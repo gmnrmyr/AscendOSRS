@@ -9,6 +9,8 @@ export interface DashboardSave {
   bankData: Record<string, any[]>;
   hoursPerDay: number;
   wealthHistory?: any[]; // série histórica da riqueza total (1 ponto/dia)
+  flipping?: { favorites: any[]; journal: any[] };
+  settings?: { runiteAsGold: boolean; goldMainOnly: boolean };
   savedAt?: string;
 }
 

@@ -175,8 +175,16 @@ export function useAppData() {
   }, [loaded, autoSnapped, characters, bankData]);
 
   // Carimbo manual: força um snapshot com os valores atuais (sobrescreve o de hoje).
-  const recordWealthSnapshot = () => {
-    setWealthHistory((prev) => upsertSnapshot(prev, characters, bankData));
+  const recordWealthSnapshot = async () => {
+    if (!canSave) throw new Error('Persistência em disco indisponível');
+    const nextHistory = upsertSnapshot(wealthHistory, characters, bankData);
+    // O botão manual confirma o POST antes de dizer que salvou. O autosave
+    // continua debounced para todas as outras mudanças.
+    await saveServerData({
+      characters, moneyMethods, purchaseGoals, bankData, hoursPerDay,
+      wealthHistory: nextHistory, flipping, settings,
+    });
+    setWealthHistory(nextHistory);
   };
 
   // Rehydrate de preço NA CARGA: o estimatedPrice salvo é só cache — a verdade é o
@@ -277,6 +285,7 @@ export function useAppData() {
     wealthHistory,
     flipping,
     settings,
+    persistenceReady: canSave,
     enabled: canSave
   });
 

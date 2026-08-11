@@ -13,7 +13,7 @@ interface BankTrackerProps {
   setCharacters: (characters: Character[]) => void;
   setBankData: (bankData: Record<string, BankItem[]>) => void;
   wealthHistory: WealthSnapshot[];
-  recordWealthSnapshot: () => void;
+  recordWealthSnapshot: () => Promise<void>;
 }
 
 export function BankTracker({

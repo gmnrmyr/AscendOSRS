@@ -2,7 +2,7 @@
 
 > The ultimate OSRS progress tracker for altscape enthusiasts
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](#)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#)
 
 > **Status: not the latest version.** This is the public snapshot from mid-2025. Development continues in a private, local-first version that runs on my own machine, and the hosted demo is offline.
@@ -158,7 +158,7 @@ Need Supabase dev access? Send your email to request access to the database dash
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
 ## ⚠️ Disclaimer
 

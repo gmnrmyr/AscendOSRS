@@ -2,9 +2,10 @@
 
 > The ultimate OSRS progress tracker for altscape enthusiasts
 
-[![Live Demo](https://img.shields.io/badge/Live-ascendosrs.com-success)](https://ascendosrs.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](#)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#)
+
+> **Status: not the latest version.** This is the public snapshot from mid-2025. Development continues in a private, local-first version that runs on my own machine, and the hosted demo is offline.
 
 AscendOSRS redefines how serious Old School RuneScape players manage their long-term progression across multiple accounts. Track wealth, gear progression, and goal completion with real-time Grand Exchange data, intelligent wealth calculations, and AI-powered insights.
 
